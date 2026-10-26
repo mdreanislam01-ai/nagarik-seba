@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>নাগরিক সেবা — অ্যাডমিন (ডেমো)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <button class="pill" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰ মেনু</button>
+  <div class="logo">নাগরিক সেবা — অ্যাডমিন<small>admin.nagarikseba.com — ডেমো, ক্লায়েন্ট সাইট থেকে সম্পূর্ণ আলাদা</small></div>
+  <div class="spacer"></div>
+  <span>অ্যাডমিন (ডেমো)</span>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main" id="main"></main>
+</div>
+<div class="modal-back" id="modalBack" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><p><button class="btn" onclick="closeModal()">ঠিক আছে</button></p></div></div>
+<script src="app.js"></script>
+</body>
+</html>
