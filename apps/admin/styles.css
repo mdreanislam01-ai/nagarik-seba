@@ -30,7 +30,6 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 body.dark{background:#0f172a;color:#e2e8f0}body.dark .card,body.dark .sidebar{background:#1e293b;color:#e2e8f0;border-color:#334155}body.dark .sidebar a{color:#e2e8f0}body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#e2e8f0;border-color:#334155}body.dark .modal{background:#1e293b;color:#e2e8f0}
 @media(max-width:800px){.sidebar{position:fixed;left:-280px;z-index:40;top:56px;transition:.2s}.sidebar.open{left:0}.main{padding:12px}}
 
-.ico{width:34px;height:34px;min-width:34px;display:inline-flex;align-items:center;justify-content:center;background:#e6f4f2;border-radius:10px;font-size:18px}
 .sidebar a{display:flex;align-items:center;gap:10px}
 .card-ico{font-size:28px;margin-bottom:6px}
 .main{width:100%}
@@ -39,3 +38,19 @@ table{min-width:520px}
 .topbar{flex-wrap:wrap}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.logo{font-size:17px}.pill{padding:6px 10px;font-size:13px}table{font-size:13px}input,select,textarea{font-size:16px}}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.main{padding:10px}.card{padding:12px}.topbar{gap:8px;padding:8px 10px}.logo{font-size:16px}.sidebar{width:270px}}
+
+.ico{width:24px;height:24px;min-width:24px;display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#334155;font-size:0}
+.ico svg{width:22px;height:22px}
+.sidebar a.active .ico{color:var(--teal-dark)}
+.sidebar a{padding:9px 10px}
+.card-ico{display:inline-flex;align-items:center;justify-content:center;color:#fff}
+.card-ico svg{width:28px;height:28px}
+.svc-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.svc-head{color:#fff;padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.svc-head b{font-size:16px}
+.svc-body{display:flex;justify-content:space-between;gap:8px;padding:12px 14px;font-size:14px}
+.svc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.dark .ico{color:#e2e8f0}
+body.dark .sidebar a.active .ico{color:#5eead4}
+@media(max-width:800px){.svc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.svc-grid{grid-template-columns:1fr}}

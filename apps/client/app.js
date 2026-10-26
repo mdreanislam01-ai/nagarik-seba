@@ -3,18 +3,54 @@ const $=s=>document.querySelector(s);
 function showModal(t,html){$('#modalTitle').textContent=t;$('#modalBody').innerHTML=html;$('#modalBack').classList.add('open')}
 function closeModal(){$('#modalBack').classList.remove('open')}
 function demoMsg(what){showModal('নোটিশ',`<p><b>${what}</b> — এই অপশনটি বর্তমানে চালু নয়।</p>`)}
-function toggleDark(){document.body.classList.toggle('dark');$('#darkBtn').textContent=document.body.classList.contains('dark')?'☀️ লাইট মোড':'🌙 ডার্ক মোড'}
+function toggleDark(){document.body.classList.toggle('dark');$('#darkBtn').textContent=document.body.classList.contains('dark')?'লাইট মোড':'ডার্ক মোড'}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
 
 
-const ICONS={
- dashboard:'🏠',recharge:'💳',report:'🚩',support:'💬',profile:'👤',devices:'📱',logout:'🚪',
- nid:'🪪',snid:'💳',brn:'👶',brni:'🏛️',sc:'🖥️',ssc:'✍️',tin:'📄',ncf:'✏️',vuk:'🎗️',
- sign:'✍️',servercopy:'🖥️',nidcard:'🪪',smartcardpdf:'📕',biomatic:'👆',tincertificate:'📄',location:'📍',number2imei:'📱',nid2allnumber:'🔢',info:'ℹ️',nidpsset:'🔑',namethikananid:'🏠',newbdris:'👶',passport:'🛂',calllist:'📞',i2an:'📲',pinset:'🔒',smartnidcard:'💳',
- signature:'✒️',tininfo:'🔍',dobfinder:'🎂',
- history:'📋'
+const S=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const P={
+ house:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
+ dollar:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1-1.3-1.5-3-1.5s-3 .5-3 1.5 1 2 3 2.5 3 1 3 2c0 1-1.3 1.5-3 1.5s-3-.5-3-1.5"/>',
+ flag:'<path d="M5 21V4"/><path d="M5 4h13l-2.5 4L18 12H5"/>',
+ chat:'<path d="M3 11a9 9 0 019-9h1a9 9 0 010 18H8l-5 2z"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>',
+ phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18.5h2"/>',
+ logout:'<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+ idcard:'<rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c1-1 2-1.5 3-1.5S10 15 11 16M14 9h5M14 12h5M14 15h3"/>',
+ doc:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>',
+ landmark:'<path d="M3 21h18M4 10l8-6 8 6M6 10v9M10 10v9M14 10v9M18 10v9M3 17h18"/>',
+ server:'<rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><circle cx="6" cy="6.5" r="1"/><circle cx="6" cy="17.5" r="1"/>',
+ pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',
+ editdoc:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M9 14l2 2 4-4"/>',
+ bank:'<path d="M3 21h18M3 10l9-6 9 6M5 10v10M9 10v10M13 10v10M17 10v10"/>',
+ finger:'<path d="M12 11a2 2 0 012 2c0 2-1 4-1 6"/><path d="M8 12c0-3 2-6 4-6s4 3 4 6c0 2-.5 4-1 6"/><path d="M5 13c0-5 3-9 7-9s7 4 7 9c0 3-1 6-2 8"/>',
+ pin:'<path d="M12 21s-7-5.5-7-11a7 7 0 0114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
+ key:'<circle cx="8" cy="15" r="4"/><path d="M11 12L20 3M16 7l3 3M19 4l2 2"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18"/>',
+ call:'<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.13.96.36 1.9.7 2.8a2 2 0 01-.45 2.1L8.1 9.9a16 16 0 006 6l1.3-1.25a2 2 0 012.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0122 16.9z"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+ searchdoc:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><circle cx="16" cy="16" r="3"/><path d="M18.5 18.5L21 21"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ clip:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a2 2 0 014 0M9 12h6M9 16h6"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5S15.5 16.5 15.5 20"/><circle cx="17" cy="9" r="3"/><path d="M16 14.5c2.5.5 4.5 2 4.5 5.5"/>',
+ tools:'<path d="M14.7 6.3a4.5 4.5 0 00-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 005.6-6l-3 3-2.5-.5-.5-2.5z"/>',
+ receipt:'<path d="M4 2h16v20l-2-1.5L16 22l-2-1.5L12 22l-2-1.5L8 22l-2-1.5L4 22z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+ money:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>',
+ mega:'<path d="M3 11v3l14 4V7z"/><path d="M17 8a4 4 0 010 8"/><path d="M7 14v4a2 2 0 004 0v-3"/>',
+ toggle:'<rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3"/>',
+ chart:'<path d="M3 21h18M7 16v-5M12 16V8M17 16v-8"/>',
+ card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
 };
-function ico(k){return `<span class="ico">${ICONS[k]||'📄'}</span>`}
+const ICONS={
+ dashboard:S(P.house),recharge:S(P.dollar),report:S(P.flag),support:S(P.chat),profile:S(P.user),devices:S(P.phone),logout:S(P.logout),
+ nid:S(P.idcard),snid:S(P.idcard),brn:S(P.doc),brni:S(P.landmark),sc:S(P.server),ssc:S(P.pen),tin:S(P.doc),ncf:S(P.editdoc),vuk:S(P.bank),
+ sign:S(P.pen),servercopy:S(P.server),nidcard:S(P.idcard),smartcardpdf:S(P.doc),biomatic:S(P.finger),tincertificate:S(P.doc),location:S(P.pin),number2imei:S(P.phone),nid2allnumber:S(P.list),info:S(P.info),nidpsset:S(P.key),namethikananid:S(P.house),newbdris:S(P.doc),passport:S(P.globe),calllist:S(P.call),i2an:S(P.phone),pinset:S(P.lock),smartnidcard:S(P.card),
+ signature:S(P.pen),tininfo:S(P.searchdoc),dobfinder:S(P.cal),
+ history:S(P.clip),doc:S(P.doc)
+};
+function ico(k){return `<span class="ico">${ICONS[k]||ICONS.doc}</span>`}
 const SERVICES=[
  {id:'nid',name:'এনআইডি ক্রিয়েট',title:'নতুন এনআইডি',cost:5,note:'সাইন থেকে এনআইডি মেইক ৫ টাকা করে কাটবে, অটো এনআইডি ১০ টাকা কাটবে।',autoload:true,fields:['নাম (বাংলা)*','নাম (ইংরেজী)*','এনআইডি নম্বর*','পিন নম্বর*','পিতার নাম*','মাতার নাম*','জন্মস্থান*','জন্ম তারিখ*','রক্তের গ্রুপ','প্রদানের তারিখ*','ঠিকানা*'],uploads:['এনআইডি ছবি*','স্বাক্ষর']},
  {id:'snid',name:'স্মার্ট এনআইডি ক্রিয়েট',title:'নতুন স্মার্ট এনআইডি',cost:10,note:'ছবির ব্যাকগ্রাউন্ড সঠিকভাবে না সরলে আসল ছবি ডাউনলোড করে remove.bg-এর মতো টুল ব্যবহারের পরামর্শ।',autoload:true,fields:['নাম (বাংলা)*','নাম (ইংরেজী)*','এনআইডি নম্বর*','পিন নম্বর*','পিতার নাম*','মাতার নাম*','জন্মস্থান*','জন্মস্থান (ইংরেজী)*','লিঙ্গ (ইংরেজী)*','জন্ম তারিখ*','রক্তের গ্রুপ','প্রদানের তারিখ*','ঠিকানা*'],uploads:['এনআইডি ছবি*','স্বাক্ষর']},
@@ -91,7 +127,7 @@ function render(){
   <div class="card"><b>Enable Notifications</b><p class="muted">Stay updated with the latest alerts and important messages.</p><button class="btn" onclick="showModal('Notifications Disabled!','You have blocked notifications. You can enable them in your browser settings.')">Allow</button></div>
   <div class="notice">📢 <b>Important Notice:</b> সার্ভারের সকল আপডেট পেতে গ্রুপে জয়েন থাকুন ধন্যবাদ 📢 <button class="btn ghost" onclick="demoMsg('WhatsApp নোটিশ')">👆 Click Now 👆</button> <span class="muted">( — কোনো গ্রুপে জয়েন করা হয় না)</span></div>
   <p class="notice" style="margin-top:12px">📢 সাইটে কোনো সমস্যা হলে, “রিপোর্ট অপশন” থেকে রিপোর্ট করুন। অর্ডার অপশন চালু 🔥 <span class="muted">— তবে অর্ডার পেজে বন্ধের ব্যানার আছে; এই অমিলটি অ্যাডমিন টগল দিয়ে সমাধানের জন্য রাখা হয়েছে।</span></p></div>
-  <div class="card"><h3>সার্ভিস কার্ড (কার্ডে ক্লিক করলে কোথাও যায় না — মূল সাইটের মতো শুধু তথ্য)</h3><div class="grid">`+SERVICES.map(s=>`<div class="card"><div class="card-ico">${ico(s.id)}</div><b>${s.name}</b><div>কার্ড খরচ: ${s.cost}</div><div class="muted">কার্ড তালিকা: ${HISTORIES.find(x=>x.id===s.id)?.rows.length||0}</div></div>`).join('')+`</div></div>
+  <div class="card"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
   <div class="card"><h3>Oders Logs (মূল সাইটের বানান অপরিবর্তিত রাখা হয়নি — এখানে সঠিক লেখা: Orders Logs)</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p><div class="grid">`+ORDERS.map(o=>`<div class="card"><div class="card-ico">${ico(o.id)}</div><b>${o.name}</b><div class="muted">Pending 0 • Received 0 • Completed 0 • Refunded 0</div></div>`).join('')+`</div></div>
   <div class="card"><h3>Activity Logs</h3><p class="muted">১০টি  এন্ট্রি: লগইন ও কার্ড তৈরির রেকর্ড (কোনো আসল IP / ডিভাইস তথ্য নেই)।</p><p><b>Profile Completion: 100% Complete</b> — Account Created, Email verified, Phone number added, Have recharged successfully।</p>
   <h3>Quick Access</h3><p><button class="btn" onclick="location.hash='#/recharge'">রিচার্জ</button> <button class="btn ghost" onclick="showModal('লাইভ চ্যাট','মূল অডিটে লাইভ চ্যাটের গন্তব্য যাচাই হয়নি। তাই এখানে কোনো চ্যাট খোলা হয় না — শুধু প্লেসহোল্ডার রাখা হয়েছে।')">লাইভ চ্যাট</button> <button class="btn ghost" onclick="location.hash='#/report'">রিপোর্ট</button> <button class="btn ghost" onclick="location.hash='#/profile'">প্রোফাইল</button></p></div>`;
@@ -158,4 +194,5 @@ function openAutoload(id){
 }
 function randomBRN(){const code=Array.from({length:4},()=>String.fromCharCode(65+Math.floor(Math.random()*26))).join('');$('#brnOut').textContent=` কোড: ${code} •  QR লিংক: demo.nagarikseba.com/qr/${code} (আসল সরকারি লিংক নয়)`}
 $('#sidebar').innerHTML=navHTML();
+$('#sidebar').addEventListener('click',e=>{if(e.target.closest('a')&&window.innerWidth<=800)document.querySelector('.sidebar').classList.remove('open')});
 window.addEventListener('hashchange',render);render();
