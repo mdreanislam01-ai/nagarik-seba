@@ -11,8 +11,6 @@ a{color:var(--teal)}button{cursor:pointer;font-family:inherit}
 .sidebar a{display:block;padding:8px 10px;border-radius:8px;color:var(--text);text-decoration:none}
 .sidebar a:hover,.sidebar a.active{background:#e6f4f2;color:var(--teal-dark);font-weight:700}
 .main{flex:1;padding:20px;max-width:1100px}
-.demo-banner{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px 14px;margin-bottom:16px}
-.demo-banner strong{color:#9a3412}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .stat{font-size:28px;font-weight:800}.muted{color:var(--muted);font-size:14px}
@@ -31,3 +29,13 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 .swatch{width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #ccc;display:inline-block;margin:3px;cursor:pointer}
 body.dark{background:#0f172a;color:#e2e8f0}body.dark .card,body.dark .sidebar{background:#1e293b;color:#e2e8f0;border-color:#334155}body.dark .sidebar a{color:#e2e8f0}body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#e2e8f0;border-color:#334155}body.dark .modal{background:#1e293b;color:#e2e8f0}
 @media(max-width:800px){.sidebar{position:fixed;left:-280px;z-index:40;top:56px;transition:.2s}.sidebar.open{left:0}.main{padding:12px}}
+
+.ico{width:34px;height:34px;min-width:34px;display:inline-flex;align-items:center;justify-content:center;background:#e6f4f2;border-radius:10px;font-size:18px}
+.sidebar a{display:flex;align-items:center;gap:10px}
+.card-ico{font-size:28px;margin-bottom:6px}
+.main{width:100%}
+.card{overflow-x:auto}
+table{min-width:520px}
+.topbar{flex-wrap:wrap}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.logo{font-size:17px}.pill{padding:6px 10px;font-size:13px}table{font-size:13px}input,select,textarea{font-size:16px}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.main{padding:10px}.card{padding:12px}.topbar{gap:8px;padding:8px 10px}.logo{font-size:16px}.sidebar{width:270px}}
