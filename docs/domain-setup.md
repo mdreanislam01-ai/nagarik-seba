@@ -4,6 +4,25 @@
 is live.** Do not claim otherwise. The steps below are for tomorrow, after the
 domain is purchased.
 
+## 0. Vercel fix — why the free domain showed 404
+
+The repository root has no app by itself: the client app lives in
+`apps/client/` and the admin app in `apps/admin/`. A Vercel project deployed
+from the repository root therefore served `https://nagarikseba.vercel.app/`
+as 404, while `https://nagarikseba.vercel.app/apps/client/` worked.
+
+Fix applied in this repo: a root `index.html` redirects `/` to
+`apps/client/`, so the free Vercel domain now opens the client panel.
+For the proper custom-domain split, use two separate Vercel projects
+instead of relying on the redirect:
+
+- Client project: Root Directory = `apps/client/` → domain `nagarikseba.com`
+- Admin project: Root Directory = `apps/admin/` → domain `admin.nagarikseba.com`
+
+In Vercel: Project → Settings → General → Root Directory → Edit →
+choose the folder above → Save, then redeploy. With a Root Directory set,
+that project serves its app at `/` directly, with no redirect needed.
+
 ## 1. Buy the domain
 
 - Buy `nagarikseba.com` from a registrar of your choice.
