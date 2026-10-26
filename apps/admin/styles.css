@@ -54,3 +54,14 @@ body.dark .ico{color:#e2e8f0}
 body.dark .sidebar a.active .ico{color:#5eead4}
 @media(max-width:800px){.svc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.svc-grid{grid-template-columns:1fr}}
+/* Dashboard service-card header icons: large white, reference-matching.
+   Bug fixed: the header icon was nested as .card-ico > .ico, and .ico set
+   color:#334155 (dark) and 22px, overriding .card-ico's white/28px intent.
+   These higher-specificity rules force white + large size on coloured headers only.
+   Sidebar icons (.ico, 22px) and white-background cards are NOT changed. */
+.svc-head{padding:22px 12px 20px;gap:10px}
+.svc-head .card-ico{color:#fff}
+.svc-head .card-ico .ico{width:56px;height:56px;min-width:56px;color:#fff}
+.svc-head .card-ico .ico svg{width:52px;height:52px;stroke:#fff;stroke-width:2.2}
+body.dark .svc-head .card-ico,body.dark .svc-head .card-ico .ico,body.dark .svc-head .card-ico .ico svg{color:#fff;stroke:#fff}
+@media(max-width:520px){.svc-head{padding:20px 12px 18px}.svc-head .card-ico .ico{width:44px;height:44px;min-width:44px}.svc-head .card-ico .ico svg{width:42px;height:42px}}
