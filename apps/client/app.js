@@ -51,6 +51,14 @@ const ICONS={
  history:S(P.clip),doc:S(P.doc)
 };
 function ico(k){return `<span class="ico">${ICONS[k]||ICONS.doc}</span>`}
+const OL_STATUS=[
+ ['pending','Pending','<path d="M5 2h14v2l-6 8 6 8v2H5v-2l6-8L5 4V2z"/>'],
+ ['received','Received','<path d="M1 7h12v9H1zM13 10h4l4 4v2h-8z"/><circle cx="5.5" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>'],
+ ['completed','Completed','<path d="M9 16.2 4.8 12 3.4 13.4 9 19 21 7 19.6 5.6z"/>'],
+ ['refunded','Refunded','<path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/>'],
+];
+function olTile(s){return `<div class="ol-tile ol-${s[0]}"><span class="ol-circle"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">${s[2]}</svg></span><span class="ol-label">${s[1]}</span><b class="ol-count">0</b></div>`}
+function ordersLogsHTML(){return `<div class="orders-logs">`+ORDERS.map(o=>`<section class="ol-section"><h4 class="ol-head">${ico(o.id)}<span>${o.name}</span></h4><div class="ol-grid">`+OL_STATUS.map(olTile).join('')+`</div></section>`).join('')+`</div>`}
 const SERVICES=[
  {id:'nid',name:'এনআইডি ক্রিয়েট',title:'নতুন এনআইডি',cost:5,note:'সাইন থেকে এনআইডি মেইক ৫ টাকা করে কাটবে, অটো এনআইডি ১০ টাকা কাটবে।',autoload:true,fields:['নাম (বাংলা)*','নাম (ইংরেজী)*','এনআইডি নম্বর*','পিন নম্বর*','পিতার নাম*','মাতার নাম*','জন্মস্থান*','জন্ম তারিখ*','রক্তের গ্রুপ','প্রদানের তারিখ*','ঠিকানা*'],uploads:['এনআইডি ছবি*','স্বাক্ষর']},
  {id:'snid',name:'স্মার্ট এনআইডি ক্রিয়েট',title:'নতুন স্মার্ট এনআইডি',cost:10,note:'ছবির ব্যাকগ্রাউন্ড সঠিকভাবে না সরলে আসল ছবি ডাউনলোড করে remove.bg-এর মতো টুল ব্যবহারের পরামর্শ।',autoload:true,fields:['নাম (বাংলা)*','নাম (ইংরেজী)*','এনআইডি নম্বর*','পিন নম্বর*','পিতার নাম*','মাতার নাম*','জন্মস্থান*','জন্মস্থান (ইংরেজী)*','লিঙ্গ (ইংরেজী)*','জন্ম তারিখ*','রক্তের গ্রুপ','প্রদানের তারিখ*','ঠিকানা*'],uploads:['এনআইডি ছবি*','স্বাক্ষর']},
@@ -128,7 +136,7 @@ function render(){
   <div class="notice">📢 <b>Important Notice:</b> সার্ভারের সকল আপডেট পেতে গ্রুপে জয়েন থাকুন ধন্যবাদ 📢 <button class="btn ghost" onclick="demoMsg('WhatsApp নোটিশ')">👆 Click Now 👆</button> <span class="muted">( — কোনো গ্রুপে জয়েন করা হয় না)</span></div>
   <p class="notice" style="margin-top:12px">📢 সাইটে কোনো সমস্যা হলে, “রিপোর্ট অপশন” থেকে রিপোর্ট করুন। অর্ডার অপশন চালু 🔥 <span class="muted">— তবে অর্ডার পেজে বন্ধের ব্যানার আছে; এই অমিলটি অ্যাডমিন টগল দিয়ে সমাধানের জন্য রাখা হয়েছে।</span></p></div>
   <div class="card"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
-  <div class="card"><h3>Oders Logs (মূল সাইটের বানান অপরিবর্তিত রাখা হয়নি — এখানে সঠিক লেখা: Orders Logs)</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p><div class="grid">`+ORDERS.map(o=>`<div class="card"><div class="card-ico">${ico(o.id)}</div><b>${o.name}</b><div class="muted">Pending 0 • Received 0 • Completed 0 • Refunded 0</div></div>`).join('')+`</div></div>
+  <div class="card orders-logs-card"><h3>Orders Logs</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p>`+ordersLogsHTML()+`</div>
   <div class="card"><h3>Activity Logs</h3><p class="muted">১০টি  এন্ট্রি: লগইন ও কার্ড তৈরির রেকর্ড (কোনো আসল IP / ডিভাইস তথ্য নেই)।</p><p><b>Profile Completion: 100% Complete</b> — Account Created, Email verified, Phone number added, Have recharged successfully।</p>
   <h3>Quick Access</h3><p><button class="btn" onclick="location.hash='#/recharge'">রিচার্জ</button> <button class="btn ghost" onclick="showModal('লাইভ চ্যাট','মূল অডিটে লাইভ চ্যাটের গন্তব্য যাচাই হয়নি। তাই এখানে কোনো চ্যাট খোলা হয় না — শুধু প্লেসহোল্ডার রাখা হয়েছে।')">লাইভ চ্যাট</button> <button class="btn ghost" onclick="location.hash='#/report'">রিপোর্ট</button> <button class="btn ghost" onclick="location.hash='#/profile'">প্রোফাইল</button></p></div>`;
  }

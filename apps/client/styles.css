@@ -65,3 +65,32 @@ body.dark .sidebar a.active .ico{color:#5eead4}
 .svc-head .card-ico .ico svg{width:52px;height:52px;stroke:#fff;stroke-width:2.2}
 body.dark .svc-head .card-ico,body.dark .svc-head .card-ico .ico,body.dark .svc-head .card-ico .ico svg{color:#fff;stroke:#fff}
 @media(max-width:520px){.svc-head{padding:20px 12px 18px}.svc-head .card-ico .ico{width:44px;height:44px;min-width:44px}.svc-head .card-ico .ico svg{width:42px;height:42px}}
+
+/* Orders Logs — reference design, scoped so it does NOT inherit the
+   large 52px dashboard service-card icons. Heading icons stay small/dark,
+   status circles stay moderate (34px circle, ~19px white glyph). */
+.orders-logs{display:flex;flex-direction:column;gap:20px}
+.ol-section{min-width:0}
+.ol-head{display:flex;align-items:center;gap:9px;margin:0 0 10px;font-size:17px;line-height:1.3}
+.ol-head .ico{width:24px;height:24px;min-width:24px;color:#1f2937}
+.ol-head .ico svg{width:22px;height:22px;stroke:currentColor}
+body.dark .ol-head .ico{color:#e2e8f0}
+.ol-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ol-tile{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid;min-height:56px}
+.ol-circle{width:34px;height:34px;min-width:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.ol-circle svg{width:19px;height:19px}
+.ol-label{flex:1;min-width:0;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ol-count{font-weight:800;font-size:16px}
+.ol-pending{background:#fff7ed;border-color:#fdba74;color:#ea580c}
+.ol-pending .ol-circle{background:#f97316}
+.ol-received{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
+.ol-received .ol-circle{background:#3b82f6}
+.ol-completed{background:#f0fdf4;border-color:#86efac;color:#16a34a}
+.ol-completed .ol-circle{background:#22c55e}
+.ol-refunded{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
+.ol-refunded .ol-circle{background:#ef4444}
+body.dark .ol-pending{background:#431407;border-color:#9a3412;color:#fdba74}
+body.dark .ol-received{background:#172554;border-color:#1d4ed8;color:#93c5fd}
+body.dark .ol-completed{background:#052e16;border-color:#15803d;color:#86efac}
+body.dark .ol-refunded{background:#450a0a;border-color:#991b1b;color:#fca5a5}
+@media(max-width:520px){.ol-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ol-tile{padding:8px 10px;gap:8px;min-height:52px}.ol-circle{width:32px;height:32px;min-width:32px}.ol-circle svg{width:18px;height:18px}.ol-label{font-size:14px}.ol-count{font-size:15px}.ol-head{font-size:16px}}
