@@ -62,7 +62,39 @@ function removeProfilePhoto(){
   showModal('ছবি সরানো হয়েছে','প্রোফাইল ছবি সরানো হয়েছে। এখন আবার জেনেরিক আইকন দেখা যাবে।');
 }
 
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+/* Profile info — LOCAL-ONLY (no backend, no server account).
+   Name/phone edited on the Profile page are saved only in this
+   browser/device via localStorage, like the profile photo.
+   They will NOT sync to another phone/PC and are lost if browser
+   data is cleared. A real backend would be needed for cross-device
+   profile sync. Email stays disabled/unchanged, balance/UID/Verified
+   are deliberately NOT changed by this form. */
+const PROFILE_KEY='nagarikseba_profile_info';
+const PROFILE_DEFAULTS={name:'নমুনা ব্যবহারকারী',phone:'01XXXXXXXXX'};
+function getProfileInfo(){
+  try{
+    const raw=localStorage.getItem(PROFILE_KEY);
+    if(!raw) return {...PROFILE_DEFAULTS};
+    const v=JSON.parse(raw);
+    return {name:(v.name||'').trim()||PROFILE_DEFAULTS.name, phone:(v.phone||'').trim()||PROFILE_DEFAULTS.phone};
+  }catch(e){return {...PROFILE_DEFAULTS}}
+}
+function saveProfileUpdate(){
+  const nameEl=document.getElementById('profileNameInput');
+  const phoneEl=document.getElementById('profilePhoneInput');
+  const name=nameEl? nameEl.value.trim() : '';
+  const phone=phoneEl? phoneEl.value.trim() : '';
+  if(!name){showModal('প্রোফাইল আপডেট','দয়া করে নাম লিখুন।'); return;}
+  if(!phone){showModal('প্রোফাইল আপডেট','দয়া করে নম্বর লিখুন।'); return;}
+  const digits=phone.replace(/\D/g,'');
+  if(digits.length<10){showModal('প্রোফাইল আপডেট','দয়া করে সঠিক নম্বর লিখুন (কমপক্ষে ১০ ডিজিট)।'); return;}
+  try{localStorage.setItem(PROFILE_KEY, JSON.stringify({name,phone}));}
+  catch(e){showModal('প্রোফাইল আপডেট','প্রোফাইল সংরক্ষণ করা যায়নি — আবার চেষ্টা করুন।'); return;}
+  render();
+  showModal('প্রোফাইল আপডেট হয়েছে','নাম ও নম্বর এই ডিভাইসে সংরক্ষিত হয়েছে। হোমপেজের প্রোফাইল কার্ডে এখন নতুন নাম দেখা যাবে।');
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
 
 
 const S=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -175,7 +207,15 @@ const SIDEBAR=[
  ['অ্যাকাউন্ট',[['profile','প্রোফাইল'],['devices','ডিভাইস'],['logout','লগআউট']]],
 ];
 function navHTML(){
- let h='';SIDEBAR.forEach(([sec,items])=>{h+=`<h3>${sec}</h3>`+items.map(([r,l])=>{const k=r.split('/').pop();return `<a href="#/${r}" data-r="${r}">${ico(k)}<span>${l}</span></a>`}).join('')});return h;
+ // BUG FIX (logout visibility): the old sidebar was one long scrollable
+ // list, so Logout — the very last item — sat below the fold on desktop
+ // and was effectively unreachable on mobile. The list now lives in its
+ // own scrollable area, and a pinned Logout footer (same #/logout action
+ // as the list item, not a second/conflicting action) stays visible at
+ // the bottom of the sidebar/drawer on both desktop and mobile.
+ let h='<div class="sidebar-scroll">';SIDEBAR.forEach(([sec,items])=>{h+=`<h3>${sec}</h3>`+items.map(([r,l])=>{const k=r.split('/').pop();return `<a href="#/${r}" data-r="${r}">${ico(k)}<span>${l}</span></a>`}).join('')});h+='</div>';
+ h+=`<div class="sidebar-logout"><a href="#/logout" data-r="logout">${ico('logout')}<span>লগআউট</span></a></div>`;
+ return h;
 }
 function tableHTML(cols,rows,actions){
  const head=`<tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`;
@@ -202,7 +242,7 @@ function render(){
   h+=`<section class="profile-card">
   <div class="profile-row">
     ${profileAvatarHTML()}
-    <div class="profile-info"><b class="profile-name">নমুনা ব্যবহারকারী</b> <span class="verified-pill">✓ ভেরিফাইড</span><div class="profile-uid">UID: #BD-982410</div></div>
+    <div class="profile-info"><b class="profile-name">${esc(getProfileInfo().name)}</b> <span class="verified-pill">✓ ভেরিফাইড</span><div class="profile-uid">UID: #BD-982410</div></div>
     <button class="qr-btn" type="button" onclick="showModal('QR কোড','UID: #BD-982410 — এই QR বোতামটি নমুনা; আসল এনকোড করা QR পেতে আসল ব্যবহারকারী তথ্য / ব্যাকএন্ড প্রয়োজন।')" aria-label="QR কোড"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3"/></svg></button>
   </div>
   <hr class="profile-divider">
@@ -267,12 +307,13 @@ function render(){
  }
  else if(hash==='report'){h+=`<div class="card"><h2>রিপোর্ট</h2><label>সমস্যার বিষয়*</label><input><label>সমস্যার ব্যাখ্যা*</label><textarea></textarea><p class="muted">ছবি যোগ করতে চাইলে লাইভ চ্যাট ব্যবহার করতে বলা আছে (মূল নোট)তে ছবি পাঠানো হয় না।</p><p><button class="btn" onclick="demoMsg('রিপোর্ট Submit')">Submit</button></p></div>`}
  else if(hash==='support'){h+=`<div class="card"><h2>সাপোর্ট</h2><p>মূল সাইটে সাপোর্ট বাইরের WhatsApp গ্রুপের লিংক খুলত। এখানে কোনো গ্রুপ লিংক দেওয়া হয়নি, জয়েন/মেসেজ করা হয় না — শুধু প্লেসহোল্ডার।</p><button class="btn ghost" onclick="demoMsg('সাপোর্ট প্লেসহোল্ডার')">সাপোর্ট</button></div>`}
- else if(hash==='profile'){h+=`<div class="card"><h2>প্রোফাইল</h2><p>নমুনা ব্যবহারকারী • Verified: Yes • Balance: 10 • Joined: তারিখ</p>
+ else if(hash==='profile'){const _pi=getProfileInfo();h+=`<div class="card"><h2>প্রোফাইল</h2><p>${esc(_pi.name)} • Verified: Yes • Balance: 10 • Joined: তারিখ</p>
  <h3>প্রোফাইল ছবি</h3><div class="photo-upload"><span class="avatar-ph photo-preview" id="photoPreviewWrap">${profilePreviewHTML()}</span><div class="photo-upload-actions"><label class="btn" for="profilePhotoInput">ছবি আপলোড করুন</label><input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhotoFile(this)"><button class="btn ghost" id="photoSaveBtn" type="button" disabled onclick="saveProfilePhoto()">সংরক্ষণ করুন</button><button class="btn ghost" type="button" onclick="removeProfilePhoto()">ছবি সরান</button><p class="muted" id="photoMsg">ছবি বাছলে এখানে প্রিভিউ দেখা যাবে। সংরক্ষণ করুন চাপলে হোমপেজের প্রোফাইল কার্ডে এই ছবি দেখা যাবে।</p><p class="muted">ছবি শুধু এই ব্রাউজার / ডিভাইসে সংরক্ষিত হবে — অন্য ফোন / পিসিতে দেখা যাবে না, আর ব্রাউজার ডাটা মুছলে মুছে যাবে।</p></div></div>
- <h3>Profile Update</h3><label>নাম*</label><input value="নমুনা ব্যবহারকারী"><label>ইমেল* (disabled)</label><input disabled value="demo@example.com"><label>নম্বর*</label><input value="01XXXXXXXXX (মাস্ক করা )"><p><button class="btn" onclick="demoMsg('Update Profile')">Update Profile</button></p>
+ <h3>Profile Update</h3><label>নাম*</label><input id="profileNameInput" value="${esc(_pi.name)}"><label>ইমেল* (disabled)</label><input disabled value="demo@example.com"><label>নম্বর*</label><input id="profilePhoneInput" value="${esc(_pi.phone)}"><p><button class="btn" onclick="saveProfileUpdate()">Update Profile</button></p><p class="muted">নাম ও নম্বর আপডেট করলে প্রোফাইল হেডার, এই ফর্ম এবং হোমপেজের প্রোফাইল কার্ড — তিন জায়গাতেই নতুন নাম দেখা যাবে। এটি শুধু এই ব্রাউজার / ডিভাইসে সংরক্ষিত হবে।</p>
  <h3>Change Password</h3><label>পুরাতন পাসওয়ার্ড*</label><input type="password"><label>নতুন পাসওয়ার্ড*</label><input type="password"><label>কনফার্ম পাসওয়ার্ড*</label><input type="password"><p><button class="btn" onclick="demoMsg('Update Password')">Update Password</button></p>
  <h3>Theme Color</h3><p><span class="swatch" style="background:#ff4961" onclick="document.documentElement.style.setProperty('--accent','#ff4961')"></span><span class="swatch" style="background:#0f766e" onclick="document.documentElement.style.setProperty('--accent','#0f766e')"></span><span class="swatch" style="background:#2563eb" onclick="document.documentElement.style.setProperty('--accent','#2563eb')"></span> <span class="muted">বর্তমান অ্যাকসেন্ট: #ff4961</span></p>
- <h3>Cards Lists (All Time)</h3><p>NID: 1, Smart NID: 3, BRN: 1, Server Copy: 0, OTP Server Copy: 0, Sign to Server Copy: 0, Tin: 0, NID Correction Form: 0</p></div>`}
+ <h3>Cards Lists (All Time)</h3><p>NID: 1, Smart NID: 3, BRN: 1, Server Copy: 0, OTP Server Copy: 0, Sign to Server Copy: 0, Tin: 0, NID Correction Form: 0</p>
+ <h3>লগআউট</h3><p><a class="btn accent" href="#/logout">লগআউট</a></p><p class="muted">লগআউট পেজটি প্রোটোটাইপ — এতে কোনো সার্ভার লগআউট হয় না, শুধু লগআউট পেজ দেখায়।</p></div>`}
  else if(hash==='devices'){h+=`<div class="card"><h2>ডিভাইস</h2>${tableHTML(['SL','IP','DEVICE ID','PLATFORM','SESSION','ACTIVED','CREATED','ACTION'],[['1','•••.•••','-ID','Android','Expired','—',''],['2','•••.•••','-ID','Linux / Chrome','Expired','—',''],['3','•••.•••','-ID','Android','Active','—',''],['4','•••.•••','-ID','Linux / Chromium','Current','—','']],'<button class="btn ghost" onclick="demoMsg(\'সেশন রিমুভ\')">Remove</button>')}<p class="muted">কোনো আসল IP / ডিভাইস ID এখানে নেই, কোনো সেশন সরানো হয় না।</p></div>`}
  else if(hash==='logout'){h+=`<div class="card"><h2>লগআউট</h2><p> লগআউট করা হয় না — এই পেজ শুধু কাঠামো দেখায়।</p><button class="btn accent" onclick="demoMsg('লগআউট')">লগআউট</button></div>`}
  else{h+='<div class="card"><p>পেজ পাওয়া যায়নি। সাইডবার থেকে বাছুন।</p></div>'}

@@ -326,3 +326,20 @@ body.dark .topbar-new .switch__input:focus-visible + .switch__icon{outline-color
 .btn:disabled{opacity:.5;cursor:not-allowed}
 body.dark .photo-upload-actions .btn.ghost{background:#1e293b;color:#5eead4;border-color:#334155}
 @media(max-width:520px){.photo-preview{width:80px;height:80px;min-width:80px}.photo-preview svg{width:44px;height:44px}}
+
+/* BUG FIX — Logout visibility (desktop + mobile).
+   Cause: the sidebar was one long scrollable list and Logout was its
+   very last item, so it sat below the fold on desktop and was effectively
+   unreachable in the mobile drawer. Fix: the sidebar is now a flex
+   column — the nav list scrolls in its own area (.sidebar-scroll) and a
+   pinned Logout footer (.sidebar-logout, same #/logout action as the
+   list item) always stays visible at the sidebar/drawer bottom.
+   Works with the existing fixed mobile drawer and sticky desktop sidebar. */
+.sidebar{display:flex;flex-direction:column;overflow:hidden}
+.sidebar-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.sidebar-logout{flex:none;border-top:1px solid var(--border);padding:10px 0 2px;background:transparent}
+.sidebar-logout a{font-weight:700;color:#b91c1c}
+.sidebar-logout a:hover{background:#fef2f2;color:#991b1b}
+body.dark .sidebar-logout{border-top-color:#334155}
+body.dark .sidebar-logout a{color:#fca5a5}
+body.dark .sidebar-logout a:hover{background:#450a0a;color:#fecaca}
