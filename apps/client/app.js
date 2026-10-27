@@ -1347,3 +1347,143 @@ render = async function () {
     });
   }
 };
+
+/* ===== Step 11 — Reference inner-page restyle (visual only) =====
+   Runs LAST in the render chain. Adds body.ns-inner-page for every page
+   except the dashboard (dashboard/homepage top untouched), table chrome
+   (Show entries / Search / Showing / pagination), 2-column service
+   form grids, teal marquee pricing strips, profile section cards, and
+   dashed-teal dropzone styling for the EXISTING upload controls (Step 9
+   wiring untouched — no separate titled upload section is re-added).
+   No price, API, order-flow or functionality change. No government
+   logo/seal/official layout/document generation. Disclaimer stays
+   exactly once per document page (Step 2/9 copy, small plain text). */
+var _renderStep8Client = render;
+render = async function () {
+  await _renderStep8Client();
+  var hash = (location.hash.replace('#/', '') || 'dashboard'), parts = hash.split('/');
+  var main = document.querySelector('#main'); if (!main) return;
+  if (hash === 'dashboard') { document.body.classList.remove('ns-inner-page'); return; }
+  document.body.classList.add('ns-inner-page');
+  var card = main.querySelector('.card');
+  /* Required-field stars in red (labels only, fresh DOM each render). */
+  main.querySelectorAll('label').forEach(function (l) {
+    if (!l.dataset.nsStar && l.textContent.indexOf('*') !== -1) { l.dataset.nsStar = '1'; l.innerHTML = l.innerHTML.replace('*', '<span class="req-star">*</span>'); }
+  });
+  /* Price banners: light blue (other .notice banners stay pale yellow). */
+  main.querySelectorAll('p.notice').forEach(function (p) { if (p.textContent.indexOf('কাটা হবে') !== -1) p.classList.add('banner-price'); });
+  /* Primary buttons full-width on forms (table + ghost buttons excluded). */
+  main.querySelectorAll('button.btn, a.btn').forEach(function (b) {
+    if (b.closest('table') || b.classList.contains('ghost')) return; b.classList.add('btn-full');
+  });
+  /* Table action colours + chrome (Show / Search / Showing / pagination). */
+  main.querySelectorAll('table').forEach(function (tbl) {
+    if (tbl.dataset.nsChrome) return; tbl.dataset.nsChrome = '1';
+    tbl.querySelectorAll('.btn').forEach(function (b) {
+      var t = b.textContent.trim();
+      if (t === 'Delete' || t === 'Remove') b.classList.add('btn-del');
+      else if (t === 'Edit') b.classList.add('btn-edit');
+      else if (t === 'Print' || t === 'Download') b.classList.add('btn-dl');
+    });
+    var wrap = document.createElement('div'); wrap.className = 'table-wrap';
+    tbl.parentNode.insertBefore(wrap, tbl); wrap.appendChild(tbl);
+    var top = document.createElement('div'); top.className = 'tbl-top';
+    top.innerHTML = '<span>Show <b>10</b> entries</span><span>Search: <input type="text" class="nsTblSearch" placeholder=""></span>';
+    wrap.parentNode.insertBefore(top, wrap);
+    var bottom = document.createElement('div'); bottom.className = 'tbl-bottom';
+    var info = document.createElement('span'); info.className = 'nsTblInfo';
+    var pg = document.createElement('div'); pg.className = 'nsTblPg';
+    bottom.appendChild(info); bottom.appendChild(pg);
+    wrap.parentNode.insertBefore(bottom, wrap.nextSibling);
+    var allRows = Array.prototype.slice.call(tbl.querySelectorAll('tr')).slice(1);
+    var emptyRow = allRows.length === 1 && (/No data available/i.test(allRows[0].textContent) || /এখনো কোনো অর্ডার নেই/.test(allRows[0].textContent) || /এই সার্ভিসে এখনো/.test(allRows[0].textContent));
+    var page = 1, query = '';
+    function filtered() { if (emptyRow) return []; if (!query) return allRows; return allRows.filter(function (r) { return r.textContent.toLowerCase().indexOf(query) !== -1; }); }
+    function draw() {
+      var rows = filtered(), total = rows.length, pages = Math.max(1, Math.ceil(total / 10));
+      if (page > pages) page = pages;
+      allRows.forEach(function (r) { r.style.display = 'none'; });
+      if (emptyRow) { allRows.forEach(function (r) { r.style.display = ''; }); info.textContent = 'Showing 0 to 0 of 0 entries'; }
+      else {
+        var from = total ? (page - 1) * 10 + 1 : 0, to = Math.min(page * 10, total);
+        rows.slice((page - 1) * 10, page * 10).forEach(function (r) { r.style.display = ''; });
+        info.textContent = 'Showing ' + from + ' to ' + to + ' of ' + total + ' entries';
+      }
+      pg.innerHTML = '';
+      function pgBtn(label, p, dis, act) { var b = document.createElement('button'); b.type = 'button'; b.className = 'pg-btn' + (act ? ' active' : ''); b.textContent = label; b.disabled = !!dis; b.onclick = function () { page = p; draw(); }; pg.appendChild(b); }
+      pgBtn('Previous', Math.max(1, page - 1), page <= 1 || emptyRow, false);
+      for (var i = 1; i <= pages; i++) pgBtn(String(i), i, false, i === page);
+      pgBtn('Next', Math.min(pages, page + 1), page >= pages || emptyRow, false);
+    }
+    top.querySelector('.nsTblSearch').addEventListener('input', function (e) { query = e.target.value.trim().toLowerCase(); page = 1; draw(); });
+    draw();
+  });
+  /* Service pages: teal marquee pricing strip + 2-column form grid. */
+  if (parts[0] === 'service' && card) {
+    var price = card.querySelector('p.notice.banner-price');
+    if (price && !price.classList.contains('marquee-strip')) { var pt = price.textContent.trim(); price.classList.add('marquee-strip'); price.innerHTML = '<marquee scrollamount="4">' + esc(pt) + '</marquee>'; }
+    var kids = Array.prototype.slice.call(card.children), grid = document.createElement('div'); grid.className = 'form-grid'; var firstField = null;
+    kids.forEach(function (el, idx) {
+      if (el.tagName !== 'LABEL') return;
+      var nx = kids[idx + 1]; if (!nx || ['INPUT', 'SELECT', 'TEXTAREA'].indexOf(nx.tagName) === -1) return;
+      if (!firstField) firstField = el;
+      var field = document.createElement('div'); field.className = 'field';
+      if (el.textContent.indexOf('নাম') !== -1 || /Name/i.test(el.textContent)) field.classList.add('field-full');
+      var prev = (nx.nextElementSibling && nx.nextElementSibling.classList && nx.nextElementSibling.classList.contains('nsDocPrev')) ? nx.nextElementSibling : null;
+      field.appendChild(el); field.appendChild(nx); if (prev) field.appendChild(prev);
+      grid.appendChild(field);
+    });
+    if (grid.children.length && firstField && firstField.parentNode) firstField.parentNode.insertBefore(grid, firstField);
+    /* Upload dropzones: wrap EXISTING file inputs only (Step 9 controls). */
+    card.querySelectorAll('input[type="file"]').forEach(function (inp) {
+      if (inp.closest('p') && inp.closest('p').textContent.indexOf('অটোলোড করুন') !== -1) return; /* brn inline picker: dashed CSS only */
+      if (inp.parentNode.classList && inp.parentNode.classList.contains('ns-upload-box')) return;
+      var box = document.createElement('div'); box.className = 'ns-upload-box';
+      var noimg = document.createElement('div'); noimg.className = 'ns-noimg'; noimg.textContent = 'NO IMAGE';
+      var reset = document.createElement('button'); reset.type = 'button'; reset.className = 'ns-reset'; reset.textContent = '✕ রিসেট';
+      var prev2 = inp.parentNode.querySelector('.nsDocPrev');
+      inp.parentNode.insertBefore(box, inp);
+      box.appendChild(noimg); box.appendChild(inp); if (prev2) box.appendChild(prev2); box.appendChild(reset);
+      function upd() { noimg.style.display = (inp.files && inp.files.length) ? 'none' : 'block'; }
+      inp.addEventListener('change', upd); upd();
+      box.addEventListener('click', function (e) { if (e.target === box || e.target === noimg) inp.click(); });
+      reset.addEventListener('click', function (e) { e.stopPropagation(); inp.value = ''; inp.dispatchEvent(new Event('change')); upd(); });
+    });
+  }
+  /* Order pages: teal marquee strip mirroring the price note. */
+  if (parts[0] === 'order' && card) {
+    var total = document.getElementById('totalNote'), h2 = card.querySelector('h2');
+    if (total && h2 && !document.getElementById('nsOrderMarquee')) {
+      var mq = document.createElement('div'); mq.className = 'marquee-strip'; mq.id = 'nsOrderMarquee';
+      mq.innerHTML = '<marquee scrollamount="4">' + esc(total.textContent.trim()) + '</marquee>';
+      h2.parentNode.insertBefore(mq, h2.nextSibling);
+      if (!window.__nsSelWrapped && typeof selectOpt === 'function') {
+        window.__nsSelWrapped = true; var _sel11 = selectOpt;
+        selectOpt = function (el, price) { _sel11(el, price); var m = document.getElementById('nsOrderMarquee'); if (m) m.innerHTML = '<marquee scrollamount="4">' + esc('এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + price + ' টাকা কাটা হবে।') + '</marquee>'; };
+      }
+    }
+  }
+  /* Recharge: centred heading, history headings already teal via CSS. */
+  if (hash === 'recharge' && card) card.classList.add('recharge-page');
+  /* Free services: full-width button (btn-full already added above). */
+  if (parts[0] === 'free' && card) card.classList.add('free-page');
+  /* Profile: split the single card into top + section cards, pair
+     Profile Update / Change Password side by side, Cards Lists as
+     label-left / teal-count rows. Profile Completion is NOT re-added. */
+  if (hash === 'profile' && card && !card.classList.contains('prof-container')) {
+    card.classList.add('prof-container');
+    var nodes = Array.prototype.slice.call(card.childNodes), top = document.createElement('div'); top.className = 'prof-top';
+    var sections = [], cur = null;
+    nodes.forEach(function (n) {
+      if (n.nodeType === 1 && n.tagName === 'H3') { cur = document.createElement('div'); cur.className = 'prof-section'; cur.appendChild(n); sections.push(cur); }
+      else if (cur) cur.appendChild(n); else top.appendChild(n);
+    });
+    card.innerHTML = ''; if (top.childNodes.length) card.appendChild(top);
+    sections.forEach(function (s) { card.appendChild(s); });
+    var upd = sections.find(function (s) { return s.textContent.indexOf('Profile Update') !== -1; });
+    var pwd = sections.find(function (s) { return s.textContent.indexOf('Change Password') !== -1; });
+    if (upd && pwd) { var pair = document.createElement('div'); pair.className = 'prof-pair'; upd.parentNode.insertBefore(pair, upd); pair.appendChild(upd); pair.appendChild(pwd); }
+    var clHead = sections.find(function (s) { var h = s.querySelector('h3'); return h && h.textContent.indexOf('Cards Lists') !== -1; });
+    if (clHead) { var p = clHead.querySelector('p'); if (p) { var list = document.createElement('div'); list.className = 'cards-list'; p.textContent.split(',').forEach(function (part) { var kv = part.split(':'); if (kv.length < 2) return; var row = document.createElement('div'); row.className = 'cl-row'; var lab = document.createElement('span'); lab.textContent = kv[0].trim(); var cnt = document.createElement('b'); cnt.textContent = kv.slice(1).join(':').trim(); row.appendChild(lab); row.appendChild(cnt); list.appendChild(row); }); if (list.children.length) p.parentNode.replaceChild(list, p); } }
+  }
+};

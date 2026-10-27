@@ -343,3 +343,74 @@ body.dark .photo-upload-actions .btn.ghost{background:#1e293b;color:#5eead4;bord
 body.dark .sidebar-logout{border-top-color:#334155}
 body.dark .sidebar-logout a{color:#fca5a5}
 body.dark .sidebar-logout a:hover{background:#450a0a;color:#fecaca}
+
+/* ===== Step 11 — Reference inner-page restyle (visual design only) =====
+   Scope: body.ns-inner-page is added by the Step 11 render wrapper for
+   every page EXCEPT the dashboard, so the homepage top (dark-green
+   profile+balance card, WhatsApp card, "প্রয়োজনীয় নাগরিক সেবাসমূহ")
+   is NOT touched. No price, API, order-flow or functionality change.
+   Colours are the reference brand teal #0E7C7B / #0F8483, page
+   background #EEF2F7, white cards 7px radius, 22px padding. */
+body.ns-inner-page{background:#EEF2F7}
+body.ns-inner-page .main .card{background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:22px;box-shadow:0 1px 4px rgba(15,23,42,.06)}
+body.ns-inner-page .sidebar h3{color:#0E7C7B;font-size:13px;font-weight:700}
+body.ns-inner-page .sidebar a{color:#1f2937;position:relative}
+body.ns-inner-page .sidebar .ico svg{width:17px;height:17px}
+body.ns-inner-page .sidebar a.active{background:#e6f7f5;color:#0E7C7B;font-weight:700}
+body.ns-inner-page .sidebar a.active::after{content:'';position:absolute;right:0;top:6px;bottom:6px;width:3px;background:#0F8483;border-radius:2px}
+body.ns-inner-page .main .card h2{color:#0E7C7B;font-size:21px;font-weight:600;margin:0 0 14px}
+body.ns-inner-page .main .card h3{color:#0E7C7B}
+body.ns-inner-page .main label{display:block;font-size:14px;color:#374151;font-weight:600;margin:12px 0 5px}
+body.ns-inner-page .main input,body.ns-inner-page .main select,body.ns-inner-page .main textarea{height:42px;border:1px solid #d1d5db;border-radius:5px;padding:10px 12px;background:#fff;font-size:15px}
+body.ns-inner-page .main textarea{height:auto;min-height:90px}
+body.ns-inner-page .main input::placeholder{color:#9ca3af}
+body.ns-inner-page .main .btn{background:#0F8483;border-color:#0F8483;color:#fff;border-radius:5px;min-height:46px;padding:12px 18px;box-shadow:0 1px 3px rgba(15,132,131,.35)}
+body.ns-inner-page .main .btn.ghost{background:#fff;color:#0F8483;border:1px solid #0F8483;box-shadow:none;min-height:44px}
+body.ns-inner-page .main .btn-full{width:100%}
+body.ns-inner-page .main .notice{background:#fef3c7;border:1px solid #fde68a;border-radius:5px;padding:10px 12px}
+body.ns-inner-page .main .banner-price{background:#e0f2fe;border:1px solid #bae6fd;color:#0c4a6e}
+body.ns-inner-page .main .closed{background:#fee2e2;border:1px solid #fecaca;border-radius:5px;padding:10px 12px;color:#991b1b;font-weight:700}
+body.ns-inner-page .marquee-strip{border:1.5px solid #0F8483;border-radius:5px;padding:9px 12px;background:#fff;color:#0E7C7B;font-size:14px;font-weight:600;margin:0 0 14px}
+body.ns-inner-page .req-star{color:#dc2626}
+body.ns-inner-page .table-wrap{overflow-x:auto}
+body.ns-inner-page .main table{border-collapse:collapse;width:100%;min-width:0}
+body.ns-inner-page .main th{background:#fff;color:#1f2937;font-size:13px;font-weight:600;border:1px solid #e5e7eb;padding:9px 10px;text-align:left}
+body.ns-inner-page .main td{border:1px solid #e5e7eb;padding:9px 10px}
+body.ns-inner-page .main tbody tr:nth-child(even) td{background:#f9fafb}
+body.ns-inner-page table .btn{min-height:0;height:auto;padding:7px 12px;font-size:13px;border-radius:4px;box-shadow:none}
+body.ns-inner-page table .btn-del{background:#ea580c;border-color:#ea580c;color:#fff}
+body.ns-inner-page table .btn-edit{background:#2563eb;border-color:#2563eb;color:#fff}
+body.ns-inner-page table .btn-dl{background:#0f766e;border-color:#0f766e;color:#fff}
+body.ns-inner-page .tbl-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;font-size:14px}
+body.ns-inner-page .tbl-top input{width:170px;height:36px;padding:6px 10px}
+body.ns-inner-page .tbl-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;font-size:13px;color:#475569}
+body.ns-inner-page .pg-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer}
+body.ns-inner-page .pg-btn.active{background:#0F8483;color:#fff;border-color:#0F8483;border-radius:4px}
+body.ns-inner-page .pg-btn:disabled{opacity:.5;cursor:default}
+body.ns-inner-page .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+body.ns-inner-page .form-grid .field{min-width:0}
+body.ns-inner-page .form-grid .field-full{grid-column:1/-1}
+body.ns-inner-page .ns-upload-box{border:1.5px dashed #0F8483;border-radius:6px;padding:12px;background:#f0fdfa;cursor:pointer;margin:6px 0 10px}
+body.ns-inner-page .ns-upload-box input[type=file]{width:100%;border:0;background:transparent;padding:4px 0;cursor:pointer;height:auto}
+body.ns-inner-page .ns-noimg{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:5px;color:#9ca3af;text-align:center;padding:22px 10px;font-size:13px;letter-spacing:1px;margin-bottom:8px}
+body.ns-inner-page .ns-reset{background:none;border:0;color:#dc2626;font-size:13px;font-weight:700;padding:4px 0;cursor:pointer}
+body.ns-inner-page input.nsDocInput{border:1.5px dashed #0F8483;border-radius:5px;padding:8px;background:#f0fdfa}
+body.ns-inner-page .recharge-page h2{text-align:center;font-weight:800}
+body.ns-inner-page .main .card.prof-container{background:transparent;border:0;box-shadow:none;padding:0;overflow:visible}
+body.ns-inner-page .prof-top{background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:20px;margin-bottom:14px}
+body.ns-inner-page .prof-section{background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:20px;margin-bottom:14px}
+body.ns-inner-page .prof-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+body.ns-inner-page .prof-pair .prof-section{margin-bottom:0}
+body.ns-inner-page .main .photo-preview{border-radius:50%}
+body.ns-inner-page .cards-list .cl-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9}
+body.ns-inner-page .cards-list .cl-row b{color:#0F8483}
+@media(max-width:600px){body.ns-inner-page .form-grid{grid-template-columns:1fr}body.ns-inner-page .form-grid .field-full{grid-column:auto}body.ns-inner-page .prof-pair{grid-template-columns:1fr}body.ns-inner-page .main .card{padding:16px}}
+body.dark.ns-inner-page .main .card,body.dark.ns-inner-page .prof-top,body.dark.ns-inner-page .prof-section{background:#1e293b;border-color:#334155;color:#e2e8f0}
+body.dark.ns-inner-page .main th{background:#1e293b;color:#e2e8f0;border-color:#334155}
+body.dark.ns-inner-page .main td{border-color:#334155}
+body.dark.ns-inner-page .main tbody tr:nth-child(even) td{background:#0f172a}
+body.dark.ns-inner-page .main input,body.dark.ns-inner-page .main select,body.dark.ns-inner-page .main textarea{background:#0f172a;color:#e2e8f0;border-color:#334155}
+body.dark.ns-inner-page .main label{color:#cbd5e1}
+body.dark.ns-inner-page .marquee-strip{background:#0f172a}
+body.dark.ns-inner-page .ns-upload-box{background:#0f172a}
+body.dark.ns-inner-page .ns-noimg{background:#0f172a;border-color:#334155}
