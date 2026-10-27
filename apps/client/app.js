@@ -437,15 +437,7 @@ function nsLoginPortalHTML(mode) {
     '<label>Email / ফোন নম্বর*</label><input id="authEmail" placeholder="youremail@gmail.com বা 01XXXXXXXXX">' +
     '<p><button class="btn ns-login-btn" onclick="nsDoForgot()">অনুরোধ পাঠান</button></p>' +
     '<p class="ns-login-foot"><a href="#/login"><b>লগইনে ফিরুন</b></a></p><p class="muted" id="authMsg"></p></div></div>';
-  return '<div class="ns-design-login"><form class="ns-design-form" onsubmit="event.preventDefault();nsDoLogin();">'
-    + '<input id="authEmail" class="ns-design-input ns-design-email" type="text" autocomplete="username" aria-label="Email or mobile number">'
-    + '<input id="authPass" class="ns-design-input ns-design-pass" type="password" autocomplete="current-password" aria-label="Password">'
-    + '<button type="button" class="ns-design-eye" onclick="nsToggleDesignPass()" aria-label="Show or hide password"></button>'
-    + '<input type="checkbox" id="authRemember" class="ns-design-remember" aria-label="Remember me">'
-    + '<button type="button" class="ns-design-forgot" onclick="location.hash=\'#/forgot\'" aria-label="Forgotten password"></button>'
-    + '<button type="submit" class="ns-design-loginbtn" aria-label="Login"></button>'
-    + '<button type="button" class="ns-design-signup" onclick="location.hash=\'#/signup\'" aria-label="Register"></button>'
-    + '</form></div>';
+  return '<div class="ns-login2">' + '<div class="ns-login2-brand"><div class="ns-login2-art" aria-hidden="true"></div><div class="ns-login2-brand-inner">' + nsLoginLogoHTML() + '<h1>নাগরিক সেবা</h1><p class="ns-login2-tagline">সবার সেবা, সবার পাশে</p><p class="ns-login2-sub">সহজ সেবা, সবার জন্য</p></div></div>' + '<div class="ns-login2-formwrap"><form class="ns-login2-card" onsubmit="event.preventDefault();nsDoLogin();">' + '<h2>লগইন করুন</h2><p class="muted">আপনার অ্যাকাউন্টে প্রবেশ করুন</p>' + '<label for="authEmail">Email / মোবাইল নম্বর*</label><input id="authEmail" type="text" autocomplete="username" placeholder="youremail@gmail.com বা 01XXXXXXXXX">' + '<label for="authPass">পাসওয়ার্ড*</label><div class="ns-login2-passwrap"><input id="authPass" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড"><button type="button" class="ns-login2-eye" onclick="nsToggleDesignPass()" aria-label="পাসওয়ার্ড দেখান/লুকান">👁</button></div>' + '<div class="ns-login2-row"><label class="ns-login2-remember"><input type="checkbox" id="authRemember"> আমাকে মনে রাখুন</label><a href="#/forgot">পাসওয়ার্ড ভুলে গেছেন?</a></div>' + '<button type="submit" class="ns-login2-btn">লগইন →</button>' + '<p class="ns-login2-foot">অ্যাকাউন্ট নেই? <a href="#/signup"><b>নিবন্ধন করুন</b></a></p><p class="muted" id="authMsg"></p>' + '</form></div></div>';
 }
 function nsAuthHTML() { return nsLoginPortalHTML('login'); }
 function nsToggleDesignPass() { const p = document.getElementById('authPass'); if (p) p.type = (p.type === 'password' ? 'text' : 'password'); }
