@@ -755,6 +755,11 @@ render = async function () {
     main.querySelectorAll('table').forEach(t => { if (t.textContent.indexOf('•••.•••') !== -1) t.remove(); });
     main.querySelectorAll('p.muted').forEach(p => { if (p.textContent.indexOf('কোনো আসল IP') !== -1) p.textContent = 'উপরে আপনার আসল ডিভাইস / সেশন দেখা যাবে।'; });
   }
+  /* Dashboard service cards are <article> with no link — make them open their service page. */
+  if (hash === 'dashboard') {
+    const dcards = document.querySelectorAll('#service-cards .svc-card');
+    dcards.forEach((card, i) => { const svc = SERVICES[i]; if (!svc) return; card.style.cursor = 'pointer'; card.onclick = () => { location.hash = '#/service/' + svc.id; }; });
+  }
   /* Dashboard Orders Logs muted "সব ০" text when logged in. */
   if (hash === 'dashboard' && nsToken()) {
     main.querySelectorAll('p.muted').forEach(p => { if (p.textContent.indexOf('সব ০') !== -1) p.textContent = 'নিচে আপনার অর্ডারের আসল সংখ্যা দেখা যাবে।'; });
