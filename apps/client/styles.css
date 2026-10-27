@@ -184,3 +184,41 @@ body.dark .all-services{color:#5eead4}
  .wa-icon{width:50px;height:50px;min-width:50px}
  .need-head h3{font-size:18px}
 }
+
+/* Single-row header fix: the dark-mode toggle already lives in the top
+   header row (right side, after .spacer) — there is NO second header row
+   in the markup. On narrow screens the old .topbar{flex-wrap:wrap} let
+   the pill wrap onto a second row, leaving a white band above the
+   profile card. These rules force one row at every width, compact the
+   pill on small screens, and collapse the old 56px header offset to the
+   real header height so the profile card sits directly under it. */
+.topbar-new{flex-wrap:nowrap}
+.topbar-new .spacer{flex:1 1 auto;min-width:0}
+.logo-new{flex-shrink:1;min-width:0}
+.logo-text{white-space:nowrap}
+.dark-pill{flex-shrink:0;min-height:44px}
+.layout{min-height:calc(100vh - 64px)}
+.sidebar{top:64px;height:calc(100vh - 64px)}
+@media(max-width:520px){
+ .topbar-new{flex-wrap:nowrap;gap:8px;padding:8px 10px}
+ .menu-btn{flex-shrink:0;padding:8px 10px;font-size:14px}
+ .logo-mark,.logo-mark svg{width:36px;height:36px}
+ .logo-text{font-size:16px}
+ .dark-pill{flex-shrink:0;gap:6px;padding:7px 8px;font-size:13px}
+ .layout{min-height:calc(100vh - 60px)}
+ .sidebar{top:60px;height:calc(100vh - 60px)}
+}
+@media(max-width:400px){
+ /* Very narrow screens only: icon-only menu button and moon+switch
+    pill (label hidden) so the row never wraps or overlaps the logo.
+    The button keeps aria-label="মেনু" and the pill keeps its full
+    toggle behaviour; the label returns at wider widths. */
+ .topbar-new{gap:6px;padding:8px 8px}
+ .menu-btn{padding:8px 10px}
+ .menu-btn span{display:none}
+ .logo-mark,.logo-mark svg{width:34px;height:34px}
+ .logo-text{font-size:16px}
+ .logo-text small{font-size:11px}
+ #darkLabel{display:none}
+ .dark-pill{padding:8px 10px}
+}
