@@ -668,3 +668,124 @@ render = async function () {
     main.appendChild(d);
   }
 };
+/* ===== Step 5 (staging only) — FIX: hashchange was bound to the ORIGINAL
+   prototype render before the Step 2-4 patches reassigned render().
+   So every sidebar click ran the prototype (sample data, demoMsg
+   modals, old logout page, #/login -> "page not found") and none of
+   the API wiring. Re-bind hashchange to the final patched render.
+   Also: remove/replace the remaining demo buttons that would still
+   show "currently not on" modals, and make the closed-order banner
+   follow the real server setting. No design/Bengali/price change
+   except the notes below. Personal-data services stay order-request
+   only: no document is ever delivered, no external lookup is called.
+   Live Chat stays a notice only. Server-copy $1 dashboard display
+   is deliberately untouched (price question still open). */
+try { if (typeof _origRender === 'function') window.removeEventListener('hashchange', _origRender); } catch (e) {}
+window.addEventListener('hashchange', function () { render(); });
+/* Honest replacements for lookup-style helpers (never fake a result). */
+openAutoload = function (id) {
+  showModal('অটোলোড', '<p>স্বয়ংক্রিয় লুকআপ এখানে চালু নয় — কোনো আসল তথ্য লোড করা হয় না, কোনো টাকা কাটা হয় না।</p><p>তথ্য লিখে "অর্ডার করুন" বোতামে ক্লিক করলে শুধু একটি অর্ডার অনুরোধ রেকর্ড হবে, অ্যাডমিন সেটি দেখে স্ট্যাটাস আপডেট করবে।</p>');
+};
+randomBRN = function () {
+  showModal('বার কোড / QR', '<p>এখানে কোনো আসল জন্মনিবন্ধন কোড বা QR লিংক তৈরি হয় না। নকল কোড দেখানো হয় না।</p><p>তথ্য লিখে অর্ডার করুন — সেটি শুধু একটি অনুরোধ রেকর্ড।</p>');
+};
+const _origSaveProfileUpdate5 = saveProfileUpdate;
+saveProfileUpdate = async function () {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'প্রোফাইল আপডেট করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
+  return _origSaveProfileUpdate5();
+};
+function ns5Note(text) { const s = document.createElement('span'); s.className = 'muted'; s.textContent = text; return s; }
+const _renderStep4Client = render;
+render = async function () {
+  const hash = location.hash.replace('#/', '') || 'dashboard';
+  const parts = hash.split('/');
+  if (hash === 'logout' && !nsToken()) {
+    document.querySelector('#main').innerHTML = '<div class="card"><h2>লগআউট</h2><p>আপনি লগইন করা নেই।</p><p><a class="btn" href="#/login">লগইন / সাইনআপ</a></p></div>';
+    return;
+  }
+  let orderOpen = true;
+  try { orderOpen = !!(await nsCall('/settings')).order_open; } catch (e) {}
+  await _renderStep4Client();
+  const main = document.querySelector('#main');
+  if (!main) return;
+  const btns = [...main.querySelectorAll('button')];
+  const replaceBtnWithNote = (btn, note) => { const p = btn.parentNode; if (p) { p.replaceChild(ns5Note(note), btn); } };
+  /* Service pages: Save & Print is not a real delivery — remove it. */
+  if (parts[0] === 'service') {
+    btns.forEach(b => { if (b.textContent.trim() === 'Save & Print') replaceBtnWithNote(b, 'প্রিন্ট / ডেলিভারি এখানে হয় না — "অর্ডার করুন" বোতামে ক্লিক করলে শুধু অর্ডার অনুরোধ রেকর্ড হবে।'); });
+    /* File uploads have no service-document endpoint — replace with a note. */
+    [...main.querySelectorAll('input[type="file"]')].forEach(el => {
+      const lab = el.previousElementSibling;
+      if (lab && lab.tagName === 'LABEL') lab.remove();
+      el.replaceWith(ns5Note('ফাইল আপলোড এই ফর্মে সংরক্ষিত হয় না — তথ্য লিখে অর্ডার করুন।'));
+    });
+    /* Captcha reload (ncf) has no real captcha system. */
+    btns.forEach(b => { if (b.textContent.indexOf('Reload Captcha') !== -1) b.setAttribute('onclick', "showModal('ক্যাপচা','ক্যাপচা সিস্টেম এখানে চালু নয় — তথ্য লিখে অর্ডার করুন, অ্যাডমিন যাচাই করবে।')"); });
+  }
+  /* Order pages: banner + note must follow the real server setting. */
+  if (parts[0] === 'order') {
+    main.querySelectorAll('.closed').forEach(d => { d.textContent = orderOpen ? 'অর্ডার গ্রহণ চালু আছে।' : '⚠ নতুন অর্ডারের অনুরোধ বর্তমানে বন্ধ আছে।'; if (orderOpen) d.className = 'notice'; });
+    main.querySelectorAll('p.muted').forEach(p => {
+      if (p.textContent.indexOf('সাবমিট বোতাম নেই') !== -1) p.textContent = orderOpen ? 'অর্ডার করুন বোতামে ক্লিক করলে ব্যালেন্স থেকে কাটবে এবং অর্ডার অনুরোধ রেকর্ড হবে; কোনো ব্যক্তিগত ডকুমেন্ট এখানে ডেলিভারি হয় না।' : 'অর্ডার গ্রহণ বন্ধ থাকায় অর্ডার করা যাবে না — অ্যাডমিন চালু করলে আবার করা যাবে।';
+      if (p.textContent.indexOf('মোট দাম “?”') !== -1) p.textContent = 'এই সার্ভিসের মূল্য নির্ধারণ করা হয়নি — অ্যাডমিন মূল্য বসালে অর্ডার করা যাবে।';
+    });
+    const total = document.getElementById('totalNote');
+    if (total && total.textContent.indexOf('?') !== -1) total.textContent = 'এই সার্ভিসের মূল্য নির্ধারণ করা হয়নি — অ্যাডমিন মূল্য বসালে অর্ডার করা যাবে।';
+  }
+  /* Recharge: Delete / Delete All have no API endpoint — remove them. */
+  if (hash === 'recharge') {
+    btns.forEach(b => { const t = b.textContent.trim(); if (t === 'Delete' || t === 'Delete All Recharge History') b.remove(); });
+  }
+  /* History: replace the prototype Edit/Print/Delete note. */
+  if (parts[0] === 'history') {
+    main.querySelectorAll('p.muted').forEach(p => { if (p.textContent.indexOf('Edit =') !== -1) p.textContent = 'এখানে আপনার আসল অর্ডার ইতিহাস দেখা যাবে; অর্ডার স্ট্যাটাস অ্যাডমিন আপডেট করবে।'; });
+    btns.forEach(b => { const t = b.textContent.trim(); if (t === 'Edit' || t === 'Print' || t === 'Delete') b.remove(); });
+  }
+  /* Report / Support: original demo Submit / placeholder buttons removed;
+     the Step 4 ticket form below is the real one. */
+  if (hash === 'report') btns.forEach(b => { if (b.textContent.trim() === 'Submit') b.remove(); });
+  if (hash === 'support') btns.forEach(b => { if (b.textContent.trim() === 'সাপোর্ট') b.remove(); });
+  /* Profile: prototype logout note + guest password button. */
+  if (hash === 'profile') {
+    main.querySelectorAll('p.muted').forEach(p => { if (p.textContent.indexOf('প্রোটোটাইপ') !== -1 && p.textContent.indexOf('লগআউট') !== -1) p.textContent = 'লগআউট চাপলে সার্ভার সেশন শেষ হবে।'; });
+    if (!nsToken()) btns.forEach(b => { if (b.textContent.trim() === 'Update Password') b.setAttribute('onclick', "showModal('লগইন প্রয়োজন','পাসওয়ার্ড বদলাতে প্রথমে লগইন করুন।');location.hash='#/login';"); });
+  }
+  /* Devices: remove the sample table when logged in (real table is appended by Step 3). */
+  if (hash === 'devices' && nsToken()) {
+    main.querySelectorAll('table').forEach(t => { if (t.textContent.indexOf('•••.•••') !== -1) t.remove(); });
+    main.querySelectorAll('p.muted').forEach(p => { if (p.textContent.indexOf('কোনো আসল IP') !== -1) p.textContent = 'উপরে আপনার আসল ডিভাইস / সেশন দেখা যাবে।'; });
+  }
+  /* Dashboard Orders Logs muted "সব ০" text when logged in. */
+  if (hash === 'dashboard' && nsToken()) {
+    main.querySelectorAll('p.muted').forEach(p => { if (p.textContent.indexOf('সব ০') !== -1) p.textContent = 'নিচে আপনার অর্ডারের আসল সংখ্যা দেখা যাবে।'; });
+  }
+  /* Free tools. */
+  if (parts[0] === 'free') {
+    if (parts[1] === 'signature' && !document.getElementById('nsSigCanvas')) {
+      const card = main.querySelector('.card');
+      if (card) {
+        const d = document.createElement('div');
+        d.innerHTML = '<h3>আপনার স্বাক্ষর আঁকুন</h3><canvas id="nsSigCanvas" width="320" height="140" style="border:1px solid #ccc;border-radius:8px;background:#fff;touch-action:none"></canvas><p><button class="btn ghost" id="nsSigClear">মুছুন</button> <button class="btn" id="nsSigDl">PNG ডাউনলোড</button></p><p class="muted">স্বাক্ষর শুধু আপনার ডিভাইসে আঁকা ও ডাউনলোড হয় — সার্ভারে পাঠানো হয় না।</p>';
+        card.appendChild(d);
+        const cv = document.getElementById('nsSigCanvas'), ctx = cv.getContext('2d');
+        ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#111';
+        let drawing = false, last = null;
+        const pos = e => { const r = cv.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return [t.clientX - r.left, t.clientY - r.top]; };
+        const start = e => { drawing = true; last = pos(e); e.preventDefault(); };
+        const move = e => { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; e.preventDefault(); };
+        const end = () => { drawing = false; };
+        cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+        cv.addEventListener('touchstart', start, { passive: false }); cv.addEventListener('touchmove', move, { passive: false }); cv.addEventListener('touchend', end);
+        document.getElementById('nsSigClear').onclick = () => ctx.clearRect(0, 0, cv.width, cv.height);
+        document.getElementById('nsSigDl').onclick = () => { const a = document.createElement('a'); a.download = 'signature.png'; a.href = cv.toDataURL('image/png'); a.click(); };
+      }
+      btns.forEach(b => { if (b.textContent.trim() === 'Make Signature') b.setAttribute('onclick', "showModal('স্বাক্ষর','উপরে ক্যানভাসে স্বাক্ষর আঁকুন, তারপর PNG ডাউনলোড করুন।')"); });
+    } else if (parts[1] === 'tininfo' || parts[1] === 'dobfinder') {
+      btns.forEach(b => {
+        if (b.textContent.trim() === 'Find Tin Info' || b.textContent.trim() === 'Find Birth Date') {
+          b.setAttribute('onclick', "showModal('অনুসন্ধান','এই তথ্য অনুসন্ধান এখানে চালু নয় — কোনো আসল টিন / জন্ম তথ্য দেখানো হয় না। অনুমোদিত উৎস ছাড়া লুকআপ করা যাবে না।')");
+        }
+      });
+    }
+  }
+};
