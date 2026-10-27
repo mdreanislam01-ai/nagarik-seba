@@ -498,3 +498,39 @@ body.ns-login-portal.ns-design-login-page .main{max-width:none;padding:0;margin:
 .ns-design-form .ns-design-loginbtn{position:absolute;left:9%;top:65%;width:82%;height:12%;background:transparent;border:0;cursor:pointer}
 .ns-design-form .ns-design-signup{position:absolute;left:50%;transform:translateX(-50%);bottom:2%;width:32%;height:5%;background:transparent;border:0;cursor:pointer}
 @media(max-width:700px){.ns-design-form{width:78vw;height:58vh;top:55%}}
+
+/* ===== Step 15 — Mobile login-portal framing + clickability (Design 01) =====
+   Desktop rules above are untouched. These rules only change narrow screens.
+   Root cause: artwork is 1145x1374 (portrait). background-size:cover on a
+   portrait phone scales it to viewport height, cropping ~150px off each side,
+   so the painted card shifts off-screen while the overlay (tuned for the
+   uncropped image) stays at desktop percentages — taps land on background,
+   not on the inputs. Fix: on narrow screens the container takes the
+   artwork's exact aspect ratio, so the whole image is visible with no crop,
+   and the overlay is repositioned to the painted fields' true positions
+   inside the image (measured from the artwork: email 24.3-75.8% x,
+   48.4-54.4% y; password 24.3-75.8% x, 56.3-62.5% y; login 25.4-74.7% x,
+   68.6-76.3% y; remember 25.5% x, 62.5% y; forgot 60.3-74.8% x, 62.4% y;
+   signup 52.5-64.8% x, 80.6% y). Heights are slightly enlarged over the
+   painted boxes so tap targets stay usable on small phones; the inputs
+   are transparent, so this changes no visible design. */
+body.ns-login-portal.ns-design-login-page .ns-design-login{position:relative;z-index:1}
+.ns-design-form{pointer-events:auto;z-index:10}
+.ns-design-form .ns-design-input,.ns-design-form .ns-design-eye,.ns-design-form .ns-design-remember,.ns-design-form .ns-design-forgot,.ns-design-form .ns-design-loginbtn,.ns-design-form .ns-design-signup{pointer-events:auto!important;z-index:11;touch-action:manipulation}
+.ns-design-form .ns-design-input{cursor:text}
+.ns-design-form .ns-design-eye,.ns-design-form .ns-design-forgot,.ns-design-form .ns-design-loginbtn,.ns-design-form .ns-design-signup{cursor:pointer}
+@media (max-width:900px){
+  body.ns-login-portal.ns-design-login-page{overflow-x:hidden}
+  body.ns-login-portal.ns-design-login-page .main{padding:0!important;max-width:none!important;overflow:visible}
+  body.ns-login-portal.ns-design-login-page .layout{overflow:visible}
+  .ns-design-login{height:auto!important;min-height:0!important;aspect-ratio:1145/1374;background-size:100% 100%!important;background-position:center top!important}
+  .ns-design-form{left:0!important;top:0!important;transform:none!important;width:100%!important;height:100%!important}
+  .ns-design-form .ns-design-input{padding:0 8px 0 36px!important;font-size:16px!important}
+  .ns-design-form .ns-design-email{left:24.3%!important;width:51.5%!important;top:48.4%!important;height:6.8%!important}
+  .ns-design-form .ns-design-pass{left:24.3%!important;width:51.5%!important;top:56.3%!important;height:7.0%!important}
+  .ns-design-form .ns-design-eye{left:69%!important;right:auto!important;width:7%!important;top:56.3%!important;height:7.0%!important}
+  .ns-design-form .ns-design-remember{left:25.5%!important;top:62.5%!important;width:22px!important;height:22px!important}
+  .ns-design-form .ns-design-forgot{left:60.3%!important;right:auto!important;width:14.5%!important;top:62.4%!important;height:2.6%!important}
+  .ns-design-form .ns-design-loginbtn{left:25.4%!important;width:49.3%!important;top:68.6%!important;height:8.5%!important}
+  .ns-design-form .ns-design-signup{left:52.5%!important;width:12.3%!important;transform:none!important;bottom:auto!important;top:80.6%!important;height:2.7%!important}
+}
