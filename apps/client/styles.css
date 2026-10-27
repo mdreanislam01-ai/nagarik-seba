@@ -135,7 +135,7 @@ body.dark .dark-pill .knob{transform:translateX(16px)}
 body.dark .topbar-new{background:#0f172a;color:#e2e8f0;box-shadow:0 1px 0 #334155}
 body.dark .menu-btn{background:#134e4a;color:#5eead4}
 body.dark .logo-text small{color:#5eead4}
-.profile-card{background:linear-gradient(135deg,#047857 0%,#065f46 55%,#064e3b 100%);color:#fff;border-radius:22px;padding:22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(6,95,70,.25);overflow:hidden}
+.profile-card{background:linear-gradient(135deg,#0F8483 0%,#0E7C7B 55%,#0b6a69 100%);color:#fff;border-radius:22px;padding:22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(14,124,123,.28);overflow:hidden}
 .profile-row{display:flex;align-items:center;gap:14px;min-width:0}
 .avatar-ph{width:72px;height:72px;min-width:72px;border-radius:18px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center}
 .avatar-ph svg{width:42px;height:42px}
@@ -414,3 +414,37 @@ body.dark.ns-inner-page .main label{color:#cbd5e1}
 body.dark.ns-inner-page .marquee-strip{background:#0f172a}
 body.dark.ns-inner-page .ns-upload-box{background:#0f172a}
 body.dark.ns-inner-page .ns-noimg{background:#0f172a;border-color:#334155}
+
+/* Step 12 — HOMEPAGE/DASHBOARD COLOURS ONLY (reference palette).
+   Scoped to body WITHOUT .ns-inner-page, so Step 11 inner pages are untouched.
+   No text, layout, icon, button label, destination or function is changed here —
+   colour values only. Reference palette: brand teal #0E7C7B / #0F8483,
+   page background #EEF2F7, top strip mint #CDE8E5, white cards. */
+body:not(.ns-inner-page){background:#EEF2F7}
+body:not(.ns-inner-page) .topbar-new{background:#fff}
+body:not(.ns-inner-page) .menu-btn{background:#CDE8E5;color:#0E7C7B}
+body:not(.ns-inner-page) .logo-text small{color:#0E7C7B}
+body:not(.ns-inner-page) .topbar-new .switch__icon{background:#0E7C7B}
+body:not(.ns-inner-page) .topbar-new .switch__input:checked + .switch__icon{background:#0F8483}
+body:not(.ns-inner-page) .topbar-new .switch__input:focus-visible + .switch__icon{outline-color:#0F8483}
+body:not(.ns-inner-page) .sidebar a:hover,body:not(.ns-inner-page) .sidebar a.active{background:#e6f7f5;color:#0E7C7B}
+body:not(.ns-inner-page) .sidebar h3{color:#0E7C7B}
+body:not(.ns-inner-page) .profile-card{background:linear-gradient(135deg,#0F8483 0%,#0E7C7B 55%,#0b6a69 100%);box-shadow:0 8px 24px rgba(14,124,123,.28)}
+body:not(.ns-inner-page) .recharge-pill{color:#0E7C7B}
+body:not(.ns-inner-page) .recharge-plus{background:#0F8483}
+body:not(.ns-inner-page) .wa-card{background:#e6f7f5;border-color:#CDE8E5}
+body:not(.ns-inner-page) .wa-arrow{color:#0E7C7B}
+body:not(.ns-inner-page) .need-head h3{color:#0E7C7B}
+body:not(.ns-inner-page) .need-dot{background:#0F8483}
+body:not(.ns-inner-page) .all-services{color:#0E7C7B}
+body:not(.ns-inner-page) .main .card h3{color:#0E7C7B}
+body:not(.ns-inner-page) .qa-head{color:#0E7C7B}
+body:not(.ns-inner-page) .btn{background:#0F8483;border-color:#0F8483;color:#fff}
+body:not(.ns-inner-page) .btn.ghost{background:#fff;color:#0E7C7B;border-color:#0F8483}
+body:not(.ns-inner-page) a{color:#0E7C7B}
+body.dark:not(.ns-inner-page) .menu-btn{background:#0E7C7B;color:#CDE8E5}
+body.dark:not(.ns-inner-page) .logo-text small{color:#CDE8E5}
+body.dark:not(.ns-inner-page) .topbar-new .switch__input:checked + .switch__icon{background:#0F8483}
+body.dark:not(.ns-inner-page) .topbar-new .switch__input:focus-visible + .switch__icon{outline-color:#CDE8E5}
+body.dark:not(.ns-inner-page) .wa-card{background:#0b3b3a;border-color:#0F8483}
+body.dark:not(.ns-inner-page) .all-services{color:#CDE8E5}
