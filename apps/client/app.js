@@ -437,16 +437,18 @@ function nsLoginPortalHTML(mode) {
     '<label>Email / ফোন নম্বর*</label><input id="authEmail" placeholder="youremail@gmail.com বা 01XXXXXXXXX">' +
     '<p><button class="btn ns-login-btn" onclick="nsDoForgot()">অনুরোধ পাঠান</button></p>' +
     '<p class="ns-login-foot"><a href="#/login"><b>লগইনে ফিরুন</b></a></p><p class="muted" id="authMsg"></p></div></div>';
-  return '<div class="ns-login-wrap"><div class="card ns-login-card">' + nsLoginLogoHTML() +
-    '<p class="ns-login-sub">ইমেল এবং পাসওয়ার্ড দিয়ে লগ ইন করুন</p>' +
-    '<label>Email</label><input id="authEmail" placeholder="youremail@gmail.com">' +
-    '<p class="muted ns-login-hint">অথবা রেজিস্টার্ড ফোন নম্বর (01XXXXXXXXX) দিয়েও লগইন করা যাবে। এটি Google সাইন-ইন নয় — আপনার নাগরিক সেবা অ্যাকাউন্টের পাসওয়ার্ড লাগবে।</p>' +
-    '<label>Password</label><input id="authPass" type="password" placeholder="**********">' +
-    '<p class="ns-login-row"><label class="ns-remember"><input type="checkbox" id="authRemember"> <span class="ns-remember-text">Remember Me!</span></label><a class="ns-forgot" href="#/forgot">Forgotten password?</a></p>' +
-    '<p><button class="btn ns-login-btn" onclick="nsDoLogin()">LOGIN</button></p>' +
-    '<p class="ns-login-foot">Don\'t Have an Account? <a href="#/signup"><b>Signup</b></a></p><p class="muted" id="authMsg"></p></div></div>';
+  return '<div class="ns-design-login"><form class="ns-design-form" onsubmit="event.preventDefault();nsDoLogin();">'
+    + '<input id="authEmail" class="ns-design-input ns-design-email" type="text" autocomplete="username" aria-label="Email or mobile number">'
+    + '<input id="authPass" class="ns-design-input ns-design-pass" type="password" autocomplete="current-password" aria-label="Password">'
+    + '<button type="button" class="ns-design-eye" onclick="nsToggleDesignPass()" aria-label="Show or hide password"></button>'
+    + '<input type="checkbox" id="authRemember" class="ns-design-remember" aria-label="Remember me">'
+    + '<button type="button" class="ns-design-forgot" onclick="location.hash=\'#/forgot\'" aria-label="Forgotten password"></button>'
+    + '<button type="submit" class="ns-design-loginbtn" aria-label="Login"></button>'
+    + '<button type="button" class="ns-design-signup" onclick="location.hash=\'#/signup\'" aria-label="Register"></button>'
+    + '</form></div>';
 }
 function nsAuthHTML() { return nsLoginPortalHTML('login'); }
+function nsToggleDesignPass() { const p = document.getElementById('authPass'); if (p) p.type = (p.type === 'password' ? 'text' : 'password'); }
 async function nsDoLogin() {
   const identifier = document.getElementById('authEmail').value.trim(), password = document.getElementById('authPass').value;
   const rememberEl = document.getElementById('authRemember');
@@ -1544,12 +1546,14 @@ render = async function () {
     }
     document.body.classList.remove('ns-inner-page');
     document.body.classList.add('ns-login-portal');
+    if (hash === 'login') document.body.classList.add('ns-design-login-page'); else document.body.classList.remove('ns-design-login-page');
     if (main) main.innerHTML = nsLoginPortalHTML(hash);
     return;
   }
   if (!nsToken()) {
     document.body.classList.remove('ns-inner-page');
     document.body.classList.add('ns-login-portal');
+    document.body.classList.add('ns-design-login-page');
     if (main) main.innerHTML = nsLoginPortalHTML('login');
     return;
   }
@@ -1558,9 +1562,11 @@ render = async function () {
     nsSetToken('');
     document.body.classList.remove('ns-inner-page');
     document.body.classList.add('ns-login-portal');
+    document.body.classList.add('ns-design-login-page');
     if (main) main.innerHTML = nsLoginPortalHTML('login');
     return;
   }
   document.body.classList.remove('ns-login-portal');
+  document.body.classList.remove('ns-design-login-page');
   await _renderStep11Client();
 };
