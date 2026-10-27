@@ -713,12 +713,9 @@ render = async function () {
   /* Service pages: Save & Print is not a real delivery — remove it. */
   if (parts[0] === 'service') {
     btns.forEach(b => { if (b.textContent.trim() === 'Save & Print') replaceBtnWithNote(b, 'Save & Print এখানে নেই — নিচের "অর্ডার করুন" দিয়ে অর্ডার করুন।'); });
-    /* File uploads have no service-document endpoint — replace with a note. */
-    [...main.querySelectorAll('input[type="file"]')].forEach(el => {
-      const lab = el.previousElementSibling;
-      if (lab && lab.tagName === 'LABEL') lab.remove();
-      el.replaceWith(ns5Note('ফাইল আপলোড এই ফর্মে সংরক্ষিত হয় না — তথ্য লিখে অর্ডার করুন।'));
-    });
+    /* Step 9: original file inputs are KEPT and wired in the Step 9
+       wrapper below — clicking the existing upload control actually
+       uploads. They are no longer replaced with a note. */
     /* Captcha reload (ncf) has no real captcha system. */
     btns.forEach(b => { if (b.textContent.indexOf('Reload Captcha') !== -1) b.setAttribute('onclick', "showModal('ক্যাপচা','ক্যাপচা সিস্টেম এখানে চালু নয় — তথ্য লিখে অর্ডার করুন, অ্যাডমিন যাচাই করবে।')"); });
   }
@@ -914,7 +911,7 @@ function nsDownscaleImage(buf, type) {
 }
 async function nsDocOnPick(input, label) {
   var svc = nsDocSvcId(); if (!svc) return;
-  var key = svc + '|' + label, prev = input.parentNode.querySelector('.nsDocPrev');
+  var key = svc + '|' + label, prev = (input.nextElementSibling && input.nextElementSibling.classList && input.nextElementSibling.classList.contains('nsDocPrev')) ? input.nextElementSibling : input.parentNode.querySelector('.nsDocPrev');
   var file = input.files && input.files[0];
   if (!file) { delete NS_DOCS[key]; if (prev) prev.textContent = ''; return; }
   if (file.size > 5 * 1024 * 1024) { showModal('ফাইল বড়', 'ফাইলটি ৫ MB-এর বেশি — ছোট ফাইল বাছুন।'); input.value = ''; return; }
@@ -983,7 +980,7 @@ function nsDocFieldMap() {
 async function nsDocAutoFill() {
   var btn = document.getElementById('nsDocFillBtn'), st = document.getElementById('nsDocFillStatus');
   var docs = Object.keys(NS_DOCS).filter(function (k) { var svc = nsDocSvcId(); return !svc || k.indexOf(svc + '|') === 0; }).map(function (k) { return NS_DOCS[k]; });
-  if (!docs.length) { showModal('ডকুমেন্ট', 'আগে উপরের ফাইল বাছাই থেকে একটি ডকুমেন্ট বাছুন।'); return; }
+  if (!docs.length) { showModal('ডকুমেন্ট', 'আগে ফাইল বাছাই থেকে একটি ডকুমেন্ট বাছুন।'); return; }
   if (btn) btn.disabled = true;
   if (st) st.textContent = 'পড়া হচ্ছে… (ফাইলটি শুধু এই ডিভাইসে পড়া হচ্ছে, কোথাও পাঠানো হচ্ছে না)';
   var text = '', lastErr = null;
@@ -1028,6 +1025,36 @@ nsOrderPayload = function (def) {
   p.documents = nsDocAttachments();
   return p;
 };
+/* ===== Step 9 (staging only) — NO separate upload section; wire the EXISTING controls =====
+   User feedback on Step 8: do NOT create a separate titled
+   "ডকুমেন্ট আপলোড (ঐচ্ছিক)" section at the top (or bottom). The
+   upload option that ALREADY exists on the page must work.
+   - Pages with an original file input (nid: "এনআইডি ছবি*" / "স্বাক্ষর",
+     snid: same, ssc: "এনআইডি ছবি*"): those original inputs are kept
+     (Step 5 no longer replaces them). Their demo onclick is removed,
+     they accept image/PDF, show preview/filename via nsDocOnPick, and
+     attach to the order payload via the existing POST /orders flow.
+     No second file input is created for them. The "ডকুমেন্ট থেকে তথ্য
+     বসান" button is placed immediately after the last original input.
+   - Pages with no original input but an Autoload button (brn): NO
+     titled section. A small file picker + the auto-fill button are
+     placed INLINE inside the same <p> as the existing
+     "এনআইডি অটোলোড করুন / স্বয়ংক্রিয়ভাবে ডেটা লোড করুন" button.
+     The Autoload button itself is unchanged (its honest modal still
+     says server lookup is not on; it is NOT turned into a lookup).
+   - Pages with neither (brni, sc, tin, ncf, vuk): NO titled section.
+     A small inline picker row (label + file input + preview + the
+     auto-fill button, no heading) is placed just before the existing
+     "অর্ডার করুন" paragraph, inside the existing card.
+   - Auto-fill stays a button press, client-side only (Tesseract.js /
+     pdf.js in this browser, user's own file only, suggestions into
+     empty fields only, never auto-submitted, never a server lookup).
+   - Disclaimer: the single copy on the "অর্ডার করুন" paragraph
+     (Step 2, small plain "muted" text) is the ONLY copy on a service
+     page. No second disclaimer is added here, so the page shows it
+     exactly once, readable, not hidden, no heading, no box.
+   - No government logo/seal/official layout/document generation.
+     Excluded services (IMEI, location, call list, biometric) untouched. */
 var _renderStep6Client = render;
 render = async function () {
   await _renderStep6Client();
@@ -1037,24 +1064,64 @@ render = async function () {
   var def = (typeof SERVICES !== 'undefined') ? SERVICES.find(function (x) { return x.id === parts[1]; }) : null;
   if (!def) return;
   var card = main.querySelector('.card'); if (!card) return;
+  var oldSec = document.getElementById('nsDocSection'); if (oldSec) oldSec.remove();
   main.querySelectorAll('span.muted').forEach(function (sp) { if (sp.textContent.indexOf('ফাইল আপলোড এই ফর্মে') !== -1) sp.remove(); });
-  if (document.getElementById('nsDocSection')) return;
   var svc = parts[1];
   Object.keys(NS_DOCS).forEach(function (k) { if (k.indexOf(svc + '|') === 0) delete NS_DOCS[k]; });
-  var labels = (def.uploads && def.uploads.length) ? def.uploads.slice() : ['ডকুমেন্ট (ছবি/PDF)'];
-  var sec = document.createElement('div'); sec.id = 'nsDocSection';
-  sec.innerHTML = '<h3>ডকুমেন্ট আপলোড (ঐচ্ছিক)</h3>' +
-    '<p class="muted">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>' +
-    labels.map(function (u, i) { return '<label>' + u + '</label><input type="file" class="nsDocInput" data-idx="' + i + '" accept="image/*,application/pdf"><span class="muted nsDocPrev"></span>'; }).join('') +
-    '<p><button class="btn ghost" id="nsDocFillBtn" type="button">ডকুমেন্ট থেকে তথ্য বসান</button> <span class="muted" id="nsDocFillStatus"></span></p>' +
-    '<p class="muted">এটি সার্ভার-লুকআপ (অটোলোড) নয়: বাছা ফাইলটি শুধু এই ডিভাইসে/ব্রাউজারে পড়া হয়, কোথাও পাঠানো হয় না। তথ্য শুধু সাজেশন হিসেবে খালি ঘরে বসবে — যাচাই করে ঠিক করে নিন, তারপর অর্ডার করুন। আপলোড / তথ্য-পড়ার জন্য কোনো টাকা কাটা হয় না; টাকা কাটবে শুধু "অর্ডার করুন"-এ।</p>';
-  card.appendChild(sec);
-  sec.querySelectorAll('.nsDocInput').forEach(function (inp) {
-    inp.addEventListener('change', function () { nsDocOnPick(inp, labels[+inp.getAttribute('data-idx')]); });
-  });
-  var fb = document.getElementById('nsDocFillBtn'); if (fb) fb.addEventListener('click', nsDocAutoFill);
+  function nsWireInput(inp, label) {
+    if (inp.dataset.nsWired) return;
+    inp.dataset.nsWired = '1';
+    inp.removeAttribute('onclick');
+    inp.setAttribute('accept', 'image/*,application/pdf');
+    inp.addEventListener('change', function () { nsDocOnPick(inp, label); });
+    var prev = document.createElement('span'); prev.className = 'muted nsDocPrev';
+    inp.parentNode.insertBefore(prev, inp.nextSibling);
+  }
+  function nsWireFillBtn(btn) { if (btn) btn.addEventListener('click', nsDocAutoFill); }
+  var existing = Array.prototype.slice.call(card.querySelectorAll('input[type="file"]'));
+  if (existing.length) {
+    existing.forEach(function (inp, i) {
+      var labEl = inp.previousElementSibling;
+      var lab = (labEl && labEl.tagName === 'LABEL') ? labEl.textContent.trim() : ((def.uploads && def.uploads[i]) || 'ডকুমেন্ট (ছবি/PDF)');
+      nsWireInput(inp, lab);
+    });
+    var last = existing[existing.length - 1];
+    var anchor = last.nextSibling; // the preview span just inserted after it
+    var row = document.createElement('p');
+    row.innerHTML = '<button class="btn ghost" id="nsDocFillBtn" type="button">ডকুমেন্ট থেকে তথ্য বসান</button> <span class="muted" id="nsDocFillStatus"></span> <span class="muted">বাছা ফাইলটি শুধু এই ডিভাইসে পড়া হয়, কোথাও পাঠানো হয় না; তথ্য শুধু সাজেশন হিসেবে খালি ঘরে বসবে — যাচাই করে তারপর অর্ডার করুন। আপলোড / তথ্য-পড়ার জন্য কোনো টাকা কাটা হয় না।</span>';
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor.nextSibling);
+    else card.appendChild(row);
+    nsWireFillBtn(document.getElementById('nsDocFillBtn'));
+    return;
+  }
+  var autoBtn = Array.prototype.slice.call(card.querySelectorAll('button')).find(function (b) { return b.textContent.indexOf('অটোলোড করুন') !== -1; });
+  if (autoBtn && autoBtn.parentNode) {
+    var pp = autoBtn.parentNode;
+    var picker = document.createElement('span');
+    picker.innerHTML = ' <input type="file" class="nsDocInput" accept="image/*,application/pdf"> <span class="muted nsDocPrev"></span>';
+    pp.appendChild(picker);
+    var inpA = picker.querySelector('input');
+    nsWireInput(inpA, 'ডকুমেন্ট (ছবি/PDF)');
+    var fbSpan = document.createElement('span');
+    fbSpan.innerHTML = ' <button class="btn ghost" id="nsDocFillBtn" type="button">ডকুমেন্ট থেকে তথ্য বসান</button> <span class="muted" id="nsDocFillStatus"></span>';
+    pp.appendChild(fbSpan);
+    nsWireFillBtn(document.getElementById('nsDocFillBtn'));
+    return;
+  }
+  var orderBtn = document.getElementById('nsOrderBtn');
+  var row2 = document.createElement('p');
+  row2.innerHTML = '<label>ডকুমেন্ট (ছবি/PDF)</label> <input type="file" class="nsDocInput" accept="image/*,application/pdf"> <span class="muted nsDocPrev"></span> <button class="btn ghost" id="nsDocFillBtn" type="button">ডকুমেন্ট থেকে তথ্য বসান</button> <span class="muted" id="nsDocFillStatus"></span>';
+  if (orderBtn && orderBtn.parentNode && orderBtn.parentNode.parentNode) orderBtn.parentNode.parentNode.insertBefore(row2, orderBtn.parentNode);
+  else card.appendChild(row2);
+  var inpB = row2.querySelector('input');
+  nsWireInput(inpB, 'ডকুমেন্ট (ছবি/PDF)');
+  nsWireFillBtn(document.getElementById('nsDocFillBtn'));
 };
 
+/* ===== Step 8 (staging only) — SUPERSEDED by Step 9: no #nsDocSection is
+   created any more, so this wrapper returns early (sec missing) and does
+   nothing. Kept only so the render chain stays intact. Original Step 8
+   comment below is historical. =====
 /* ===== Step 8 (staging only) — Upload section to the TOP, ONE disclaimer =====
    What this does (and does not do):
    - Moves the whole Step 7 document-upload section (#nsDocSection:
