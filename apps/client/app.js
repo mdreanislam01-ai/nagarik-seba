@@ -3,7 +3,10 @@ const $=s=>document.querySelector(s);
 function showModal(t,html){$('#modalTitle').textContent=t;$('#modalBody').innerHTML=html;$('#modalBack').classList.add('open')}
 function closeModal(){$('#modalBack').classList.remove('open')}
 function demoMsg(what){showModal('নোটিশ',`<p><b>${what}</b> — এই অপশনটি বর্তমানে চালু নয়।</p>`)}
-function toggleDark(){document.body.classList.toggle('dark');const l=document.querySelector('#darkLabel');if(l){l.textContent=document.body.classList.contains('dark')?'লাইট মোড':'ডার্ক মোড'}else{$('#darkBtn').textContent=document.body.classList.contains('dark')?'লাইট মোড':'ডার্ক মোড'}}
+function toggleDark(){document.body.classList.toggle('dark');const sw=document.querySelector('.switch__input');if(sw){sw.checked=document.body.classList.contains('dark')}}
+/* Tiny header dark-mode switch (user-supplied markup): checked = dark ON,
+   unchecked = light. Keep the checkbox in sync with body.dark. */
+(function(){const sw=document.querySelector('.switch__input');if(!sw)return;sw.checked=document.body.classList.contains('dark');sw.addEventListener('change',toggleDark)})();
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
 
 

@@ -287,3 +287,24 @@ body.dark .dark-pill .knob{transform:translateX(12px)}
 @media(max-width:400px){
  .dark-pill{padding:6px 8px}
 }
+
+/* Tiny header dark-mode switch — user-supplied markup, as small as possible.
+   Visual switch: 34px wide x 19px tall on desktop AND mobile (no larger on
+   mobile). The old dark-pill (text + padding) is gone from the markup, so
+   the switch is far smaller than the previous 30x18px track + pill.
+   Part 1 is the sliding knob; parts 2-11 are collapsed at this tiny size
+   for legibility (structure kept in markup). Track colour changes with
+   state and with light/dark header, so the switch stays visible in both. */
+.topbar-new label.switch{display:inline-flex;align-items:center;flex-shrink:0;cursor:pointer;padding:7px 5px;margin:0;line-height:0}
+.topbar-new .switch__input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+.topbar-new .switch__icon{position:relative;display:inline-block;width:34px;height:19px;min-width:34px;border-radius:999px;background:#064e3b;transition:background .2s;overflow:hidden}
+.topbar-new .switch__icon-part{position:absolute;display:block;pointer-events:none}
+.topbar-new .switch__icon-part--1{left:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .2s}
+.topbar-new .switch__icon-part--2,.topbar-new .switch__icon-part--3,.topbar-new .switch__icon-part--4,.topbar-new .switch__icon-part--5,.topbar-new .switch__icon-part--6,.topbar-new .switch__icon-part--7,.topbar-new .switch__icon-part--8,.topbar-new .switch__icon-part--9,.topbar-new .switch__icon-part--10,.topbar-new .switch__icon-part--11{width:0;height:0;opacity:0}
+.topbar-new .switch__input:checked + .switch__icon{background:#0f766e}
+.topbar-new .switch__input:checked + .switch__icon .switch__icon-part--1{transform:translateX(15px)}
+.topbar-new .switch__input:focus-visible + .switch__icon{outline:2px solid #0f766e;outline-offset:2px}
+.topbar-new .switch__sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.dark .topbar-new .switch__icon{background:#334155}
+body.dark .topbar-new .switch__input:checked + .switch__icon{background:#14b8a6}
+body.dark .topbar-new .switch__input:focus-visible + .switch__icon{outline-color:#5eead4}

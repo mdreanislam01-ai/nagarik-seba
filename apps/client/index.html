@@ -11,7 +11,23 @@
   <button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="মেনু">☰ <span>মেনু</span></button>
   <div class="logo-new"><span class="logo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="19" fill="#0f766e"/><circle cx="24" cy="8" r="4" fill="#f59e0b"/><path d="M24 40V22M24 30c-6-1-10-5-11-11 6 1 10 5 11 11zm0 0c6-1 10-5 11-11-6 1-10 5-11 11z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="logo-text">নাগরিক সেবা<small>nagarikseba.com</small></span></div>
   <div class="spacer"></div>
-  <button class="dark-pill" id="darkBtn" onclick="toggleDark()"><span class="moon" aria-hidden="true">☾</span><span id="darkLabel">ডার্ক মোড</span><span class="switch" aria-hidden="true"><span class="knob"></span></span></button>
+  <label class="switch">
+	<input class="switch__input" type="checkbox" role="switch" />
+	<span class="switch__icon">
+		<span class="switch__icon-part switch__icon-part--1"></span>
+		<span class="switch__icon-part switch__icon-part--2"></span>
+		<span class="switch__icon-part switch__icon-part--3"></span>
+		<span class="switch__icon-part switch__icon-part--4"></span>
+		<span class="switch__icon-part switch__icon-part--5"></span>
+		<span class="switch__icon-part switch__icon-part--6"></span>
+		<span class="switch__icon-part switch__icon-part--7"></span>
+		<span class="switch__icon-part switch__icon-part--8"></span>
+		<span class="switch__icon-part switch__icon-part--9"></span>
+		<span class="switch__icon-part switch__icon-part--10"></span>
+		<span class="switch__icon-part switch__icon-part--11"></span>
+	</span>
+	<span class="switch__sr">Dark Mode</span>
+</label>
 </header>
 <div class="layout">
   <nav class="sidebar" id="sidebar"></nav>
