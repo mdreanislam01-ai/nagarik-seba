@@ -853,3 +853,211 @@ render = async function () {
   }
   // Order-success modal already says "no personal document" (Step 2); nothing to fake here.
 };
+
+/* ===== Step 7 (staging only) — Document upload + CLIENT-SIDE auto-fill =====
+   What this does (and does not do):
+   - Upload: on service pages, the file field actually works. The user
+     picks an image (JPG/PNG/GIF/WebP) or PDF (checked by magic bytes,
+     max 5 MB for reading). A preview/filename is shown. When the user
+     presses "অর্ডার করুন", the file is attached to that order record
+     only (payload.documents via POST /orders) — images are downscaled
+     in-browser so the whole order JSON stays under the API's 200 KB
+     body limit (total attachments capped at ~150 KB; a file too large
+     to attach is stored as metadata only, with that stated clearly).
+     No file is sent to any external service, and no file is stored
+     outside the order record.
+   - Auto-fill: the "ডকুমেন্ট থেকে তথ্য বসান" button reads ONLY the
+     file the user already selected, IN THIS BROWSER ONLY (Tesseract.js
+     for images, pdf.js for PDFs, both loaded as libraries from a CDN;
+     the document itself is never uploaded anywhere). Matches are
+     filled ONLY into empty fields, ONLY as suggestions (NID/BRN
+     number, date of birth, blood group), never auto-submitted, never
+     presented as verified. If OCR finds nothing, the user is told to
+     fill manually. No charge for upload/OCR itself; money is deducted
+     only by the existing POST /orders flow when "অর্ডার করুন" is
+     pressed.
+   - NOT built: no server-side Autoload lookup by NID/phone/identifier,
+     no government/external lookup, no official document generation
+     (no logo, seal, card/certificate layout, no official-looking PDF).
+     The Step 6 short disclaimer is left unchanged. Excluded services
+     (IMEI, location, call list, biometric) are order pages and are
+     not touched by this service-page-only patch. */
+var NS_DOCS = {};
+function nsDocSvcId() { var h = (location.hash.replace('#/', '') || '').split('/'); return (h[0] === 'service') ? h[1] : null; }
+function nsDocMagic(buf) {
+  var b = new Uint8Array(buf);
+  if (b.length > 3 && b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return 'jpeg';
+  if (b.length > 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return 'png';
+  if (b.length > 3 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return 'gif';
+  if (b.length > 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return 'webp';
+  if (b.length > 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return 'pdf';
+  return null;
+}
+function nsBufToB64(buf) {
+  var bytes = new Uint8Array(buf), out = '', i, chunk = 0x8000;
+  for (i = 0; i < bytes.length; i += chunk) out += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  return btoa(out);
+}
+function nsDownscaleImage(buf, type) {
+  return new Promise(function (resolve) {
+    var url = URL.createObjectURL(new Blob([buf], { type: 'image/' + (type === 'jpeg' ? 'jpeg' : type) }));
+    var img = new Image();
+    img.onload = function () {
+      var widths = [800, 640, 480, 320], best = null, fits = null;
+      widths.forEach(function (w) {
+        var scale = Math.min(1, w / img.width), cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(img.width * scale)); cv.height = Math.max(1, Math.round(img.height * scale));
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        var d = cv.toDataURL('image/jpeg', 0.72);
+        if (!best) best = d;
+        if (!fits && d.length <= 110 * 1024) fits = d;
+      });
+      URL.revokeObjectURL(url);
+      resolve(fits || null);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+async function nsDocOnPick(input, label) {
+  var svc = nsDocSvcId(); if (!svc) return;
+  var key = svc + '|' + label, prev = input.parentNode.querySelector('.nsDocPrev');
+  var file = input.files && input.files[0];
+  if (!file) { delete NS_DOCS[key]; if (prev) prev.textContent = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { showModal('ফাইল বড়', 'ফাইলটি ৫ MB-এর বেশি — ছোট ফাইল বাছুন।'); input.value = ''; return; }
+  var buf;
+  try { buf = await file.arrayBuffer(); } catch (e) { showModal('ফাইল', 'ফাইলটি পড়া যায়নি।'); input.value = ''; return; }
+  var magic = nsDocMagic(buf);
+  if (!magic) { showModal('ফাইল', 'শুধু ছবি (JPG/PNG/GIF/WebP) বা PDF বাছুন।'); input.value = ''; return; }
+  var doc = { filename: file.name, type: magic, size: file.size, buf: buf, dataUri: null };
+  if (magic === 'pdf') {
+    if (file.size <= 100 * 1024) doc.dataUri = 'data:application/pdf;base64,' + nsBufToB64(buf);
+  } else {
+    doc.dataUri = await nsDownscaleImage(buf, magic);
+  }
+  NS_DOCS[key] = doc;
+  if (prev) {
+    prev.textContent = 'যুক্ত হয়েছে: ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)' + (doc.dataUri ? ' — অর্ডারের সাথে সংযুক্ত হবে।' : ' — ফাইলটি বড় হওয়ায় শুধু নাম/তথ্য সংরক্ষিত হবে, ফাইলটি সংযুক্ত হবে না।');
+    if (magic !== 'pdf') {
+      var im = document.createElement('img'); im.src = URL.createObjectURL(new Blob([buf])); im.style.cssText = 'display:block;max-width:160px;max-height:120px;margin-top:6px;border:1px solid #ddd;border-radius:8px';
+      prev.appendChild(im);
+    }
+  }
+}
+function nsDocAttachments() {
+  var svc = nsDocSvcId(), out = [], total = 0;
+  Object.keys(NS_DOCS).forEach(function (k) {
+    if (svc && k.indexOf(svc + '|') !== 0) return;
+    var d = NS_DOCS[k], e = { label: k.split('|').slice(1).join('|'), filename: d.filename, type: d.type, size: d.size, attached: false };
+    if (d.dataUri && total + d.dataUri.length <= 150 * 1024) { e.data = d.dataUri; e.attached = true; total += d.dataUri.length; }
+    else if (d.dataUri) { e.note = 'বড় ফাইল — সংযুক্ত হয়নি, শুধু নাম সংরক্ষিত'; }
+    out.push(e);
+  });
+  return out;
+}
+function nsDocLoadScript(src) {
+  return new Promise(function (resolve, reject) {
+    if (document.querySelector('script[src="' + src + '"]')) return resolve();
+    var s = document.createElement('script'); s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+  });
+}
+async function nsDocReadText(doc) {
+  if (doc.type === 'pdf') {
+    await nsDocLoadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    var pdfjs = window.pdfjsLib; if (!pdfjs) throw new Error('pdf.js missing');
+    pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var pdf = await pdfjs.getDocument({ data: doc.buf }).promise, txt = '';
+    for (var p = 1; p <= Math.min(pdf.numPages, 3); p++) {
+      var page = await pdf.getPage(p), tc = await page.getTextContent();
+      txt += ' ' + tc.items.map(function (it) { return it.str; }).join(' ');
+    }
+    return txt;
+  }
+  await nsDocLoadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+  if (!window.Tesseract) throw new Error('tesseract missing');
+  var res = await window.Tesseract.recognize(new Blob([doc.buf], { type: 'image/' + doc.type }), 'eng+ben');
+  return (res && res.data && res.data.text) || '';
+}
+function nsDocFieldMap() {
+  var card = document.querySelector('#main .card'), map = {};
+  if (!card) return map;
+  card.querySelectorAll('label').forEach(function (lab) {
+    var inp = lab.nextElementSibling;
+    if (inp && (inp.tagName === 'INPUT' || inp.tagName === 'SELECT' || inp.tagName === 'TEXTAREA')) map[lab.textContent.trim()] = inp;
+  });
+  return map;
+}
+async function nsDocAutoFill() {
+  var btn = document.getElementById('nsDocFillBtn'), st = document.getElementById('nsDocFillStatus');
+  var docs = Object.keys(NS_DOCS).filter(function (k) { var svc = nsDocSvcId(); return !svc || k.indexOf(svc + '|') === 0; }).map(function (k) { return NS_DOCS[k]; });
+  if (!docs.length) { showModal('ডকুমেন্ট', 'আগে উপরের ফাইল বাছাই থেকে একটি ডকুমেন্ট বাছুন।'); return; }
+  if (btn) btn.disabled = true;
+  if (st) st.textContent = 'পড়া হচ্ছে… (ফাইলটি শুধু এই ডিভাইসে পড়া হচ্ছে, কোথাও পাঠানো হচ্ছে না)';
+  var text = '', lastErr = null;
+  for (var i = 0; i < docs.length && !text.trim(); i++) {
+    try { text = await nsDocReadText(docs[i]); } catch (e) { lastErr = e; }
+  }
+  if (btn) btn.disabled = false;
+  if (st) st.textContent = '';
+  if (!text.trim()) { showModal('ডকুমেন্ট থেকে পড়া যায়নি', 'এই ডকুমেন্ট থেকে কোনো লেখা চেনা যায়নি বা পড়া যায়নি। দয়া করে তথ্য হাতে লিখুন। কোনো টাকা কাটা হয়নি।'); return; }
+  var flat = text.replace(/\s+/g, ' ');
+  var numSeq = function () {
+    var out = [], m, re = /\d[\d ]{8,22}\d/g;
+    while ((m = re.exec(flat)) !== null) { var d = m[0].replace(/ /g, ''); if (d.length >= 10 && d.length <= 17) out.push(d); }
+    return out;
+  };
+  var nums = numSeq();
+  var dateMatch = flat.match(/(\d{4})-(\d{2})-(\d{2})/) || flat.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);
+  var dateVal = '';
+  if (dateMatch) {
+    if (dateMatch[0].indexOf('-') === 4) dateVal = dateMatch[0];
+    else { var dd = dateMatch[1].padStart(2, '0'), mm = dateMatch[2].padStart(2, '0'); dateVal = dateMatch[3] + '-' + mm + '-' + dd; }
+  }
+  var blood = (flat.match(/\b(AB|A|B|O)[+-]\b/) || [])[0] || '';
+  var map = nsDocFieldMap(), filled = [];
+  var fillIfEmpty = function (test, val, name) {
+    if (!val) return;
+    Object.keys(map).forEach(function (lab) {
+      if (test(lab) && map[lab] && !map[lab].value) { map[lab].value = val; filled.push(lab); }
+    });
+  };
+  var svc = nsDocSvcId();
+  if (svc === 'brn') fillIfEmpty(function (l) { return l.indexOf('Birth Registration Number') !== -1; }, nums[nums.length - 1] || nums[0] || '', 'brn');
+  else fillIfEmpty(function (l) { return l.indexOf('এনআইডি নম্বর') !== -1; }, nums[0] || '', 'nid');
+  fillIfEmpty(function (l) { return (l.indexOf('জন্ম তারিখ') !== -1 || l === 'Date of Birth*') && l.indexOf('Word') === -1; }, dateVal, 'dob');
+  fillIfEmpty(function (l) { return l.indexOf('রক্তের গ্রুপ') !== -1 || l.indexOf('Blood Group') !== -1; }, blood, 'blood');
+  if (!filled.length) { showModal('ডকুমেন্ট থেকে পড়া যায়নি', 'লেখা পড়া গেছে, কিন্তু এই ফর্মের কোনো খালি ঘরের সাথে মেলানো তথ্য (এনআইডি/জন্ম নিবন্ধন নম্বর, জন্ম তারিখ, রক্তের গ্রুপ) পাওয়া যায়নি। দয়া করে তথ্য হাতে লিখুন। কোনো টাকা কাটা হয়নি।'); return; }
+  showModal('সাজেশন বসানো হয়েছে — যাচাই করুন', 'এই ঘরগুলোতে ডকুমেন্ট থেকে পড়া তথ্য সাজেশন হিসেবে বসানো হয়েছে (যাচাই করা হয়নি): ' + filled.join(', ') + '। সব তথ্য দেখে ঠিক করে নিন, তারপর "অর্ডার করুন" চাপুন। এখনো কিছু জমা হয়নি, কোনো টাকা কাটা হয়নি।');
+}
+var _nsOrderPayload7 = nsOrderPayload;
+nsOrderPayload = function (def) {
+  var p = _nsOrderPayload7(def);
+  p.documents = nsDocAttachments();
+  return p;
+};
+var _renderStep6Client = render;
+render = async function () {
+  await _renderStep6Client();
+  var main = document.querySelector('#main'); if (!main) return;
+  var hash = location.hash.replace('#/', '') || 'dashboard', parts = hash.split('/');
+  if (parts[0] !== 'service') return;
+  var def = (typeof SERVICES !== 'undefined') ? SERVICES.find(function (x) { return x.id === parts[1]; }) : null;
+  if (!def) return;
+  var card = main.querySelector('.card'); if (!card) return;
+  main.querySelectorAll('span.muted').forEach(function (sp) { if (sp.textContent.indexOf('ফাইল আপলোড এই ফর্মে') !== -1) sp.remove(); });
+  if (document.getElementById('nsDocSection')) return;
+  var svc = parts[1];
+  Object.keys(NS_DOCS).forEach(function (k) { if (k.indexOf(svc + '|') === 0) delete NS_DOCS[k]; });
+  var labels = (def.uploads && def.uploads.length) ? def.uploads.slice() : ['ডকুমেন্ট (ছবি/PDF)'];
+  var sec = document.createElement('div'); sec.id = 'nsDocSection';
+  sec.innerHTML = '<h3>ডকুমেন্ট আপলোড (ঐচ্ছিক)</h3>' +
+    '<p class="muted">ফাইল শুধু আপনার অর্ডার রেকর্ডের সাথে সংরক্ষিত হবে — কোনো সরকারি ডকুমেন্ট তৈরি / ডেলিভারি হয় না।</p>' +
+    labels.map(function (u, i) { return '<label>' + u + '</label><input type="file" class="nsDocInput" data-idx="' + i + '" accept="image/*,application/pdf"><span class="muted nsDocPrev"></span>'; }).join('') +
+    '<p><button class="btn ghost" id="nsDocFillBtn" type="button">ডকুমেন্ট থেকে তথ্য বসান</button> <span class="muted" id="nsDocFillStatus"></span></p>' +
+    '<p class="muted">এটি সার্ভার-লুকআপ (অটোলোড) নয়: বাছা ফাইলটি শুধু এই ডিভাইসে/ব্রাউজারে পড়া হয়, কোথাও পাঠানো হয় না। তথ্য শুধু সাজেশন হিসেবে খালি ঘরে বসবে — যাচাই করে ঠিক করে নিন, তারপর অর্ডার করুন। আপলোড / তথ্য-পড়ার জন্য কোনো টাকা কাটা হয় না; টাকা কাটবে শুধু "অর্ডার করুন"-এ।</p>';
+  card.appendChild(sec);
+  sec.querySelectorAll('.nsDocInput').forEach(function (inp) {
+    inp.addEventListener('change', function () { nsDocOnPick(inp, labels[+inp.getAttribute('data-idx')]); });
+  });
+  var fb = document.getElementById('nsDocFillBtn'); if (fb) fb.addEventListener('click', nsDocAutoFill);
+};
