@@ -448,3 +448,31 @@ body.dark:not(.ns-inner-page) .topbar-new .switch__input:checked + .switch__icon
 body.dark:not(.ns-inner-page) .topbar-new .switch__input:focus-visible + .switch__icon{outline-color:#CDE8E5}
 body.dark:not(.ns-inner-page) .wa-card{background:#0b3b3a;border-color:#0F8483}
 body.dark:not(.ns-inner-page) .all-services{color:#CDE8E5}
+
+/* ===== Step 13 — Login portal (colours only follow the reference login layout;
+   logo/name are our own: নাগরিক সেবা / nagarikseba.com) ===== */
+body.ns-login-portal{background:#EEF2F7}
+body.ns-login-portal .sidebar{display:none}
+body.ns-login-portal .layout{display:block}
+body.ns-login-portal .main{max-width:100%;padding:24px 12px}
+.ns-login-wrap{display:flex;justify-content:center;padding:24px 8px}
+.ns-login-card{max-width:420px;width:100%;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,.10);padding:28px 24px}
+.ns-login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.ns-login-logo .logo-mark svg{width:48px;height:48px;display:block}
+.ns-login-logo .logo-text{display:flex;flex-direction:column;font-size:22px;font-weight:700;color:#16302e;line-height:1.1}
+.ns-login-logo .logo-text small{font-size:14px;font-weight:400;color:#0E7C7B}
+.ns-login-sub{text-align:center;color:#0284c7;font-size:16px;font-weight:600;margin:12px 0 16px}
+.ns-login-card label{display:block;margin:12px 0 4px;font-weight:600;color:#334155}
+.ns-login-card input[type="text"],.ns-login-card input[type="password"],.ns-login-card input:not([type="checkbox"]){width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:15px}
+.ns-login-hint{font-size:13px;margin:6px 0 0}
+.ns-login-row{display:flex;justify-content:space-between;align-items:center;margin:14px 0 6px}
+.ns-remember{display:flex;align-items:center;gap:6px;margin:0!important}
+.ns-remember-text{color:#16a34a;font-weight:600}
+.ns-forgot{color:#e11d48;text-decoration:none;font-weight:600}
+.ns-login-btn{width:100%;background:#1d4ed8!important;color:#fff!important;font-size:17px;font-weight:700;letter-spacing:.5px;padding:13px;border-radius:6px}
+.ns-login-foot{text-align:center;margin-top:14px;color:#334155}
+.ns-login-foot a{color:#16302e;text-decoration:none}
+body.dark.ns-login-portal{background:#0f172a}
+body.dark .ns-login-card{background:#1e293b;color:#e2e8f0}
+body.dark .ns-login-card label,body.dark .ns-login-foot{color:#e2e8f0}
+body.dark .ns-login-logo .logo-text{color:#e2e8f0}

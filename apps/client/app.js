@@ -339,8 +339,12 @@ window.addEventListener('hashchange',render);render();
    Signature canvas is untouched and needs no backend. */
 const API_BASE = window.API_BASE || localStorage.getItem('ns_api_base') || 'https://api.nagarikseba.com';
 const NS_STATE = { user: null, wallet: null, services: [], orders: [], recharges: [], logs: [] };
-const nsToken = () => sessionStorage.getItem('ns_token') || '';
-const nsSetToken = t => t ? sessionStorage.setItem('ns_token', t) : sessionStorage.removeItem('ns_token');
+const nsToken = () => localStorage.getItem('ns_token') || sessionStorage.getItem('ns_token') || '';
+const nsSetToken = (t, remember) => {
+  if (!t) { localStorage.removeItem('ns_token'); sessionStorage.removeItem('ns_token'); return; }
+  if (remember) { localStorage.setItem('ns_token', t); sessionStorage.removeItem('ns_token'); }
+  else { sessionStorage.setItem('ns_token', t); localStorage.removeItem('ns_token'); }
+};
 async function nsCall(path, method, body) {
   const r = await fetch(API_BASE + path, { method: method || 'GET',
     headers: { 'Content-Type': 'application/json', ...(nsToken() ? { Authorization: 'Bearer ' + nsToken() } : {}) },
@@ -414,24 +418,53 @@ async function nsRechargeSubmit() {
   try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(); render(); showModal('রিচার্জ অনুরোধ', `অনুরোধ #${r.recharge.id} — ${r.recharge.amount_bdt} টাকা, স্ট্যাটাস: pending। অ্যাডমিন approve করলে ব্যালেন্স যোগ হবে।`); }
   catch (e) { showModal('রিচার্জ হয়নি', e.message === 'trxid_exists' ? 'এই TrxID আগেই ব্যবহার হয়েছে।' : e.message); }
 }
-function nsAuthHTML() {
-  return `<div class="card"><h2>লগইন / সাইনআপ</h2><p class="muted">API: ${esc(API_BASE)} — প্রোডাকশনে এই একটি মান বদলালেই হবে।</p>
-  <label>নাম (সাইনআপের জন্য)</label><input id="authName" placeholder="নাম">
-  <label>ইমেইল*</label><input id="authEmail" placeholder="ইমেইল">
-  <label>ফোন*</label><input id="authPhone" placeholder="01XXXXXXXXX">
-  <label>পাসওয়ার্ড* (কমপক্ষে ৮ অক্ষর)</label><input id="authPass" type="password">
-  <p><button class="btn" onclick="nsDoLogin()">লগইন</button> <button class="btn ghost" onclick="nsDoSignup()">সাইনআপ</button></p>
-  <p class="muted" id="authMsg"></p></div>`;
+function nsLoginLogoHTML() {
+  return '<div class="ns-login-logo"><span class="logo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="19" fill="#0f766e"/><circle cx="24" cy="8" r="4" fill="#f59e0b"/><path d="M24 40V22M24 30c-6-1-10-5-11-11 6 1 10 5 11 11zm0 0c6-1 10-5 11-11-6 1-10 5-11 11z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="logo-text">নাগরিক সেবা<small>nagarikseba.com</small></span></div>';
 }
+function nsLoginPortalHTML(mode) {
+  mode = mode || 'login';
+  if (mode === 'signup') return '<div class="ns-login-wrap"><div class="card ns-login-card">' + nsLoginLogoHTML() +
+    '<p class="ns-login-sub">নতুন অ্যাকাউন্ট তৈরি করুন</p>' +
+    '<label>নাম*</label><input id="authName" placeholder="আপনার নাম">' +
+    '<label>Email*</label><input id="authEmail" placeholder="youremail@gmail.com">' +
+    '<label>ফোন*</label><input id="authPhone" placeholder="01XXXXXXXXX">' +
+    '<label>পাসওয়ার্ড* (কমপক্ষে ৮ অক্ষর)</label><input id="authPass" type="password">' +
+    '<p><button class="btn ns-login-btn" onclick="nsDoSignup()">Signup</button></p>' +
+    '<p class="ns-login-foot">Already Have an Account? <a href="#/login"><b>Login</b></a></p><p class="muted" id="authMsg"></p></div></div>';
+  if (mode === 'forgot') return '<div class="ns-login-wrap"><div class="card ns-login-card">' + nsLoginLogoHTML() +
+    '<p class="ns-login-sub">পাসওয়ার্ড ভুলে গেছেন?</p>' +
+    '<p class="muted">ইমেইল বা রেজিস্টার্ড ফোন নম্বর লিখুন। কোনো রিসেট ইমেইল পাঠানো হয় না — আপনার অনুরোধ অ্যাডমিনের কাছে টিকিট হিসেবে যাবে, অ্যাডমিন যোগাযোগ করে রিসেট করবেন।</p>' +
+    '<label>Email / ফোন নম্বর*</label><input id="authEmail" placeholder="youremail@gmail.com বা 01XXXXXXXXX">' +
+    '<p><button class="btn ns-login-btn" onclick="nsDoForgot()">অনুরোধ পাঠান</button></p>' +
+    '<p class="ns-login-foot"><a href="#/login"><b>লগইনে ফিরুন</b></a></p><p class="muted" id="authMsg"></p></div></div>';
+  return '<div class="ns-login-wrap"><div class="card ns-login-card">' + nsLoginLogoHTML() +
+    '<p class="ns-login-sub">ইমেল এবং পাসওয়ার্ড দিয়ে লগ ইন করুন</p>' +
+    '<label>Email</label><input id="authEmail" placeholder="youremail@gmail.com">' +
+    '<p class="muted ns-login-hint">অথবা রেজিস্টার্ড ফোন নম্বর (01XXXXXXXXX) দিয়েও লগইন করা যাবে। এটি Google সাইন-ইন নয় — আপনার নাগরিক সেবা অ্যাকাউন্টের পাসওয়ার্ড লাগবে।</p>' +
+    '<label>Password</label><input id="authPass" type="password" placeholder="**********">' +
+    '<p class="ns-login-row"><label class="ns-remember"><input type="checkbox" id="authRemember"> <span class="ns-remember-text">Remember Me!</span></label><a class="ns-forgot" href="#/forgot">Forgotten password?</a></p>' +
+    '<p><button class="btn ns-login-btn" onclick="nsDoLogin()">LOGIN</button></p>' +
+    '<p class="ns-login-foot">Don\'t Have an Account? <a href="#/signup"><b>Signup</b></a></p><p class="muted" id="authMsg"></p></div></div>';
+}
+function nsAuthHTML() { return nsLoginPortalHTML('login'); }
 async function nsDoLogin() {
-  const email = document.getElementById('authEmail').value.trim(), password = document.getElementById('authPass').value;
-  try { const r = await nsCall('/auth/login', 'POST', { email, password }); nsSetToken(r.token); await nsRefresh(); location.hash = '#/dashboard'; render(); }
-  catch (e) { showModal('লগইন হয়নি', e.message); }
+  const identifier = document.getElementById('authEmail').value.trim(), password = document.getElementById('authPass').value;
+  const rememberEl = document.getElementById('authRemember');
+  const remember_me = !!(rememberEl && rememberEl.checked);
+  if (!identifier || !password) { showModal('লগইন হয়নি', 'ইমেইল/ফোন নম্বর ও পাসওয়ার্ড লিখুন।'); return; }
+  try { const r = await nsCall('/auth/login', 'POST', { identifier, password, remember_me }); nsSetToken(r.token, remember_me); await nsRefresh(); location.hash = '#/dashboard'; render(); }
+  catch (e) { showModal('লগইন হয়নি', e.message === 'invalid_credentials' ? 'ইমেইল/ফোন নম্বর বা পাসওয়ার্ড ভুল।' : e.message); }
+}
+async function nsDoForgot() {
+  const identifier = document.getElementById('authEmail').value.trim();
+  if (!identifier) { showModal('পাসওয়ার্ড রিসেট', 'ইমেইল বা ফোন নম্বর লিখুন।'); return; }
+  try { await nsCall('/auth/forgot-password', 'POST', { identifier }); showModal('পাসওয়ার্ড রিসেট', 'অনুরোধ জমা হয়েছে। কোনো রিসেট ইমেইল পাঠানো হয়নি — অ্যাডমিন আপনার অনুরোধ দেখে যোগাযোগ করবেন।'); }
+  catch (e) { showModal('পাসওয়ার্ড রিসেট', e.message); }
 }
 async function nsDoSignup() {
   const name = document.getElementById('authName').value.trim(), email = document.getElementById('authEmail').value.trim(),
     phone = document.getElementById('authPhone').value.trim(), password = document.getElementById('authPass').value;
-  try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); }
+  try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); location.hash = '#/login'; }
   catch (e) { showModal('সাইনআপ হয়নি', e.message); }
 }
 const _origRender = render;
@@ -1486,4 +1519,48 @@ render = async function () {
     var clHead = sections.find(function (s) { var h = s.querySelector('h3'); return h && h.textContent.indexOf('Cards Lists') !== -1; });
     if (clHead) { var p = clHead.querySelector('p'); if (p) { var list = document.createElement('div'); list.className = 'cards-list'; p.textContent.split(',').forEach(function (part) { var kv = part.split(':'); if (kv.length < 2) return; var row = document.createElement('div'); row.className = 'cl-row'; var lab = document.createElement('span'); lab.textContent = kv[0].trim(); var cnt = document.createElement('b'); cnt.textContent = kv.slice(1).join(':').trim(); row.appendChild(lab); row.appendChild(cnt); list.appendChild(row); }); if (list.children.length) p.parentNode.replaceChild(list, p); } }
   }
+};
+
+/* ===== Step 13 — Login portal gate (client only) =====
+   Unauthenticated users land on the login portal for ANY route, not on
+   the dashboard. Public routes: #/login, #/signup, #/forgot (forgot is
+   part of the login flow, otherwise its link would be dead). After login
+   -> #/dashboard; after logout -> #/login. No Google OAuth button: login
+   is email/phone + password against our own API. Disclaimer, prices,
+   inner-page design and homepage colours are untouched by this step. */
+var _renderStep11Client = render;
+render = async function () {
+  var hash = location.hash.replace('#/', '') || 'dashboard';
+  var main = document.querySelector('#main');
+  if (hash === 'logout') {
+    if (nsToken()) { try { await nsCall('/auth/logout', 'POST', {}); } catch (e) {} nsSetToken(''); NS_STATE.user = null; NS_STATE.wallet = null; }
+    location.hash = '#/login'; return;
+  }
+  if (hash === 'login' || hash === 'signup' || hash === 'forgot') {
+    if (nsToken()) {
+      try { await nsRefresh(); } catch (e) {}
+      if (NS_STATE.user) { location.hash = '#/dashboard'; return; }
+      nsSetToken('');
+    }
+    document.body.classList.remove('ns-inner-page');
+    document.body.classList.add('ns-login-portal');
+    if (main) main.innerHTML = nsLoginPortalHTML(hash);
+    return;
+  }
+  if (!nsToken()) {
+    document.body.classList.remove('ns-inner-page');
+    document.body.classList.add('ns-login-portal');
+    if (main) main.innerHTML = nsLoginPortalHTML('login');
+    return;
+  }
+  try { await nsRefresh(); } catch (e) {}
+  if (!NS_STATE.user) {
+    nsSetToken('');
+    document.body.classList.remove('ns-inner-page');
+    document.body.classList.add('ns-login-portal');
+    if (main) main.innerHTML = nsLoginPortalHTML('login');
+    return;
+  }
+  document.body.classList.remove('ns-login-portal');
+  await _renderStep11Client();
 };
