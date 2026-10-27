@@ -222,3 +222,23 @@ body.dark .all-services{color:#5eead4}
  #darkLabel{display:none}
  .dark-pill{padding:8px 10px}
 }
+
+/* Profile card — narrower sideways, NOT shorter.
+   User feedback: too much empty space inside, especially on the right.
+   Only horizontal dimensions shrink: side padding, row gap, card max-width,
+   Verified pill and UID font. Vertical padding, name, avatar, balance
+   amount and recharge button are deliberately unchanged. */
+.profile-card{max-width:780px;margin-left:auto;margin-right:auto;padding-left:18px;padding-right:18px}
+.profile-row{gap:10px}
+.verified-pill{font-size:12px;padding:3px 8px}
+.profile-uid{font-size:13px;white-space:nowrap}
+.bal-row{gap:12px}
+@media(max-width:800px){
+ .profile-card{max-width:680px}
+}
+@media(max-width:520px){
+ .profile-card{max-width:none;margin-left:6px;margin-right:6px;padding-left:14px;padding-right:14px}
+ .profile-row{gap:8px}
+ .verified-pill{font-size:11px;padding:2px 7px}
+ .profile-uid{font-size:12px}
+}
