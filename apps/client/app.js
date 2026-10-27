@@ -7,6 +7,61 @@ function toggleDark(){document.body.classList.toggle('dark');const sw=document.q
 /* Tiny header dark-mode switch (user-supplied markup): checked = dark ON,
    unchecked = light. Keep the checkbox in sync with body.dark. */
 (function(){const sw=document.querySelector('.switch__input');if(!sw)return;sw.checked=document.body.classList.contains('dark');sw.addEventListener('change',toggleDark)})();
+/* Profile photo — LOCAL-ONLY (no backend, no server upload).
+   Saved only in this browser/device via localStorage, downscaled to
+   max 512px (JPEG ~0.8) before saving to avoid quota failures.
+   It will NOT sync to another phone/PC and is lost if browser data
+   is cleared. A real server upload would be needed for cross-device sync. */
+const PHOTO_KEY='nagarikseba_profile_photo';
+let __pendingPhoto='';
+function getProfilePhoto(){try{return localStorage.getItem(PHOTO_KEY)||''}catch(e){return ''}}
+function profileAvatarHTML(){
+  const ph=getProfilePhoto();
+  if(ph) return `<span class="avatar-ph avatar-photo"><img src="${ph}" alt="প্রোফাইল ছবি"></span>`;
+  return `<span class="avatar-ph"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg></span>`;
+}
+function profilePreviewHTML(){
+  const ph=getProfilePhoto();
+  if(ph) return `<img id="photoPreviewImg" src="${ph}" alt="প্রোফাইল ছবি">`;
+  return `<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>`;
+}
+function handleProfilePhotoFile(input){
+  const file=input.files&&input.files[0]; if(!file) return;
+  if(!file.type || file.type.indexOf('image/')!==0){showModal('ছবি আপলোড','দয়া করে একটি ছবি ফাইল (JPG/PNG ইত্যাদি) বাছুন।'); input.value=''; return;}
+  const reader=new FileReader();
+  reader.onload=function(){
+    const img=new Image();
+    img.onload=function(){
+      try{
+        const max=512, scale=Math.min(1, max/Math.max(img.width,img.height));
+        const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        __pendingPhoto=c.toDataURL('image/jpeg',0.8);
+        const wrap=document.getElementById('photoPreviewWrap');
+        if(wrap) wrap.innerHTML=`<img id="photoPreviewImg" src="${__pendingPhoto}" alt="প্রোফাইল ছবি">`;
+        const saveBtn=document.getElementById('photoSaveBtn'); if(saveBtn) saveBtn.disabled=false;
+        const msg=document.getElementById('photoMsg'); if(msg) msg.textContent='প্রিভিউ দেখা যাচ্ছে — সংরক্ষণ করুন চাপলে হোমপেজের প্রোফাইল কার্ডে দেখা যাবে।';
+      }catch(e){showModal('ছবি আপলোড','ছবিটি প্রসেস করা যায়নি। অন্য একটি ছবি চেষ্টা করুন।');}
+    };
+    img.onerror=function(){showModal('ছবি আপলোড','ছবিটি খোলা যায়নি। অন্য একটি ছবি চেষ্টা করুন।');};
+    img.src=reader.result;
+  };
+  reader.onerror=function(){showModal('ছবি আপলোড','ছবিটি পড়া যায়নি। আবার চেষ্টা করুন।');};
+  reader.readAsDataURL(file);
+}
+function saveProfilePhoto(){
+  if(!__pendingPhoto){showModal('ছবি আপলোড','প্রথমে একটি ছবি বাছুন।'); return;}
+  try{localStorage.setItem(PHOTO_KEY,__pendingPhoto);}catch(e){showModal('ছবি আপলোড','ছবি সংরক্ষণ করা যায়নি — ফাইলটি বড় হতে পারে, ছোট ছবি চেষ্টা করুন।'); return;}
+  __pendingPhoto=''; render();
+  showModal('ছবি সংরক্ষণ করা হয়েছে','প্রোফাইল ছবি এই ডিভাইসে সংরক্ষিত হয়েছে। হোমপেজের প্রোফাইল কার্ডে এখন এই ছবি দেখা যাবে।');
+}
+function removeProfilePhoto(){
+  try{localStorage.removeItem(PHOTO_KEY);}catch(e){}
+  __pendingPhoto=''; render();
+  showModal('ছবি সরানো হয়েছে','প্রোফাইল ছবি সরানো হয়েছে। এখন আবার জেনেরিক আইকন দেখা যাবে।');
+}
+
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
 
 
@@ -146,7 +201,7 @@ function render(){
  if(hash==='dashboard'){
   h+=`<section class="profile-card">
   <div class="profile-row">
-    <span class="avatar-ph"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg></span>
+    ${profileAvatarHTML()}
     <div class="profile-info"><b class="profile-name">নমুনা ব্যবহারকারী</b> <span class="verified-pill">✓ ভেরিফাইড</span><div class="profile-uid">UID: #BD-982410</div></div>
     <button class="qr-btn" type="button" onclick="showModal('QR কোড','UID: #BD-982410 — এই QR বোতামটি নমুনা; আসল এনকোড করা QR পেতে আসল ব্যবহারকারী তথ্য / ব্যাকএন্ড প্রয়োজন।')" aria-label="QR কোড"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3"/></svg></button>
   </div>
@@ -213,6 +268,7 @@ function render(){
  else if(hash==='report'){h+=`<div class="card"><h2>রিপোর্ট</h2><label>সমস্যার বিষয়*</label><input><label>সমস্যার ব্যাখ্যা*</label><textarea></textarea><p class="muted">ছবি যোগ করতে চাইলে লাইভ চ্যাট ব্যবহার করতে বলা আছে (মূল নোট)তে ছবি পাঠানো হয় না।</p><p><button class="btn" onclick="demoMsg('রিপোর্ট Submit')">Submit</button></p></div>`}
  else if(hash==='support'){h+=`<div class="card"><h2>সাপোর্ট</h2><p>মূল সাইটে সাপোর্ট বাইরের WhatsApp গ্রুপের লিংক খুলত। এখানে কোনো গ্রুপ লিংক দেওয়া হয়নি, জয়েন/মেসেজ করা হয় না — শুধু প্লেসহোল্ডার।</p><button class="btn ghost" onclick="demoMsg('সাপোর্ট প্লেসহোল্ডার')">সাপোর্ট</button></div>`}
  else if(hash==='profile'){h+=`<div class="card"><h2>প্রোফাইল</h2><p>নমুনা ব্যবহারকারী • Verified: Yes • Balance: 10 • Joined: তারিখ</p>
+ <h3>প্রোফাইল ছবি</h3><div class="photo-upload"><span class="avatar-ph photo-preview" id="photoPreviewWrap">${profilePreviewHTML()}</span><div class="photo-upload-actions"><label class="btn" for="profilePhotoInput">ছবি আপলোড করুন</label><input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhotoFile(this)"><button class="btn ghost" id="photoSaveBtn" type="button" disabled onclick="saveProfilePhoto()">সংরক্ষণ করুন</button><button class="btn ghost" type="button" onclick="removeProfilePhoto()">ছবি সরান</button><p class="muted" id="photoMsg">ছবি বাছলে এখানে প্রিভিউ দেখা যাবে। সংরক্ষণ করুন চাপলে হোমপেজের প্রোফাইল কার্ডে এই ছবি দেখা যাবে।</p><p class="muted">ছবি শুধু এই ব্রাউজার / ডিভাইসে সংরক্ষিত হবে — অন্য ফোন / পিসিতে দেখা যাবে না, আর ব্রাউজার ডাটা মুছলে মুছে যাবে।</p></div></div>
  <h3>Profile Update</h3><label>নাম*</label><input value="নমুনা ব্যবহারকারী"><label>ইমেল* (disabled)</label><input disabled value="demo@example.com"><label>নম্বর*</label><input value="01XXXXXXXXX (মাস্ক করা )"><p><button class="btn" onclick="demoMsg('Update Profile')">Update Profile</button></p>
  <h3>Change Password</h3><label>পুরাতন পাসওয়ার্ড*</label><input type="password"><label>নতুন পাসওয়ার্ড*</label><input type="password"><label>কনফার্ম পাসওয়ার্ড*</label><input type="password"><p><button class="btn" onclick="demoMsg('Update Password')">Update Password</button></p>
  <h3>Theme Color</h3><p><span class="swatch" style="background:#ff4961" onclick="document.documentElement.style.setProperty('--accent','#ff4961')"></span><span class="swatch" style="background:#0f766e" onclick="document.documentElement.style.setProperty('--accent','#0f766e')"></span><span class="swatch" style="background:#2563eb" onclick="document.documentElement.style.setProperty('--accent','#2563eb')"></span> <span class="muted">বর্তমান অ্যাকসেন্ট: #ff4961</span></p>
