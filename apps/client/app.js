@@ -328,3 +328,343 @@ function randomBRN(){const code=Array.from({length:4},()=>String.fromCharCode(65
 $('#sidebar').innerHTML=navHTML();
 $('#sidebar').addEventListener('click',e=>{if(e.target.closest('a')&&window.innerWidth<=800)document.querySelector('.sidebar').classList.remove('open')});
 window.addEventListener('hashchange',render);render();
+/* ===== Step 2 (staging only) — API wiring, design preserved =====
+   Single configurable base URL. Production: change this one value to the
+   deployed API origin (see staging README deployment note). Locally it
+   defaults to the Step 1 server on :3100. Token lives in sessionStorage
+   (cleared on logout / tab close); profile photo stays localStorage-only
+   (no photo-upload endpoint exists in Step 1) and is listed as remaining.
+   No personal-data delivery: an "order" here is only a request record +
+   wallet/status workflow; result_text is an admin note, never a document.
+   Signature canvas is untouched and needs no backend. */
+const API_BASE = window.API_BASE || localStorage.getItem('ns_api_base') || 'https://api.nagarikseba.com';
+const NS_STATE = { user: null, wallet: null, services: [], orders: [], recharges: [], logs: [] };
+const nsToken = () => sessionStorage.getItem('ns_token') || '';
+const nsSetToken = t => t ? sessionStorage.setItem('ns_token', t) : sessionStorage.removeItem('ns_token');
+async function nsCall(path, method, body) {
+  const r = await fetch(API_BASE + path, { method: method || 'GET',
+    headers: { 'Content-Type': 'application/json', ...(nsToken() ? { Authorization: 'Bearer ' + nsToken() } : {}) },
+    body: body ? JSON.stringify(body) : undefined });
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+  return j;
+}
+async function nsRefresh() {
+  try { const s = await nsCall('/services'); NS_STATE.services = s.services || []; } catch (e) {}
+  if (!nsToken()) { NS_STATE.user = null; NS_STATE.wallet = null; NS_STATE.orders = []; NS_STATE.recharges = []; NS_STATE.logs = []; return; }
+  try { const m = await nsCall('/me'); NS_STATE.user = m.user; NS_STATE.wallet = m.wallet_bdt; } catch (e) { NS_STATE.user = null; }
+  try { NS_STATE.orders = (await nsCall('/orders')).orders || []; } catch (e) {}
+  try { NS_STATE.recharges = (await nsCall('/recharges')).recharges || []; } catch (e) {}
+  try { NS_STATE.logs = (await nsCall('/me/login-logs')).login_logs || []; } catch (e) {}
+  nsSyncPrices();
+}
+function nsSyncPrices() {
+  if (!NS_STATE.services.length) return;
+  const byId = {}; NS_STATE.services.forEach(s => byId[s.id] = s);
+  SERVICES.forEach(s => { const a = byId[s.id]; if (a && a.base_price_bdt != null) s.cost = a.base_price_bdt; });
+  ORDERS.forEach(o => { const a = byId[o.id]; if (!a) return; if (a.base_price_bdt != null) o.cost = a.base_price_bdt; if (a.options) o.options = a.options; });
+}
+function nsOrderPayload(def) {
+  const card = document.querySelector('#main .card') || document;
+  const vals = [...card.querySelectorAll('input,select,textarea')].map(el => ({ label: el.closest('label') ? '' : '', value: el.value || '' }));
+  // Map values to the page's field labels in order (inputs are rendered in field order).
+  const fields = (def.fields || []).map((f, i) => ({ field: f, value: (vals[i] && vals[i].value) || '' }));
+  return { fields };
+}
+let NS_SEL = null;
+const _origSelectOpt = selectOpt;
+selectOpt = function (el, price) { NS_SEL = el.textContent.trim(); _origSelectOpt(el, price); };
+const _origGetProfileInfo = getProfileInfo;
+getProfileInfo = function () { if (NS_STATE.user) return { name: NS_STATE.user.name, phone: NS_STATE.user.phone }; return _origGetProfileInfo(); };
+const _origSaveProfileUpdate = saveProfileUpdate;
+saveProfileUpdate = async function () {
+  if (!nsToken()) return _origSaveProfileUpdate();
+  const nameEl = document.getElementById('profileNameInput'), phoneEl = document.getElementById('profilePhoneInput');
+  const name = nameEl ? nameEl.value.trim() : '', phone = phoneEl ? phoneEl.value.trim() : '';
+  if (!name || !phone || phone.replace(/\D/g, '').length < 10) { showModal('প্রোফাইল আপডেট', 'দয়া করে নাম ও সঠিক নম্বর (কমপক্ষে ১০ ডিজিট) লিখুন।'); return; }
+  try { const m = await nsCall('/me', 'PUT', { name, phone }); NS_STATE.user = m.user; render(); showModal('প্রোফাইল আপডেট হয়েছে', 'সার্ভারে সংরক্ষিত হয়েছে — হোমপেজের প্রোফাইল কার্ডে নতুন নাম দেখা যাবে।'); }
+  catch (e) { showModal('প্রোফাইল আপডেট', 'সংরক্ষণ হয়নি: ' + e.message); }
+};
+activityLogsHTML = function () {
+  if (NS_STATE.logs.length) return '<ul>' + NS_STATE.logs.map(l => `<li>${esc(l.created_at || '')} — ${esc(l.ip || '—')} — ${esc((l.user_agent || '').slice(0, 60))}</li>`).join('') + '</ul>';
+  return '<p class="muted">এখনো কোনো লগইন রেকর্ড নেই</p>';
+};
+ordersLogsHTML = function () {
+  const count = (id, st) => NS_STATE.orders.filter(o => o.service_id === id && o.status === st).length;
+  return '<div class="orders-logs">' + ORDERS.map(o => `<section class="ol-section"><h4 class="ol-head">${ico(o.id)}<span>${o.name}</span></h4><div class="ol-grid">` + OL_STATUS.map(s => `<div class="ol-tile ol-${s[0]}"><span class="ol-circle"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">${s[2]}</svg></span><span class="ol-label">${s[1]}</span><b class="ol-count">${count(o.id, s[1])}</b></div>`).join('') + `</div></section>`).join('') + '</div>';
+};
+async function nsOrderSubmit(kind, id) {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'অর্ডার করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
+  const def = kind === 'service' ? SERVICES.find(x => x.id === id) : ORDERS.find(x => x.id === id);
+  if (!def) return;
+  let option_name = null;
+  if (kind === 'order' && def.options) { const sel = document.querySelector('#opts .opt.sel'); const txt = sel ? sel.textContent.trim() : ''; option_name = txt.replace(/\s*\(.*$/, ''); }
+  if (kind === 'service' && id === 'sc') { const sel = document.getElementById('apiSel'); option_name = sel && sel.value === '5' ? 'API ৫' : 'API ৩'; }
+  try {
+    const r = await nsCall('/orders', 'POST', { service_id: id, option_name, payload: nsOrderPayload(def) });
+    NS_STATE.wallet = r.wallet_bdt; await nsRefresh(); render();
+    showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}। এটি শুধু একটি অর্ডার অনুরোধ; কোনো ব্যক্তিগত ডকুমেন্ট এখানে তৈরি / ডেলিভারি হয় না।`);
+  } catch (e) { showModal('অর্ডার হয়নি', e.message === 'insufficient_balance' ? 'ব্যালান্স কম — রিচার্জ করুন।' : e.message); }
+}
+async function nsRechargeSubmit() {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'রিচার্জ করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
+  const amt = +document.getElementById('amt').value, method = document.getElementById('rchMethod').value,
+    sender = document.getElementById('rchSender').value, trxid = document.getElementById('rchTrx').value.trim();
+  if (!amt || amt < 100 || !trxid) { showModal('যাচাই', 'সর্বনিম্ন রিচার্জ 100 টাকা, আর TrxID লাগবে।'); return; }
+  try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(); render(); showModal('রিচার্জ অনুরোধ', `অনুরোধ #${r.recharge.id} — ${r.recharge.amount_bdt} টাকা, স্ট্যাটাস: pending। অ্যাডমিন approve করলে ব্যালেন্স যোগ হবে।`); }
+  catch (e) { showModal('রিচার্জ হয়নি', e.message === 'trxid_exists' ? 'এই TrxID আগেই ব্যবহার হয়েছে।' : e.message); }
+}
+function nsAuthHTML() {
+  return `<div class="card"><h2>লগইন / সাইনআপ</h2><p class="muted">API: ${esc(API_BASE)} — প্রোডাকশনে এই একটি মান বদলালেই হবে।</p>
+  <label>নাম (সাইনআপের জন্য)</label><input id="authName" placeholder="নাম">
+  <label>ইমেইল*</label><input id="authEmail" placeholder="ইমেইল">
+  <label>ফোন*</label><input id="authPhone" placeholder="01XXXXXXXXX">
+  <label>পাসওয়ার্ড* (কমপক্ষে ৮ অক্ষর)</label><input id="authPass" type="password">
+  <p><button class="btn" onclick="nsDoLogin()">লগইন</button> <button class="btn ghost" onclick="nsDoSignup()">সাইনআপ</button></p>
+  <p class="muted" id="authMsg"></p></div>`;
+}
+async function nsDoLogin() {
+  const email = document.getElementById('authEmail').value.trim(), password = document.getElementById('authPass').value;
+  try { const r = await nsCall('/auth/login', 'POST', { email, password }); nsSetToken(r.token); await nsRefresh(); location.hash = '#/dashboard'; render(); }
+  catch (e) { showModal('লগইন হয়নি', e.message); }
+}
+async function nsDoSignup() {
+  const name = document.getElementById('authName').value.trim(), email = document.getElementById('authEmail').value.trim(),
+    phone = document.getElementById('authPhone').value.trim(), password = document.getElementById('authPass').value;
+  try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); }
+  catch (e) { showModal('সাইনআপ হয়নি', e.message); }
+}
+const _origRender = render;
+render = async function () {
+  const hash = location.hash.replace('#/', '') || 'dashboard';
+  if (hash === 'login') { try { await nsRefresh(); } catch (e) {} document.querySelector('#main').innerHTML = nsAuthHTML(); return; }
+  if (hash === 'logout') {
+    if (nsToken()) { try { await nsCall('/auth/logout', 'POST', {}); } catch (e) {} nsSetToken(''); NS_STATE.user = null; NS_STATE.wallet = null; }
+    document.querySelector('#main').innerHTML = '<div class="card"><h2>লগআউট</h2><p>সার্ভার সেশন শেষ হয়েছে।</p><p><a class="btn" href="#/login">আবার লগইন</a></p></div>'; return;
+  }
+  try { await nsRefresh(); } catch (e) {}
+  _origRender();
+  // Dashboard: real balance (prototype hard-coded ৳ ১০).
+  const bal = document.querySelector('.bal-amount');
+  if (bal && NS_STATE.wallet !== null) bal.textContent = '৳ ' + NS_STATE.wallet;
+  if (!nsToken()) { const card = document.querySelector('.profile-card'); if (card && !document.getElementById('nsLoginBtn')) { const a = document.createElement('a'); a.id = 'nsLoginBtn'; a.className = 'btn'; a.href = '#/login'; a.textContent = 'লগইন / সাইনআপ'; a.style.margin = '10px'; card.appendChild(a); } }
+  const parts = hash.split('/');
+  if (hash === 'recharge') {
+    const btn = [...document.querySelectorAll('#main .btn')].find(b => b.textContent.trim() === 'Recharge');
+    if (btn && !document.getElementById('rchMethod')) {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = '<label>পেমেন্ট মাধ্যম*</label><select id="rchMethod"><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Bank</option></select><label>যে নম্বর থেকে পেমেন্ট*</label><input id="rchSender" placeholder="01XXXXXXXXX"><label>Transaction ID*</label><input id="rchTrx" placeholder="TrxID">';
+      btn.parentNode.insertBefore(wrap, btn); btn.setAttribute('onclick', 'nsRechargeSubmit()');
+    }
+    const tables = [...document.querySelectorAll('#main table')];
+    if (tables[0] && NS_STATE.recharges.length) tables[0].innerHTML = '<tr><th>SL</th><th>NUMBER</th><th>TRXID</th><th>AMOUNT</th><th>TYPE</th><th>DATE</th></tr>' + NS_STATE.recharges.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.sender_number || '')}</td><td>${esc(r.trxid)}</td><td>${r.amount_bdt}</td><td>${esc(r.method)}</td><td>${esc(r.created_at || '')}</td></tr>`).join('');
+    if (tables[1] && NS_STATE.recharges.length) tables[1].innerHTML = '<tr><th>SL</th><th>TRXID</th><th>AMOUNT</th><th>TYPE</th><th>STATUS</th><th>DATE</th></tr>' + NS_STATE.recharges.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.trxid)}</td><td>${r.amount_bdt}</td><td>${esc(r.method)}</td><td>${esc(r.status)}</td><td>${esc(r.created_at || '')}</td></tr>`).join('');
+  }
+  if (parts[0] === 'service' || parts[0] === 'order') {
+    const card = document.querySelector('#main .card');
+    if (card && !document.getElementById('nsOrderBtn')) {
+      const b = document.createElement('p'); b.innerHTML = `<button class="btn" id="nsOrderBtn" onclick="nsOrderSubmit('${parts[0]}','${parts[1]}')">অর্ডার করুন (ব্যালেন্স থেকে কাটবে)</button> <span class="muted">অর্ডার = অনুরোধ রেকর্ড মাত্র; কোনো ব্যক্তিগত ডকুমেন্ট ডেলিভারি হয় না।</span>`;
+      card.appendChild(b);
+    }
+    if (parts[0] === 'order') {
+      const tbl = document.querySelector('#main table');
+      const mine = NS_STATE.orders.filter(o => o.service_id === parts[1]);
+      if (tbl && mine.length) tbl.innerHTML = '<tr><th>NO</th><th>COST</th><th>STATUS</th><th>CREATED</th></tr>' + mine.map(o => `<tr><td>${o.id}</td><td>${o.amount_bdt}</td><td>${esc(o.status)}</td><td>${esc(o.created_at || '')}</td></tr>`).join('');
+    }
+  }
+  if (parts[0] === 'history') {
+    const tbl = document.querySelector('#main table');
+    const mine = NS_STATE.orders.filter(o => o.service_id === parts[1]);
+    if (tbl && nsToken()) tbl.innerHTML = '<tr><th>ID</th><th>AMOUNT</th><th>STATUS</th><th>CREATED</th></tr>' + (mine.length ? mine.map(o => `<tr><td>${o.id}</td><td>${o.amount_bdt}</td><td>${esc(o.status)}</td><td>${esc(o.created_at || '')}</td></tr>`).join('') : '<tr><td colspan="4">এই সার্ভিসে এখনো কোনো অর্ডার নেই</td></tr>');
+  }
+};
+// Sidebar: add a Login entry (Account section) once, if not logged in.
+(function () {
+  const sc = document.querySelector('.sidebar-scroll');
+  if (sc && !document.getElementById('nsSidebarLogin')) { const a = document.createElement('a'); a.id = 'nsSidebarLogin'; a.href = '#/login'; a.innerHTML = '<span>লগইন</span>'; sc.appendChild(a); }
+})();
+nsRefresh().then(() => render()).catch(() => {});
+/* ===== Step 3 (staging only) — notices, password change, devices =====
+   Appended after the Step 2 patch. Design/layout/Bengali text preserved;
+   only the previously notice-only / sample-data spots below call the API.
+   No personal-data delivery. */
+async function nsLoadNotices() {
+  try { const s = await nsCall('/notices'); NS_STATE.notices = s.notices || []; } catch (e) { NS_STATE.notices = []; }
+}
+async function nsChangePassword() {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'পাসওয়ার্ড বদলাতে প্রথমে লগইন করুন।'); return; }
+  const pw = [...document.querySelectorAll('#main input[type="password"]')];
+  const oldP = pw[0] ? pw[0].value : '', nw = pw[1] ? pw[1].value : '', cf = pw[2] ? pw[2].value : '';
+  if (!oldP || !nw || nw !== cf) { showModal('পাসওয়ার্ড পরিবর্তন', 'পুরাতন ও নতুন পাসওয়ার্ড ঠিকভাবে লিখুন, নতুন দুটো মিলতে হবে।'); return; }
+  try { await nsCall('/auth/change-password', 'POST', { old_password: oldP, new_password: nw }); showModal('পাসওয়ার্ড পরিবর্তন', 'পাসওয়ার্ড বদলে গেছে। অন্য ডিভাইসের সেশন বাতিল হয়েছে।'); }
+  catch (e) { showModal('পাসওয়ার্ড পরিবর্তন', e.message === 'invalid_old_password' ? 'পুরাতন পাসওয়ার্ড ভুল।' : e.message); }
+}
+async function nsRevokeDevice(id) {
+  try { await nsCall(`/me/devices/${id}/revoke`, 'POST', {}); render(); }
+  catch (e) { showModal('ডিভাইস', 'সরানো যায়নি: ' + e.message); }
+}
+const _renderStep2Client = render;
+render = async function () {
+  await _renderStep2Client();
+  const hash = location.hash.replace('#/', '') || 'dashboard';
+  if (hash === 'dashboard' && nsToken()) {
+    await nsLoadNotices();
+    const main = document.querySelector('#main');
+    if (main && NS_STATE.notices.length && !document.getElementById('nsNotices')) {
+      const d = document.createElement('div'); d.id = 'nsNotices'; d.className = 'card';
+      d.innerHTML = '<h3>নোটিশ</h3>' + NS_STATE.notices.map(n => `<p><b>${esc(n.title)}</b> — ${esc(n.body)}</p>`).join('');
+      main.prepend(d);
+    }
+  }
+  if (hash === 'profile' && nsToken()) {
+    const btn = [...document.querySelectorAll('#main .btn')].find(b => b.textContent.trim() === 'Update Password');
+    if (btn) btn.setAttribute('onclick', 'nsChangePassword()');
+  }
+  if (hash === 'devices' && nsToken()) {
+    try {
+      const s = await nsCall('/me/devices');
+      const card = document.querySelector('#main .card');
+      if (card && s.devices) {
+        const t = document.createElement('div');
+        t.innerHTML = '<h3>আসল ডিভাইস / সেশন</h3><table><tr><th>IP</th><th>ডিভাইস</th><th>অবস্থা</th><th>অ্যাকশন</th></tr>' + s.devices.map(d => `<tr><td>${esc(d.ip || '—')}</td><td>${esc((d.user_agent || '').slice(0, 50))}</td><td>${d.revoked_at ? 'বাতিল' : (d.current ? 'বর্তমান' : 'সক্রিয়')}</td><td>${d.revoked_at ? '—' : `<button class="btn ghost" onclick="nsRevokeDevice(${d.id})">Remove</button>`}</td></tr>`).join('') + '</table>';
+        card.appendChild(t);
+      }
+    } catch (e) {}
+  }
+  // Order-closed message: if an order attempt fails with orders_closed, nsOrderSubmit already shows the API message.
+};
+/* ===== Step 4 (staging only) — UID, real counts, tickets, server photo =====
+   Appended after the Step 3 patch. Design/layout/Bengali text preserved
+   except the spots below, which now use the API instead of placeholders.
+   - UID comes from the server (/me.uid, format BD-######, unique).
+     The QR button only DISPLAYS that UID; it is NOT an encoded QR code.
+   - Dashboard service-card "কার্ড তালিকা" counts and Profile Cards Lists
+     come from /me/order-stats when logged in. When logged out they show
+     a login prompt, not sample numbers. The "$ X কার্ড খরচ" price display
+     is deliberately untouched (server-copy $1 vs 25/10 is still open).
+   - Report/Support now create real tickets via /tickets. Live Chat is
+     still only a notice — no chat backend is faked here.
+   - Profile photo: when logged in, save/remove go to /me/photo on the
+     server (validated image, max 512KB decoded; the staging client
+     already downscales to max 512px JPEG before upload, so no server
+     resize is needed in this build). When logged out, the old
+     localStorage-only behaviour is kept as fallback.
+   - Autoload / captcha / BRN-random are deliberately left as
+     placeholders: they belong to personal-data services and must not
+     deliver real personal data.
+   No personal-data delivery. */
+NS_STATE.photoData = NS_STATE.photoData || '';
+NS_STATE.photoFetched = false;
+NS_STATE.stats = null;
+NS_STATE.tickets = [];
+async function nsTicketSubmit(kind) {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'টিকিট করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
+  const subj = document.getElementById('nsTicketSubject'), bod = document.getElementById('nsTicketBody');
+  const subject = subj ? subj.value.trim() : '', body = bod ? bod.value.trim() : '';
+  if (!subject || !body) { showModal('টিকিট', 'বিষয় ও ব্যাখ্যা দুটোই লিখুন।'); return; }
+  try { const r = await nsCall('/tickets', 'POST', { kind, subject, body }); NS_STATE.tickets.unshift(r.ticket); render(); showModal('টিকিট জমা হয়েছে', 'টিকিট #' + r.ticket.id + ' — স্ট্যাটাস: open। অ্যাডমিন জবাব দিলে এখানেই দেখা যাবে।'); }
+  catch (e) { showModal('টিকিট হয়নি', e.message); }
+}
+const _origSaveProfilePhoto4 = saveProfilePhoto;
+saveProfilePhoto = async function () {
+  if (!nsToken() || !__pendingPhoto) return _origSaveProfilePhoto4();
+  try { await nsCall('/me/photo', 'POST', { data_uri: __pendingPhoto }); NS_STATE.photoData = __pendingPhoto; __pendingPhoto = ''; render(); showModal('ছবি সংরক্ষণ করা হয়েছে', 'প্রোফাইল ছবি সার্ভারে সংরক্ষিত হয়েছে।'); }
+  catch (e) { showModal('ছবি আপলোড', 'সার্ভারে সংরক্ষণ হয়নি: ' + e.message); }
+};
+const _origRemoveProfilePhoto4 = removeProfilePhoto;
+removeProfilePhoto = async function () {
+  if (nsToken() && NS_STATE.photoData) { try { await nsCall('/me/photo', 'DELETE'); } catch (e) {} NS_STATE.photoData = ''; }
+  try { localStorage.removeItem(PHOTO_KEY); } catch (e) {}
+  __pendingPhoto = ''; render();
+  showModal('ছবি সরানো হয়েছে', 'প্রোফাইল ছবি সরানো হয়েছে। এখন আবার জেনেরিক আইকন দেখা যাবে।');
+};
+const _origProfileAvatarHTML4 = profileAvatarHTML;
+profileAvatarHTML = function () {
+  if (NS_STATE.photoData) return '<span class="avatar-ph avatar-photo"><img src="' + NS_STATE.photoData + '" alt="প্রোফাইল ছবি"></span>';
+  return _origProfileAvatarHTML4();
+};
+const _origProfilePreviewHTML4 = profilePreviewHTML;
+profilePreviewHTML = function () {
+  if (NS_STATE.photoData) return '<img id="photoPreviewImg" src="' + NS_STATE.photoData + '" alt="প্রোফাইল ছবি">';
+  return _origProfilePreviewHTML4();
+};
+const _renderStep3Client = render;
+render = async function () {
+  const hash = location.hash.replace('#/', '') || 'dashboard';
+  const parts = hash.split('/');
+  if (nsToken() && !NS_STATE.photoFetched) {
+    try { const ph = await nsCall('/me/photo'); NS_STATE.photoData = ph.data_uri || ''; } catch (e) { NS_STATE.photoData = ''; }
+    NS_STATE.photoFetched = true;
+    try { NS_STATE.stats = await nsCall('/me/order-stats'); } catch (e) { NS_STATE.stats = null; }
+    try { NS_STATE.tickets = (await nsCall('/tickets')).tickets || []; } catch (e) { NS_STATE.tickets = []; }
+  }
+  if (!nsToken()) { NS_STATE.photoData = ''; NS_STATE.photoFetched = false; NS_STATE.stats = null; NS_STATE.tickets = []; }
+  await _renderStep3Client();
+  const main = document.querySelector('#main');
+  if (!main) return;
+  // UID + QR display (server UID only; never the old #BD-982410 sample).
+  const uidEl = document.querySelector('.profile-uid');
+  if (uidEl && NS_STATE.user && NS_STATE.user.uid) uidEl.textContent = 'UID: #' + NS_STATE.user.uid;
+  else if (uidEl && !nsToken()) uidEl.textContent = 'UID: লগইন করুন';
+  const qrBtn = document.querySelector('.qr-btn');
+  if (qrBtn && NS_STATE.user && NS_STATE.user.uid) qrBtn.setAttribute('onclick', "showModal('QR কোড','UID: #" + NS_STATE.user.uid + " — এই বোতামটি শুধু UID দেখায়; এটি এনকোড করা QR কোড নয়।')");
+  else if (qrBtn && !nsToken()) qrBtn.setAttribute('onclick', "showModal('লগইন প্রয়োজন','UID দেখতে প্রথমে লগইন করুন।')");
+  // Guest balance: login prompt instead of the sample ৳ ১০.
+  if (!nsToken()) {
+    const bal = document.querySelector('.bal-amount');
+    if (bal) bal.textContent = 'লগইন করুন';
+  }
+  // Dashboard service-card counts: real order counts when logged in.
+  if (hash === 'dashboard') {
+    const cards = document.querySelectorAll('#service-cards .svc-card');
+    cards.forEach((card, i) => {
+      const svc = SERVICES[i]; if (!svc) return;
+      const spans = card.querySelectorAll('.svc-body span');
+      if (spans.length < 2) return;
+      if (nsToken() && NS_STATE.stats) spans[1].textContent = (NS_STATE.stats.by_service[svc.id] || 0) + ' কার্ড তালিকা';
+      else if (!nsToken()) spans[1].textContent = '— কার্ড তালিকা';
+    });
+  }
+  // Profile page: real balance/UID header, real Cards Lists, server-photo note.
+  if (hash === 'profile') {
+    if (nsToken() && NS_STATE.user) {
+      const firstP = document.querySelector('#main .card p');
+      if (firstP && firstP.textContent.indexOf('Balance: 10') !== -1) firstP.textContent = NS_STATE.user.name + ' • Verified: Yes • Balance: ' + (NS_STATE.wallet != null ? NS_STATE.wallet : '') + ' • UID: #' + (NS_STATE.user.uid || '');
+    } else if (!nsToken()) {
+      const firstP = document.querySelector('#main .card p');
+      if (firstP) firstP.textContent = 'লগইন করলে আপনার আসল প্রোফাইল দেখা যাবে।';
+    }
+    const heads = [...document.querySelectorAll('#main h3')].find(h => h.textContent.indexOf('Cards Lists') !== -1);
+    if (heads && heads.nextElementSibling && heads.nextElementSibling.tagName === 'P') {
+      if (nsToken() && NS_STATE.stats) {
+        const by = NS_STATE.stats.by_service || {};
+        const m = [['NID', 'nid'], ['Smart NID', 'snid'], ['BRN', 'brn'], ['Server Copy', 'servercopy'], ['OTP Server Copy', 'sc'], ['Sign to Server Copy', 'ssc'], ['Tin', 'tin'], ['NID Correction Form', 'ncf']];
+        heads.nextElementSibling.textContent = m.map(([label, id]) => label + ': ' + (by[id] || 0)).join(', ');
+      } else if (!nsToken()) {
+        heads.nextElementSibling.textContent = 'লগইন করলে আপনার আসল কার্ড তালিকা দেখা যাবে।';
+      }
+    }
+    if (nsToken()) {
+      const note = [...document.querySelectorAll('#main p.muted')].find(p => p.textContent.indexOf('শুধু এই ব্রাউজার') !== -1);
+      if (note) note.textContent = 'লগইন থাকলে ছবি সার্ভারে সংরক্ষিত হবে, তাই একই অ্যাকাউন্টে অন্য ডিভাইসেও দেখা যাবে।';
+    }
+  }
+  // History when logged out: login prompt instead of sample rows.
+  if (parts[0] === 'history' && !nsToken()) {
+    const tbl = document.querySelector('#main table');
+    if (tbl) tbl.outerHTML = '<p class="muted">লগইন করলে আপনার আসল হিস্ট্রি দেখা যাবে। <a href="#/login">লগইন</a></p>';
+  }
+  // Report / Support tickets (Live Chat untouched — still only a notice).
+  if ((hash === 'report' || hash === 'support') && !document.getElementById('nsTickets')) {
+    const kind = hash === 'report' ? 'report' : 'support';
+    const d = document.createElement('div'); d.id = 'nsTickets'; d.className = 'card';
+    if (!nsToken()) {
+      d.innerHTML = '<h3>আমার টিকিট</h3><p class="muted">টিকিট করতে প্রথমে <a href="#/login">লগইন</a> করুন।</p>';
+    } else {
+      const mine = (NS_STATE.tickets || []).filter(t => t.kind === kind);
+      d.innerHTML = '<h3>আমার টিকিট</h3><label>বিষয়*</label><input id="nsTicketSubject" placeholder="বিষয়"><label>ব্যাখ্যা*</label><textarea id="nsTicketBody" placeholder="ব্যাখ্যা"></textarea><p><button class="btn" onclick="nsTicketSubmit(\'' + kind + '\')">জমা দিন</button></p>' +
+        '<h3>আগের টিকিট</h3>' + (mine.length ? '<ul>' + mine.map(t => '<li>#' + t.id + ' — ' + esc(t.subject) + ' — ' + esc(t.status) + '</li>').join('') + '</ul>' : '<p class="muted">এখনো কোনো টিকিট নেই।</p>');
+    }
+    main.appendChild(d);
+  }
+};
