@@ -951,6 +951,35 @@ function nsDocLoadScript(src) {
     var s = document.createElement('script'); s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
   });
 }
+function nsBnToAscii(s) { return (s || '').replace(/[০-৯]/g, function (c) { return '০১২৩৪৫৬৭৮৯'.indexOf(c); }); }
+function nsDocPreprocessImage(buf, type) {
+  return new Promise(function (resolve) {
+    var url = URL.createObjectURL(new Blob([buf], { type: 'image/' + type }));
+    var img = new Image();
+    img.onload = function () {
+      try {
+        var target = img.width < 1600 ? 1600 : img.width;
+        if (target > 3000) target = 3000;
+        var scale = target / img.width;
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+        var ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        var id = ctx.getImageData(0, 0, cv.width, cv.height), d = id.data;
+        for (var i = 0; i < d.length; i += 4) {
+          var g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          var v = (g - 128) * 1.4 + 128;
+          if (v < 0) v = 0; if (v > 255) v = 255;
+          d[i] = d[i + 1] = d[i + 2] = v;
+        }
+        ctx.putImageData(id, 0, 0);
+        cv.toBlob(function (b) { URL.revokeObjectURL(url); resolve(b); }, 'image/png');
+      } catch (e) { URL.revokeObjectURL(url); resolve(null); }
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
 async function nsDocReadText(doc) {
   if (doc.type === 'pdf') {
     await nsDocLoadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
@@ -959,14 +988,123 @@ async function nsDocReadText(doc) {
     var pdf = await pdfjs.getDocument({ data: doc.buf }).promise, txt = '';
     for (var p = 1; p <= Math.min(pdf.numPages, 3); p++) {
       var page = await pdf.getPage(p), tc = await page.getTextContent();
-      txt += ' ' + tc.items.map(function (it) { return it.str; }).join(' ');
+      tc.items.forEach(function (it) { txt += it.str + (it.hasEOL ? '\n' : ' '); });
+      txt += '\n';
     }
     return txt;
   }
   await nsDocLoadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
   if (!window.Tesseract) throw new Error('tesseract missing');
-  var res = await window.Tesseract.recognize(new Blob([doc.buf], { type: 'image/' + doc.type }), 'eng+ben');
+  var blob = new Blob([doc.buf], { type: 'image/' + doc.type });
+  try {
+    var pre = await nsDocPreprocessImage(doc.buf, doc.type);
+    if (pre) blob = pre;
+  } catch (e) { /* fall back to the original image */ }
+  var res = await window.Tesseract.recognize(blob, 'eng+ben');
   return (res && res.data && res.data.text) || '';
+}
+/* Step 10 — label-based OCR parsing. Only the user's own uploaded file,
+   read in this browser. A value is used ONLY if a recognised label
+   (Bengali or English) is followed by a plausible value on the same
+   line or the next line; anything not found or low-confidence is left
+   empty and reported as not found, never guessed. Nationality is
+   never invented: an ID card does not state it, so nationality fields
+   are always left for the user to fill by hand. */
+function nsDocCleanValue(v) {
+  if (!v) return '';
+  v = v.replace(/^[:;।\-–—\s]+/, '').replace(/\s+/g, ' ').trim();
+  // Only strip a label when it is followed by a colon — otherwise a
+  // value such as "FATHER NAME" would be wrongly stripped to "NAME".
+  v = v.replace(/^(নাম|পিতা|মাতা|Name|Father|Mother|ID NO|NID|জন্ম তারিখ|Date of Birth)\s*:\s*/i, '');
+  return v.trim();
+}
+function nsDocIsNameValue(v, bn) {
+  if (!v || v.length < 2 || v.length > 80) return false;
+  var digits = (v.match(/\d/g) || []).length;
+  if (digits > v.length * 0.3) return false;
+  if (bn) return /[\u0980-\u09FF]/.test(v);
+  return /[A-Za-z]/.test(v) && /[A-Za-z]{2,}/.test(v);
+}
+function nsDocParseDate(v) {
+  v = nsBnToAscii(v || '');
+  var months = { jan: '01', january: '01', feb: '02', february: '02', mar: '03', march: '03', apr: '04', april: '04', may: '05', jun: '06', june: '06', jul: '07', july: '07', aug: '08', august: '08', sep: '09', sept: '09', september: '09', oct: '10', october: '10', nov: '11', november: '11', dec: '12', december: '12' };
+  var m = v.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+  if (m && months[m[2].toLowerCase()]) return m[3] + '-' + months[m[2].toLowerCase()] + '-' + m[1].padStart(2, '0');
+  m = v.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[0];
+  m = v.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);
+  if (m) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+  return '';
+}
+function nsDocParseText(text) {
+  var slots = {};
+  var lines = (text || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) { return l; });
+  var labelDefs = [
+    ['পিতার নাম', 'fatherBn'], ['মাতার নাম', 'motherBn'],
+    ['Father Name', 'fatherEn'], ['Mother Name', 'motherEn'],
+    ['নাম', 'nameBn'], ['পিতা', 'fatherBn'], ['মাতা', 'motherBn'],
+    ['জন্মস্থান', 'birthplaceBn'], ['স্থায়ী ঠিকানা', 'addressBn'], ['ঠিকানা', 'addressBn'],
+    ['জন্ম তারিখ', 'dob'], ['লিঙ্গ', 'genderBn'],
+    ['Name', 'nameEn'], ['Father', 'fatherEn'], ['Mother', 'motherEn'],
+    ['Place of Birth', 'birthplaceEn'], ['Permanent Address', 'addressEn'],
+    ['Date of Birth', 'dob'], ['Gender', 'genderEn'],
+    ['ID NO', 'id'], ['ID No', 'id'], ['NID', 'id'],
+    ['Birth Registration Number', 'brn'], ['জন্ম নিবন্ধন নম্বর', 'brn'],
+    ['Blood Group', 'blood'], ['রক্তের গ্রুপ', 'blood']
+  ];
+  function takeValue(slot, raw) {
+    if (slots[slot]) return;
+    var v = nsDocCleanValue(raw);
+    if (slot === 'dob') { var d = nsDocParseDate(v); if (d) slots[slot] = d; return; }
+    if (slot === 'id' || slot === 'brn') {
+      var digs = nsBnToAscii(v).replace(/[^0-9]/g, '');
+      if (digs.length >= 10 && digs.length <= 17) slots[slot] = digs;
+      return;
+    }
+    if (slot === 'genderBn' || slot === 'genderEn') {
+      if (/male|পুরুষ/i.test(v)) { slots.genderEn = 'Male'; slots.genderBn = 'পুরুষ'; }
+      else if (/female|মহিলা/i.test(v)) { slots.genderEn = 'Female'; slots.genderBn = 'মহিলা'; }
+      return;
+    }
+    if (slot === 'blood') { var b = (v.match(/(AB|A|B|O)[+-](?![A-Za-z])/) || [])[0]; if (b) slots[slot] = b; return; }
+    if (slot === 'nameBn' || slot === 'fatherBn' || slot === 'motherBn' || slot === 'birthplaceBn' || slot === 'addressBn') {
+      if (nsDocIsNameValue(v, true)) slots[slot] = v;
+      return;
+    }
+    if (slot === 'nameEn' || slot === 'fatherEn' || slot === 'motherEn' || slot === 'birthplaceEn' || slot === 'addressEn') {
+      if (nsDocIsNameValue(v, false)) slots[slot] = v;
+      return;
+    }
+    if (v && v.length >= 2 && v.length <= 100) slots[slot] = v;
+  }
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var usedSpans = [];
+    for (var j = 0; j < labelDefs.length; j++) {
+      var lab = labelDefs[j][0], slot = labelDefs[j][1];
+      if (slots[slot]) continue;
+      var idx = line.indexOf(lab);
+      if (idx === -1) continue;
+      var overlaps = usedSpans.some(function (sp) { return idx < sp[1] && (idx + lab.length) > sp[0]; });
+      if (overlaps) continue;
+      usedSpans.push([idx, idx + lab.length]);
+      var rest = line.slice(idx + lab.length);
+      if (!/^[\s:;।\-–—]/.test(rest) && rest !== '') continue;
+      labelDefs.forEach(function (ld) {
+        if (ld[0] === lab) return;
+        var cut = rest.indexOf(ld[0]);
+        if (cut > 0 && /^[\s:;।\-–—]/.test(rest.slice(cut + ld[0].length))) rest = rest.slice(0, cut);
+      });
+      var val = nsDocCleanValue(rest);
+      if (!val && i + 1 < lines.length) {
+        var nxt = lines[i + 1];
+        var isLabel = labelDefs.some(function (ld) { return nxt.indexOf(ld[0]) !== -1; });
+        if (!isLabel) val = nxt;
+      }
+      takeValue(slot, val);
+    }
+  }
+  return slots;
 }
 function nsDocFieldMap() {
   var card = document.querySelector('#main .card'), map = {};
@@ -991,33 +1129,63 @@ async function nsDocAutoFill() {
   if (st) st.textContent = '';
   if (!text.trim()) { showModal('ডকুমেন্ট থেকে পড়া যায়নি', 'এই ডকুমেন্ট থেকে কোনো লেখা চেনা যায়নি বা পড়া যায়নি। দয়া করে তথ্য হাতে লিখুন। কোনো টাকা কাটা হয়নি।'); return; }
   var flat = text.replace(/\s+/g, ' ');
+  var slots = nsDocParseText(text);
   var numSeq = function () {
-    var out = [], m, re = /\d[\d ]{8,22}\d/g;
-    while ((m = re.exec(flat)) !== null) { var d = m[0].replace(/ /g, ''); if (d.length >= 10 && d.length <= 17) out.push(d); }
+    var out = [], m, re = /[০-৯\d][০-৯\d ]{8,22}[০-৯\d]/g;
+    while ((m = re.exec(flat)) !== null) { var d = nsBnToAscii(m[0]).replace(/ /g, ''); if (d.length >= 10 && d.length <= 17) out.push(d); }
     return out;
   };
   var nums = numSeq();
-  var dateMatch = flat.match(/(\d{4})-(\d{2})-(\d{2})/) || flat.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);
-  var dateVal = '';
-  if (dateMatch) {
-    if (dateMatch[0].indexOf('-') === 4) dateVal = dateMatch[0];
-    else { var dd = dateMatch[1].padStart(2, '0'), mm = dateMatch[2].padStart(2, '0'); dateVal = dateMatch[3] + '-' + mm + '-' + dd; }
+  if (!slots.id && nums.length) slots.id = nums[0];
+  if (!slots.brn && nums.length) slots.brn = nums[nums.length - 1];
+  if (!slots.dob) {
+    var dm = flat.match(/(\d{1,2})\s+(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|Sept|September|Oct|October|Nov|November|Dec|December)\s+(\d{4})/i);
+    if (dm) slots.dob = nsDocParseDate(dm[0]);
+    else {
+      var dateMatch = flat.match(/(\d{4})-(\d{2})-(\d{2})/) || flat.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);
+      if (dateMatch) slots.dob = nsDocParseDate(dateMatch[0]);
+    }
   }
-  var blood = (flat.match(/\b(AB|A|B|O)[+-]\b/) || [])[0] || '';
+  if (!slots.blood) slots.blood = (flat.match(/(AB|A|B|O)[+-](?![A-Za-z])/) || [])[0] || '';
   var map = nsDocFieldMap(), filled = [];
-  var fillIfEmpty = function (test, val, name) {
+  var fillIfEmpty = function (test, val) {
     if (!val) return;
     Object.keys(map).forEach(function (lab) {
       if (test(lab) && map[lab] && !map[lab].value) { map[lab].value = val; filled.push(lab); }
     });
   };
   var svc = nsDocSvcId();
-  if (svc === 'brn') fillIfEmpty(function (l) { return l.indexOf('Birth Registration Number') !== -1; }, nums[nums.length - 1] || nums[0] || '', 'brn');
-  else fillIfEmpty(function (l) { return l.indexOf('এনআইডি নম্বর') !== -1; }, nums[0] || '', 'nid');
-  fillIfEmpty(function (l) { return (l.indexOf('জন্ম তারিখ') !== -1 || l === 'Date of Birth*') && l.indexOf('Word') === -1; }, dateVal, 'dob');
-  fillIfEmpty(function (l) { return l.indexOf('রক্তের গ্রুপ') !== -1 || l.indexOf('Blood Group') !== -1; }, blood, 'blood');
-  if (!filled.length) { showModal('ডকুমেন্ট থেকে পড়া যায়নি', 'লেখা পড়া গেছে, কিন্তু এই ফর্মের কোনো খালি ঘরের সাথে মেলানো তথ্য (এনআইডি/জন্ম নিবন্ধন নম্বর, জন্ম তারিখ, রক্তের গ্রুপ) পাওয়া যায়নি। দয়া করে তথ্য হাতে লিখুন। কোনো টাকা কাটা হয়নি।'); return; }
-  showModal('সাজেশন বসানো হয়েছে — যাচাই করুন', 'এই ঘরগুলোতে ডকুমেন্ট থেকে পড়া তথ্য সাজেশন হিসেবে বসানো হয়েছে (যাচাই করা হয়নি): ' + filled.join(', ') + '। সব তথ্য দেখে ঠিক করে নিন, তারপর "অর্ডার করুন" চাপুন। এখনো কিছু জমা হয়নি, কোনো টাকা কাটা হয়নি।');
+  fillIfEmpty(function (l) { return l === 'নাম (বাংলা)*' || l === 'নাম*'; }, slots.nameBn);
+  fillIfEmpty(function (l) { return l === 'নাম (ইংরেজী)*' || l === 'Name'; }, slots.nameEn);
+  fillIfEmpty(function (l) { return l === 'নাম*' && !slots.nameBn; }, slots.nameEn);
+  fillIfEmpty(function (l) { return l === 'ব্যক্তির নাম'; }, slots.nameBn || slots.nameEn);
+  fillIfEmpty(function (l) { return l.indexOf('পিতার নাম') !== -1; }, slots.fatherBn);
+  fillIfEmpty(function (l) { return l === 'Father Name'; }, slots.fatherEn);
+  fillIfEmpty(function (l) { return l.indexOf('মাতার নাম') !== -1; }, slots.motherBn);
+  fillIfEmpty(function (l) { return l === 'Mother Name'; }, slots.motherEn);
+  fillIfEmpty(function (l) { return l.indexOf('জন্মস্থান (ইংরেজী)') !== -1 || l === 'Place of Birth'; }, slots.birthplaceEn);
+  fillIfEmpty(function (l) { return l.indexOf('জন্মস্থান') !== -1 && l.indexOf('ইংরেজী') === -1; }, slots.birthplaceBn);
+  fillIfEmpty(function (l) { return l.indexOf('লিঙ্গ (ইংরেজী)') !== -1 || l === 'Gender*'; }, slots.genderEn);
+  fillIfEmpty(function (l) { return l.indexOf('লিঙ্গ') !== -1 && l.indexOf('ইংরেজী') === -1 && l.indexOf('সকল') === -1; }, slots.genderBn);
+  fillIfEmpty(function (l) { return l.indexOf('স্থায়ী ঠিকানা') !== -1 || l === 'Permanent Address'; }, slots.addressBn || slots.addressEn);
+  fillIfEmpty(function (l) { return l === 'ঠিকানা*'; }, slots.addressBn || slots.addressEn);
+  if (svc === 'brn') fillIfEmpty(function (l) { return l.indexOf('Birth Registration Number') !== -1; }, slots.brn);
+  fillIfEmpty(function (l) { return l.indexOf('এনআইডি নম্বর') !== -1 || l.indexOf('NID') !== -1 || l.indexOf('এনআইডি / ভোটার') !== -1; }, slots.id);
+  fillIfEmpty(function (l) { return (l.indexOf('জন্ম তারিখ') !== -1 || l === 'Date of Birth*') && l.indexOf('Word') === -1; }, slots.dob);
+  fillIfEmpty(function (l) { return l.indexOf('রক্তের গ্রুপ') !== -1 || l.indexOf('Blood Group') !== -1; }, slots.blood);
+  var targets = ['নাম', 'পিতার নাম', 'মাতার নাম', 'জন্মস্থান', 'জন্ম তারিখ', 'এনআইডি নম্বর', 'Birth Registration Number', 'Date of Birth', 'Father Name', 'Mother Name', 'Place of Birth', 'Gender', 'লিঙ্গ', 'ঠিকানা', 'স্থায়ী ঠিকানা', 'Permanent Address', 'রক্তের গ্রুপ'];
+  var notFound = [];
+  Object.keys(map).forEach(function (lab) {
+    if (filled.indexOf(lab) !== -1) return;
+    if (map[lab].value) return;
+    if (targets.some(function (t) { return lab.indexOf(t) !== -1; })) notFound.push(lab);
+  });
+  var hasNationality = Object.keys(map).some(function (lab) { return lab.indexOf('জাতীয়তা') !== -1 || lab.indexOf('Nationality') !== -1; });
+  if (!filled.length) { showModal('ডকুমেন্ট থেকে পড়া যায়নি', 'লেখা পড়া গেছে, কিন্তু এই ফর্মের কোনো খালি ঘরের সাথে মেলানো তথ্য পাওয়া যায়নি। দয়া করে তথ্য হাতে লিখুন। কোনো টাকা কাটা হয়নি।'); return; }
+  var msg = 'এই ঘরগুলোতে ডকুমেন্ট থেকে পড়া তথ্য সাজেশন হিসেবে বসানো হয়েছে (যাচাই করা হয়নি): ' + filled.join(', ') + '। সব তথ্য দেখে ঠিক করে নিন, তারপর "অর্ডার করুন" চাপুন। এখনো কিছু জমা হয়নি, কোনো টাকা কাটা হয়নি।';
+  if (notFound.length) msg += ' পাওয়া যায়নি — হাতে লিখুন: ' + notFound.join(', ') + '।';
+  if (hasNationality) msg += ' জাতীয়তা ডকুমেন্টে উল্লেখ থাকে না, তাই জাতীয়তার ঘর হাতে লিখতে হবে।';
+  showModal('সাজেশন বসানো হয়েছে — যাচাই করুন', msg);
 }
 var _nsOrderPayload7 = nsOrderPayload;
 nsOrderPayload = function (def) {
