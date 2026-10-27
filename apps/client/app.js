@@ -403,7 +403,7 @@ async function nsOrderSubmit(kind, id) {
   try {
     const r = await nsCall('/orders', 'POST', { service_id: id, option_name, payload: nsOrderPayload(def) });
     NS_STATE.wallet = r.wallet_bdt; await nsRefresh(); render();
-    showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না`);
+    showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}।`);
   } catch (e) { showModal('অর্ডার হয়নি', e.message === 'insufficient_balance' ? 'ব্যালান্স কম — রিচার্জ করুন।' : e.message); }
 }
 async function nsRechargeSubmit() {
@@ -712,7 +712,7 @@ render = async function () {
   const replaceBtnWithNote = (btn, note) => { const p = btn.parentNode; if (p) { p.replaceChild(ns5Note(note), btn); } };
   /* Service pages: Save & Print is not a real delivery — remove it. */
   if (parts[0] === 'service') {
-    btns.forEach(b => { if (b.textContent.trim() === 'Save & Print') replaceBtnWithNote(b, 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না'); });
+    btns.forEach(b => { if (b.textContent.trim() === 'Save & Print') replaceBtnWithNote(b, 'Save & Print এখানে নেই — নিচের "অর্ডার করুন" দিয়ে অর্ডার করুন।'); });
     /* File uploads have no service-document endpoint — replace with a note. */
     [...main.querySelectorAll('input[type="file"]')].forEach(el => {
       const lab = el.previousElementSibling;
@@ -726,7 +726,7 @@ render = async function () {
   if (parts[0] === 'order') {
     main.querySelectorAll('.closed').forEach(d => { d.textContent = orderOpen ? 'অর্ডার গ্রহণ চালু আছে।' : '⚠ নতুন অর্ডারের অনুরোধ বর্তমানে বন্ধ আছে।'; if (orderOpen) d.className = 'notice'; });
     main.querySelectorAll('p.muted').forEach(p => {
-      if (p.textContent.indexOf('সাবমিট বোতাম নেই') !== -1) p.textContent = orderOpen ? 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না' : 'অর্ডার গ্রহণ বন্ধ থাকায় অর্ডার করা যাবে না — অ্যাডমিন চালু করলে আবার করা যাবে।';
+      if (p.textContent.indexOf('সাবমিট বোতাম নেই') !== -1) p.textContent = orderOpen ? 'অর্ডার গ্রহণ চালু আছে — "অর্ডার করুন" দিয়ে অর্ডার করুন।' : 'অর্ডার গ্রহণ বন্ধ থাকায় অর্ডার করা যাবে না — অ্যাডমিন চালু করলে আবার করা যাবে।';
       if (p.textContent.indexOf('মোট দাম “?”') !== -1) p.textContent = 'এই সার্ভিসের মূল্য নির্ধারণ করা হয়নি — অ্যাডমিন মূল্য বসালে অর্ডার করা যাবে।';
     });
     const total = document.getElementById('totalNote');
@@ -841,16 +841,9 @@ render = async function () {
     const a = document.createElement('a'); a.className = t.className; a.href = '#/livechat'; a.innerHTML = t.innerHTML;
     t.replaceWith(a);
   });
-  // Honest, NON-official summary note on NID / birth-registration create pages.
-  const parts = hash.split('/');
-  if (parts[0] === 'service' && (parts[1] === 'nid' || parts[1] === 'snid' || parts[1] === 'brn') && !document.getElementById('nsHonestNote')) {
-    const card = main.querySelector('.card');
-    if (card) {
-      const d = document.createElement('p'); d.id = 'nsHonestNote'; d.className = 'muted';
-      d.textContent = 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না';
-      card.appendChild(d);
-    }
-  }
+  // Step 8: the Step 6 bottom honest note is superseded by the single
+  // disclaimer inside the top document-upload section (Step 7, moved to
+  // the top by Step 8 below). Do not append a second copy here.
   // Order-success modal already says "no personal document" (Step 2); nothing to fake here.
 };
 
@@ -1060,4 +1053,62 @@ render = async function () {
     inp.addEventListener('change', function () { nsDocOnPick(inp, labels[+inp.getAttribute('data-idx')]); });
   });
   var fb = document.getElementById('nsDocFillBtn'); if (fb) fb.addEventListener('click', nsDocAutoFill);
+};
+
+/* ===== Step 8 (staging only) — Upload section to the TOP, ONE disclaimer =====
+   What this does (and does not do):
+   - Moves the whole Step 7 document-upload section (#nsDocSection:
+     file input(s), preview, "ডকুমেন্ট থেকে তথ্য বসান" button and its
+     explanatory note) from the bottom of each service form to the TOP,
+     immediately after the page title / price note and before the main
+     data fields. Pages that already had a top upload field (nid/snid/
+     ssc) do NOT get a second section: the prototype top inputs were
+     already replaced by the Step 5 patch and removed by Step 7, so the
+     moved Step 7 section IS the single top upload area for that page.
+   - De-duplicates the disclaimer: the single kept copy is the one
+     inside #nsDocSection itself (small plain text, class "muted", no
+     heading, no box, readable, not hidden). Every other element on
+     the rendered service page whose text is exactly that disclaimer
+     is removed (order-button span, Save & Print note, Step 6 note —
+     the last three were also removed at source, so this is a safety
+     net, not a second copy). The disclaimer text itself is read from
+     the kept paragraph, not hard-coded again here.
+   - Order pages are untouched by this wrapper: their single
+     disclaimer remains the order-button span from Step 2.
+   - Preserved: file type/size checks, preview, client-side auto-fill
+     from the user's own uploaded file only (no server lookup), order
+     submission with the file attached to the order payload, prices,
+     and the order button. No government logo, seal, official card/
+     certificate layout, or official document generation. Excluded
+     services (IMEI, location, call list, biometric) are order pages
+     and are not touched. */
+var _renderStep7Client = render;
+render = async function () {
+  await _renderStep7Client();
+  var main = document.querySelector('#main'); if (!main) return;
+  var hash = (location.hash.replace('#/', '') || 'dashboard'), parts = hash.split('/');
+  if (parts[0] !== 'service') return;
+  var card = main.querySelector('.card'); if (!card) return;
+  var sec = document.getElementById('nsDocSection'); if (!sec) return;
+  // Move to the top: right after the title / price note, before fields.
+  var notice = card.querySelector('p.notice');
+  if (notice) {
+    if (notice.nextSibling) card.insertBefore(sec, notice.nextSibling);
+    else card.appendChild(sec);
+  } else {
+    var h2 = card.querySelector('h2');
+    if (h2 && h2.nextSibling) card.insertBefore(sec, h2.nextSibling);
+    else card.insertBefore(sec, card.firstChild);
+  }
+  // De-duplicate: keep only the disclaimer inside the moved section.
+  var discP = sec.querySelector('p.muted');
+  var disc = discP ? discP.textContent.trim() : '';
+  if (discP) discP.className = 'muted';
+  var honest = document.getElementById('nsHonestNote'); if (honest) honest.remove();
+  if (disc) {
+    Array.prototype.slice.call(main.querySelectorAll('span, p')).forEach(function (el) {
+      if (sec.contains(el)) return;
+      if (el.textContent.trim() === disc) el.remove();
+    });
+  }
 };
