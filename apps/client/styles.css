@@ -116,3 +116,71 @@ body.dark .ol-refunded{background:#450a0a;border-color:#991b1b;color:#fca5a5}
 .qa-profile .qa-label{color:#0284c7}
 body.dark .qa-tile{background:#1e293b;border-color:#334155}
 @media(max-width:520px){.qa-grid{gap:10px}.qa-tile{padding:16px 8px 14px}.qa-icon{width:36px;height:36px}.qa-icon svg{width:34px;height:34px}.qa-label{font-size:16px}}
+
+/* Homepage top redesign — reference style, scoped to new classes only.
+   Old dashboard cards (52px white), Orders Logs (.ol-* 34px) and
+   Quick Access (.qa-*) are NOT touched by these rules. */
+.topbar-new{background:#fff;color:#16302e;box-shadow:0 1px 0 #e2e8f0}
+.menu-btn{background:#e6f4f2;color:#0f766e;border:0;border-radius:12px;padding:9px 14px;font-weight:800;font-size:15px}
+.logo-new{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-mark{width:44px;height:44px;min-width:44px;display:inline-flex}
+.logo-mark svg{width:44px;height:44px}
+.logo-text{font-weight:800;font-size:20px;line-height:1.1}
+.logo-text small{display:block;font-size:12px;color:#0f766e;font-weight:600}
+.dark-pill{background:#064e3b;color:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.dark-pill .moon{font-size:16px}
+.dark-pill .switch{width:36px;height:20px;border-radius:999px;background:rgba(255,255,255,.25);display:inline-flex;align-items:center;padding:2px}
+.dark-pill .knob{width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+body.dark .dark-pill .knob{transform:translateX(16px)}
+body.dark .topbar-new{background:#0f172a;color:#e2e8f0;box-shadow:0 1px 0 #334155}
+body.dark .menu-btn{background:#134e4a;color:#5eead4}
+body.dark .logo-text small{color:#5eead4}
+.profile-card{background:linear-gradient(135deg,#047857 0%,#065f46 55%,#064e3b 100%);color:#fff;border-radius:22px;padding:22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(6,95,70,.25);overflow:hidden}
+.profile-row{display:flex;align-items:center;gap:14px;min-width:0}
+.avatar-ph{width:72px;height:72px;min-width:72px;border-radius:18px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center}
+.avatar-ph svg{width:42px;height:42px}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-size:22px;line-height:1.3}
+.verified-pill{display:inline-block;background:#22c55e;color:#fff;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;margin-left:8px;white-space:nowrap}
+.profile-uid{color:rgba(255,255,255,.88);margin-top:4px;font-size:15px}
+.qr-btn{width:52px;height:52px;min-width:52px;border-radius:14px;background:transparent;border:1px solid rgba(255,255,255,.45);display:inline-flex;align-items:center;justify-content:center}
+.qr-btn svg{width:30px;height:30px}
+.profile-divider{border:0;border-top:1px solid rgba(255,255,255,.28);margin:18px 0}
+.bal-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.bal-label{color:rgba(255,255,255,.88);font-size:15px}
+.bal-amount{font-size:42px;font-weight:800;line-height:1.15}
+.recharge-pill{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#064e3b;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none;white-space:nowrap}
+.recharge-plus{width:26px;height:26px;border-radius:50%;background:#16a34a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:20px;line-height:1}
+.wa-card{display:flex;align-items:center;gap:14px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:18px;padding:16px;margin-bottom:16px;text-decoration:none;color:#16302e;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.wa-icon{width:56px;height:56px;min-width:56px;border-radius:16px;background:#22c55e;display:inline-flex;align-items:center;justify-content:center}
+.wa-icon svg{width:34px;height:34px}
+.wa-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.wa-text b{font-size:18px}
+.wa-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e;margin-left:4px}
+.wa-sub{color:#475569;font-size:14px}
+.wa-arrow{width:44px;height:44px;min-width:44px;border-radius:50%;background:#fff;color:#0f766e;display:inline-flex;align-items:center;justify-content:center;font-size:22px;border:1px solid #e2e8f0}
+body.dark .wa-card{background:#052e16;border-color:#166534;color:#e2e8f0}
+body.dark .wa-sub{color:#a7f3d0}
+body.dark .wa-arrow{background:#1e293b;border-color:#334155;color:#5eead4}
+.need-head{display:flex;align-items:center;gap:10px;margin:20px 2px 12px}
+.need-dot{width:12px;height:12px;min-width:12px;border-radius:50%;background:#16a34a}
+.need-head h3{flex:1;min-width:0;margin:0;font-size:20px;line-height:1.3}
+.all-services{background:transparent;border:0;color:#0f766e;font-weight:800;font-size:15px;white-space:nowrap;cursor:pointer}
+body.dark .all-services{color:#5eead4}
+@media(max-width:520px){
+ .topbar-new{gap:8px;padding:8px 10px}
+ .menu-btn{padding:8px 10px}
+ .logo-mark,.logo-mark svg{width:38px;height:38px}
+ .logo-text{font-size:17px}
+ .dark-pill{padding:7px 10px;font-size:13px}
+ .profile-card{padding:18px 16px;border-radius:18px}
+ .avatar-ph{width:60px;height:60px;min-width:60px;border-radius:14px}
+ .avatar-ph svg{width:34px;height:34px}
+ .profile-name{font-size:19px}
+ .qr-btn{width:46px;height:46px;min-width:46px}
+ .bal-amount{font-size:34px}
+ .recharge-pill{width:100%;justify-content:center}
+ .wa-card{padding:14px;gap:10px}
+ .wa-icon{width:50px;height:50px;min-width:50px}
+ .need-head h3{font-size:18px}
+}

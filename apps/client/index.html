@@ -7,13 +7,11 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="topbar">
-  <button class="pill" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰ মেনু</button>
-  <div class="logo">নাগরিক সেবা<small>nagarikseba.com</small></div>
+<header class="topbar topbar-new">
+  <button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="মেনু">☰ <span>মেনু</span></button>
+  <div class="logo-new"><span class="logo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="19" fill="#0f766e"/><circle cx="24" cy="8" r="4" fill="#f59e0b"/><path d="M24 40V22M24 30c-6-1-10-5-11-11 6 1 10 5 11 11zm0 0c6-1 10-5 11-11-6 1-10 5-11 11z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="logo-text">নাগরিক সেবা<small>nagarikseba.com</small></span></div>
   <div class="spacer"></div>
-  <button class="pill" onclick="showModal('ব্যালান্স','এটি শুধু ডিসপ্লে। ব্যালান্স: $ 10')">$ 10</button>
-  <span>নমুনা ব্যবহারকারী <span style="background:#fff;color:#0f766e;border-radius:99px;padding:2px 8px;font-size:12px">Verified ✓</span></span>
-  <button class="pill" id="darkBtn" onclick="toggleDark()">ডার্ক মোড</button>
+  <button class="dark-pill" id="darkBtn" onclick="toggleDark()"><span class="moon" aria-hidden="true">☾</span><span id="darkLabel">ডার্ক মোড</span><span class="switch" aria-hidden="true"><span class="knob"></span></span></button>
 </header>
 <div class="layout">
   <nav class="sidebar" id="sidebar"></nav>

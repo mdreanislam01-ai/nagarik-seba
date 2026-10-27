@@ -3,7 +3,7 @@ const $=s=>document.querySelector(s);
 function showModal(t,html){$('#modalTitle').textContent=t;$('#modalBody').innerHTML=html;$('#modalBack').classList.add('open')}
 function closeModal(){$('#modalBack').classList.remove('open')}
 function demoMsg(what){showModal('নোটিশ',`<p><b>${what}</b> — এই অপশনটি বর্তমানে চালু নয়।</p>`)}
-function toggleDark(){document.body.classList.toggle('dark');$('#darkBtn').textContent=document.body.classList.contains('dark')?'লাইট মোড':'ডার্ক মোড'}
+function toggleDark(){document.body.classList.toggle('dark');const l=document.querySelector('#darkLabel');if(l){l.textContent=document.body.classList.contains('dark')?'লাইট মোড':'ডার্ক মোড'}else{$('#darkBtn').textContent=document.body.classList.contains('dark')?'লাইট মোড':'ডার্ক মোড'}}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
 
 
@@ -141,11 +141,23 @@ function render(){
  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.toggle('active',a.dataset.r===hash));
  let m=$('#main');let h='';
  if(hash==='dashboard'){
-  h+=`<div class="card"><h2>ড্যাশবোর্ড</h2><p class="muted">নমুনা ব্যবহারকারী • Verified ✓ • ব্যালান্স: $ 10</p>
+  h+=`<section class="profile-card">
+  <div class="profile-row">
+    <span class="avatar-ph"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg></span>
+    <div class="profile-info"><b class="profile-name">নমুনা ব্যবহারকারী</b> <span class="verified-pill">✓ ভেরিফাইড</span><div class="profile-uid">UID: #BD-982410</div></div>
+    <button class="qr-btn" type="button" onclick="showModal('QR কোড','UID: #BD-982410 — এই QR বোতামটি নমুনা; আসল এনকোড করা QR পেতে আসল ব্যবহারকারী তথ্য / ব্যাকএন্ড প্রয়োজন।')" aria-label="QR কোড"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3"/></svg></button>
+  </div>
+  <hr class="profile-divider">
+  <div class="bal-row"><div class="bal-left"><span class="bal-label">বর্তমান ব্যালেন্স</span><div class="bal-amount">৳ ১০</div></div>
+  <a class="recharge-pill" href="#/recharge"><span class="recharge-plus">+</span> রিচার্জ করুন <span aria-hidden="true">›</span></a></div>
+  </section>
+  <a class="wa-card" href="#/support"><span class="wa-icon"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.7-1.2A9 9 0 1 0 12 3zm0 16.5a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15zm-3.2-9.3c.3-.6 1-1 1.6-.7l1.1.7c.2.1.4.3.5.5l.7 1.2c.1.3 0 .7-.2.9l-.6.7c-.2.2-.3.5-.1.8.5 1 1.3 1.8 2.3 2.3.3.2.6.1.8-.1l.7-.6c.2-.2.6-.3.9-.2l1.2.7c.2.1.4.3.5.5l.7 1.1c.3.6-.1 1.3-.7 1.6-.6.3-1.2.4-1.8.2-2.6-.8-4.9-3.1-5.7-5.7-.2-.6-.1-1.2.2-1.8z"/></svg></span><span class="wa-text"><b>হোয়াটসঅ্যাপ সাপোর্ট <span class="wa-dot" aria-hidden="true"></span></b><span class="wa-sub">সরাসরি কথা বলুন • ২৪/৭ সক্রিয় সহায়তা</span></span><span class="wa-arrow" aria-hidden="true">→</span></a>
+  <div class="card">
   <div class="card"><b>Enable Notifications</b><p class="muted">Stay updated with the latest alerts and important messages.</p><button class="btn" onclick="showModal('Notifications Disabled!','You have blocked notifications. You can enable them in your browser settings.')">Allow</button></div>
   <div class="notice">📢 <b>Important Notice:</b> সার্ভারের সকল আপডেট পেতে গ্রুপে জয়েন থাকুন ধন্যবাদ 📢 <button class="btn ghost" onclick="demoMsg('WhatsApp নোটিশ')">👆 Click Now 👆</button> <span class="muted">( — কোনো গ্রুপে জয়েন করা হয় না)</span></div>
   <p class="notice" style="margin-top:12px">📢 সাইটে কোনো সমস্যা হলে, “রিপোর্ট অপশন” থেকে রিপোর্ট করুন। অর্ডার অপশন চালু 🔥 <span class="muted">— তবে অর্ডার পেজে বন্ধের ব্যানার আছে; এই অমিলটি অ্যাডমিন টগল দিয়ে সমাধানের জন্য রাখা হয়েছে।</span></p></div>
-  <div class="card"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
+  <div class="need-head"><span class="need-dot" aria-hidden="true"></span><h3>প্রয়োজনীয় নাগরিক সেবাসমূহ</h3><button class="all-services" type="button" onclick="document.getElementById('service-cards').scrollIntoView({behavior:'smooth'})">সকল সেবা ›</button></div>
+  <div class="card" id="service-cards"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
   <div class="card orders-logs-card"><h3>Orders Logs</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p>`+ordersLogsHTML()+`</div>
   <div class="card"><h3>Activity Logs</h3>`+activityLogsHTML()+`</div>
   <div class="card qa-card"><h3 class="qa-head"><span class="qa-bolt"><svg viewBox="0 0 24 24" fill="#0f766e" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span><span>Quick Access</span></h3><div class="qa-grid">
