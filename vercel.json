@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://api.nagarikseba.com/$1" }
+  ]
+}

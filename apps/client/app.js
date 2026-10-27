@@ -337,7 +337,7 @@ window.addEventListener('hashchange',render);render();
    No personal-data delivery: an "order" here is only a request record +
    wallet/status workflow; result_text is an admin note, never a document.
    Signature canvas is untouched and needs no backend. */
-const API_BASE = window.API_BASE || localStorage.getItem('ns_api_base') || 'https://api.nagarikseba.com';
+const API_BASE = window.API_BASE || localStorage.getItem('ns_api_base') || '/api';
 const NS_STATE = { user: null, wallet: null, services: [], orders: [], recharges: [], logs: [] };
 const nsToken = () => localStorage.getItem('ns_token') || sessionStorage.getItem('ns_token') || '';
 const nsSetToken = (t, remember) => {
@@ -346,12 +346,27 @@ const nsSetToken = (t, remember) => {
   else { sessionStorage.setItem('ns_token', t); localStorage.removeItem('ns_token'); }
 };
 async function nsCall(path, method, body) {
-  const r = await fetch(API_BASE + path, { method: method || 'GET',
-    headers: { 'Content-Type': 'application/json', ...(nsToken() ? { Authorization: 'Bearer ' + nsToken() } : {}) },
-    body: body ? JSON.stringify(body) : undefined });
-  let j = {}; try { j = await r.json(); } catch (e) {}
-  if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
-  return j;
+  // Step 20: same-origin /api proxy + one retry on network failure only
+  // (HTTP errors are not retried). A transient network blip must not
+  // surface as "Failed to fetch" on the first attempt.
+  let lastErr = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const r = await fetch(API_BASE + path, { method: method || 'GET',
+        headers: { 'Content-Type': 'application/json', ...(nsToken() ? { Authorization: 'Bearer ' + nsToken() } : {}) },
+        body: body ? JSON.stringify(body) : undefined });
+      let j = {}; try { j = await r.json(); } catch (e) {}
+      if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      return j;
+    } catch (e) {
+      // Only a thrown fetch/network error is retried; a server error
+      // thrown above (j.error / HTTP status) must not be retried, so
+      // distinguish by re-throwing non-network errors immediately.
+      if (e && e.message && (e.message.startsWith('HTTP ') || /^[a-z_]+$/.test(e.message))) throw e;
+      lastErr = e;
+    }
+  }
+  throw lastErr;
 }
 async function nsRefresh() {
   try { const s = await nsCall('/services'); NS_STATE.services = s.services || []; } catch (e) {}
