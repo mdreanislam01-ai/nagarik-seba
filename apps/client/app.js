@@ -794,3 +794,62 @@ render = async function () {
     }
   }
 };
+/* ===== Step 6 (staging only) — REAL Live Chat + honest form summaries =====
+   Live Chat: #/livechat, GET/POST /chat/messages, polled every 5s while
+   open. No bot, no fake messages, no WhatsApp link invented.
+   Quick Access Live Chat tile now links to #/livechat (was a notice).
+   NID / birth-registration create forms: NO official document is ever
+   generated — no government logo, seal, card or certificate layout.
+   The order flow saves the entered application data as an order record
+   (POST /orders, Step 2/5), and the service page now shows a plain,
+   clearly-marked summary note: this is NOT a government NID / birth
+   certificate, only the user's own application record. Excluded services
+   (IMEI, location, call list, biometric) are untouched by this patch. */
+NS_STATE.chat = [];
+async function nsChatLoad() {
+  if (!nsToken()) return;
+  try { NS_STATE.chat = (await nsCall('/chat/messages')).messages || []; } catch (e) {}
+}
+async function nsChatSend() {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'চ্যাট করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
+  const el = document.getElementById('nsChatInput'); const body = el ? el.value.trim() : '';
+  if (!body) return;
+  try { await nsCall('/chat/messages', 'POST', { body }); if (el) el.value = ''; await nsChatLoad(); render(); }
+  catch (e) { showModal('চ্যাট', 'মেসেজ যায়নি: ' + e.message); }
+}
+function nsChatHTML() {
+  if (!nsToken()) return '<div class="card"><h2>লাইভ চ্যাট</h2><p class="muted">চ্যাট করতে প্রথমে <a href="#/login">লগইন</a> করুন।</p></div>';
+  const list = (NS_STATE.chat || []).map(m => `<p><b>${m.sender === 'admin' ? 'অ্যাডমিন' : 'আপনি'}</b>: ${esc(m.body)} <span class="muted">${esc(m.created_at || '')}</span></p>`).join('') || '<p class="muted">এখনো কোনো মেসেজ নেই — নিচে লিখে পাঠান, অ্যাডমিন জবাব দেবে।</p>';
+  return `<div class="card"><h2>লাইভ চ্যাট</h2><p class="muted">এটি ইন-অ্যাপ চ্যাট — কোনো বট নয়, অ্যাডমিন সরাসরি জবাব দেবে। WhatsApp লিংক এখানে নেই।</p><div id="nsChatList">${list}</div><label>মেসেজ*</label><textarea id="nsChatInput" placeholder="লিখুন…"></textarea><p><button class="btn" onclick="nsChatSend()">পাঠান</button> <button class="btn ghost" onclick="nsChatLoad().then(render)">রিফ্রেশ</button></p></div>`;
+}
+const _renderStep5Client = render;
+render = async function () {
+  const hash = location.hash.replace('#/', '') || 'dashboard';
+  if (hash === 'livechat') {
+    await nsChatLoad();
+    document.querySelector('#main').innerHTML = nsChatHTML();
+    if (window.__nsChatTimer) clearInterval(window.__nsChatTimer);
+    window.__nsChatTimer = setInterval(async () => { if ((location.hash.replace('#/', '') || '') === 'livechat') { await nsChatLoad(); const l = document.getElementById('nsChatList'); if (l) l.innerHTML = (NS_STATE.chat || []).map(m => `<p><b>${m.sender === 'admin' ? 'অ্যাডমিন' : 'আপনি'}</b>: ${esc(m.body)} <span class="muted">${esc(m.created_at || '')}</span></p>`).join('') || '<p class="muted">এখনো কোনো মেসেজ নেই।</p>'; } else { clearInterval(window.__nsChatTimer); } }, 5000);
+    return;
+  }
+  await _renderStep5Client();
+  const main = document.querySelector('#main');
+  if (!main) return;
+  // Quick Access Live Chat tile -> real chat page.
+  const qaChat = [...main.querySelectorAll('.qa-tile.qa-chat')];
+  qaChat.forEach(t => {
+    const a = document.createElement('a'); a.className = t.className; a.href = '#/livechat'; a.innerHTML = t.innerHTML;
+    t.replaceWith(a);
+  });
+  // Honest, NON-official summary note on NID / birth-registration create pages.
+  const parts = hash.split('/');
+  if (parts[0] === 'service' && (parts[1] === 'nid' || parts[1] === 'snid' || parts[1] === 'brn') && !document.getElementById('nsHonestNote')) {
+    const card = main.querySelector('.card');
+    if (card) {
+      const d = document.createElement('p'); d.id = 'nsHonestNote'; d.className = 'notice';
+      d.textContent = 'সতর্কতা: এটি সরকারি এনআইডি / জন্ম সনদ নয়, কোনো সরকারি লোগো, সিল বা অফিসিয়াল কার্ড/সনদ ফরম্যাট এখানে তৈরি হয় না। আপনি যে তথ্য লিখবেন তা শুধু আপনার আবেদন রেকর্ড হিসেবে অর্ডার আকারে সংরক্ষিত হবে, আর অর্ডার ইতিহাসে তার একটি সাধারণ সারাংশ দেখা যাবে। আসল সরকারি ডকুমেন্ট পেতে অফিসিয়াল চ্যানেল ব্যবহার করুন।';
+      card.appendChild(d);
+    }
+  }
+  // Order-success modal already says "no personal document" (Step 2); nothing to fake here.
+};
