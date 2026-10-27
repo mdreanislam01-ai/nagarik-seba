@@ -242,3 +242,48 @@ body.dark .all-services{color:#5eead4}
  .verified-pill{font-size:11px;padding:2px 7px}
  .profile-uid{font-size:12px}
 }
+
+/* Compact profile card + smaller dark toggle (user-marked screenshot).
+   Profile info must fit in a tighter top area, balance follows at once,
+   recharge follows at once, and the next section moves up. Nothing is
+   clipped: balance amount and recharge button stay fully visible, and
+   recharge stays at least 44px tall. Dark toggle stays in the single
+   top header row, right side, only smaller. */
+.profile-card{padding-top:14px;padding-bottom:14px;margin-bottom:10px}
+.profile-row{gap:10px}
+.avatar-ph{width:64px;height:64px;min-width:64px;border-radius:16px}
+.avatar-ph svg{width:36px;height:36px}
+.profile-name{font-size:20px;line-height:1.25}
+.profile-uid{margin-top:2px}
+.qr-btn{width:46px;height:46px;min-width:46px;border-radius:12px}
+.qr-btn svg{width:26px;height:26px}
+.profile-divider{margin:10px 0}
+.bal-row{gap:10px}
+.bal-label{font-size:13px}
+.bal-amount{font-size:36px;line-height:1.1}
+.recharge-pill{padding:9px 16px;min-height:44px}
+.recharge-plus{width:24px;height:24px;font-size:18px}
+.wa-card{margin-top:0}
+.main>*:first-child{margin-top:0}
+/* Smaller dark-mode toggle, still in the single top row on the right. */
+.dark-pill{padding:6px 10px;font-size:12px;gap:6px;min-height:40px}
+.dark-pill .moon{font-size:14px}
+.dark-pill .switch{width:30px;height:18px}
+.dark-pill .knob{width:14px;height:14px}
+body.dark .dark-pill .knob{transform:translateX(12px)}
+@media(max-width:520px){
+ .profile-card{padding-top:12px;padding-bottom:12px;margin-bottom:8px}
+ .avatar-ph{width:56px;height:56px;min-width:56px;border-radius:13px}
+ .avatar-ph svg{width:32px;height:32px}
+ .profile-name{font-size:18px}
+ .qr-btn{width:42px;height:42px;min-width:42px}
+ .qr-btn svg{width:24px;height:24px}
+ .profile-divider{margin:8px 0}
+ .bal-label{font-size:12px}
+ .bal-amount{font-size:30px}
+ .recharge-pill{min-height:44px}
+ .dark-pill{padding:6px 8px;font-size:12px;min-height:40px}
+}
+@media(max-width:400px){
+ .dark-pill{padding:6px 8px}
+}
