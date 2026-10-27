@@ -403,7 +403,7 @@ async function nsOrderSubmit(kind, id) {
   try {
     const r = await nsCall('/orders', 'POST', { service_id: id, option_name, payload: nsOrderPayload(def) });
     NS_STATE.wallet = r.wallet_bdt; await nsRefresh(); render();
-    showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}। এটি শুধু একটি অর্ডার অনুরোধ; কোনো ব্যক্তিগত ডকুমেন্ট এখানে তৈরি / ডেলিভারি হয় না।`);
+    showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না`);
   } catch (e) { showModal('অর্ডার হয়নি', e.message === 'insufficient_balance' ? 'ব্যালান্স কম — রিচার্জ করুন।' : e.message); }
 }
 async function nsRechargeSubmit() {
@@ -463,7 +463,7 @@ render = async function () {
   if (parts[0] === 'service' || parts[0] === 'order') {
     const card = document.querySelector('#main .card');
     if (card && !document.getElementById('nsOrderBtn')) {
-      const b = document.createElement('p'); b.innerHTML = `<button class="btn" id="nsOrderBtn" onclick="nsOrderSubmit('${parts[0]}','${parts[1]}')">অর্ডার করুন (ব্যালেন্স থেকে কাটবে)</button> <span class="muted">অর্ডার = অনুরোধ রেকর্ড মাত্র; কোনো ব্যক্তিগত ডকুমেন্ট ডেলিভারি হয় না।</span>`;
+      const b = document.createElement('p'); b.innerHTML = `<button class="btn" id="nsOrderBtn" onclick="nsOrderSubmit('${parts[0]}','${parts[1]}')">অর্ডার করুন (ব্যালেন্স থেকে কাটবে)</button> <span class="muted">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</span>`;
       card.appendChild(b);
     }
     if (parts[0] === 'order') {
@@ -712,7 +712,7 @@ render = async function () {
   const replaceBtnWithNote = (btn, note) => { const p = btn.parentNode; if (p) { p.replaceChild(ns5Note(note), btn); } };
   /* Service pages: Save & Print is not a real delivery — remove it. */
   if (parts[0] === 'service') {
-    btns.forEach(b => { if (b.textContent.trim() === 'Save & Print') replaceBtnWithNote(b, 'প্রিন্ট / ডেলিভারি এখানে হয় না — "অর্ডার করুন" বোতামে ক্লিক করলে শুধু অর্ডার অনুরোধ রেকর্ড হবে।'); });
+    btns.forEach(b => { if (b.textContent.trim() === 'Save & Print') replaceBtnWithNote(b, 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না'); });
     /* File uploads have no service-document endpoint — replace with a note. */
     [...main.querySelectorAll('input[type="file"]')].forEach(el => {
       const lab = el.previousElementSibling;
@@ -726,7 +726,7 @@ render = async function () {
   if (parts[0] === 'order') {
     main.querySelectorAll('.closed').forEach(d => { d.textContent = orderOpen ? 'অর্ডার গ্রহণ চালু আছে।' : '⚠ নতুন অর্ডারের অনুরোধ বর্তমানে বন্ধ আছে।'; if (orderOpen) d.className = 'notice'; });
     main.querySelectorAll('p.muted').forEach(p => {
-      if (p.textContent.indexOf('সাবমিট বোতাম নেই') !== -1) p.textContent = orderOpen ? 'অর্ডার করুন বোতামে ক্লিক করলে ব্যালেন্স থেকে কাটবে এবং অর্ডার অনুরোধ রেকর্ড হবে; কোনো ব্যক্তিগত ডকুমেন্ট এখানে ডেলিভারি হয় না।' : 'অর্ডার গ্রহণ বন্ধ থাকায় অর্ডার করা যাবে না — অ্যাডমিন চালু করলে আবার করা যাবে।';
+      if (p.textContent.indexOf('সাবমিট বোতাম নেই') !== -1) p.textContent = orderOpen ? 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না' : 'অর্ডার গ্রহণ বন্ধ থাকায় অর্ডার করা যাবে না — অ্যাডমিন চালু করলে আবার করা যাবে।';
       if (p.textContent.indexOf('মোট দাম “?”') !== -1) p.textContent = 'এই সার্ভিসের মূল্য নির্ধারণ করা হয়নি — অ্যাডমিন মূল্য বসালে অর্ডার করা যাবে।';
     });
     const total = document.getElementById('totalNote');
@@ -846,8 +846,8 @@ render = async function () {
   if (parts[0] === 'service' && (parts[1] === 'nid' || parts[1] === 'snid' || parts[1] === 'brn') && !document.getElementById('nsHonestNote')) {
     const card = main.querySelector('.card');
     if (card) {
-      const d = document.createElement('p'); d.id = 'nsHonestNote'; d.className = 'notice';
-      d.textContent = 'এখানের কোনো ডকুমেন্ট সরকারি কোনো কাজে ব্যবহার করা যাবে না। অর্ডার = অনুরোধ রেকর্ড মাত্র।';
+      const d = document.createElement('p'); d.id = 'nsHonestNote'; d.className = 'muted';
+      d.textContent = 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না';
       card.appendChild(d);
     }
   }
@@ -1051,7 +1051,7 @@ render = async function () {
   var labels = (def.uploads && def.uploads.length) ? def.uploads.slice() : ['ডকুমেন্ট (ছবি/PDF)'];
   var sec = document.createElement('div'); sec.id = 'nsDocSection';
   sec.innerHTML = '<h3>ডকুমেন্ট আপলোড (ঐচ্ছিক)</h3>' +
-    '<p class="muted">ফাইল শুধু আপনার অর্ডার রেকর্ডের সাথে সংরক্ষিত হবে — কোনো সরকারি ডকুমেন্ট তৈরি / ডেলিভারি হয় না।</p>' +
+    '<p class="muted">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>' +
     labels.map(function (u, i) { return '<label>' + u + '</label><input type="file" class="nsDocInput" data-idx="' + i + '" accept="image/*,application/pdf"><span class="muted nsDocPrev"></span>'; }).join('') +
     '<p><button class="btn ghost" id="nsDocFillBtn" type="button">ডকুমেন্ট থেকে তথ্য বসান</button> <span class="muted" id="nsDocFillStatus"></span></p>' +
     '<p class="muted">এটি সার্ভার-লুকআপ (অটোলোড) নয়: বাছা ফাইলটি শুধু এই ডিভাইসে/ব্রাউজারে পড়া হয়, কোথাও পাঠানো হয় না। তথ্য শুধু সাজেশন হিসেবে খালি ঘরে বসবে — যাচাই করে ঠিক করে নিন, তারপর অর্ডার করুন। আপলোড / তথ্য-পড়ার জন্য কোনো টাকা কাটা হয় না; টাকা কাটবে শুধু "অর্ডার করুন"-এ।</p>';
