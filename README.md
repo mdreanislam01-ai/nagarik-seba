@@ -55,7 +55,7 @@ dark-mode toggle. Dashboard shows a demo user with a Verified badge, demo balanc
 `$ 10`, an Enable Notifications card, an Important Notice / WhatsApp notice
 (placeholder only — no group is joined), a notice bar, service cards with cost and
 list count, Orders Logs (Pending / Received / Completed / Refunded), Activity Logs,
-Profile Completion, and Quick Access (Recharge, Live Chat, Report, Profile).
+and Quick Access (Recharge, Live Chat, Report, Profile).
 
 ### Recharge
 

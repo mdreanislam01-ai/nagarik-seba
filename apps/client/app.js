@@ -126,6 +126,16 @@ function tableHTML(cols,rows,actions){
 }
 function fieldHTML(f,i){return `<label>${f}</label><input placeholder="${esc(f)}">`}
 function closedBanner(){return `<div class="closed">⚠ নতুন অর্ডারের অনুরোধ বর্তমানে বন্ধ আছে।</div>`}
+
+// Real login activity only: this prototype has no auth backend, so the store
+// starts empty. Do NOT seed it with sample/demo entries. Entries may only be
+// added by a real login/auth backend when one is connected.
+const REAL_LOGIN_ACTIVITY = [];
+function activityLogsHTML(){
+  if(!REAL_LOGIN_ACTIVITY.length) return `<p class="muted">এখনো কোনো লগইন রেকর্ড নেই</p>`;
+  return `<ul>` + REAL_LOGIN_ACTIVITY.map(a=>`<li>${esc(a)}</li>`).join('') + `</ul>`;
+}
+
 function render(){
  const hash=location.hash.replace('#/','')||'dashboard';const parts=hash.split('/');
  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.toggle('active',a.dataset.r===hash));
@@ -137,8 +147,13 @@ function render(){
   <p class="notice" style="margin-top:12px">📢 সাইটে কোনো সমস্যা হলে, “রিপোর্ট অপশন” থেকে রিপোর্ট করুন। অর্ডার অপশন চালু 🔥 <span class="muted">— তবে অর্ডার পেজে বন্ধের ব্যানার আছে; এই অমিলটি অ্যাডমিন টগল দিয়ে সমাধানের জন্য রাখা হয়েছে।</span></p></div>
   <div class="card"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
   <div class="card orders-logs-card"><h3>Orders Logs</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p>`+ordersLogsHTML()+`</div>
-  <div class="card"><h3>Activity Logs</h3><p class="muted">১০টি  এন্ট্রি: লগইন ও কার্ড তৈরির রেকর্ড (কোনো আসল IP / ডিভাইস তথ্য নেই)।</p><p><b>Profile Completion: 100% Complete</b> — Account Created, Email verified, Phone number added, Have recharged successfully।</p>
-  <h3>Quick Access</h3><p><button class="btn" onclick="location.hash='#/recharge'">রিচার্জ</button> <button class="btn ghost" onclick="showModal('লাইভ চ্যাট','মূল অডিটে লাইভ চ্যাটের গন্তব্য যাচাই হয়নি। তাই এখানে কোনো চ্যাট খোলা হয় না — শুধু প্লেসহোল্ডার রাখা হয়েছে।')">লাইভ চ্যাট</button> <button class="btn ghost" onclick="location.hash='#/report'">রিপোর্ট</button> <button class="btn ghost" onclick="location.hash='#/profile'">প্রোফাইল</button></p></div>`;
+  <div class="card"><h3>Activity Logs</h3>`+activityLogsHTML()+`</div>
+  <div class="card qa-card"><h3 class="qa-head"><span class="qa-bolt"><svg viewBox="0 0 24 24" fill="#0f766e" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span><span>Quick Access</span></h3><div class="qa-grid">
+  <a class="qa-tile qa-recharge" href="#/recharge"><span class="qa-icon"><span class="qa-dollar">$</span></span><span class="qa-label">রিচার্জ</span></a>
+  <button class="qa-tile qa-chat" type="button" onclick="showModal('লাইভ চ্যাট','মূল অডিটে লাইভ চ্যাটের গন্তব্য যাচাই হয়নি। তাই এখানে কোনো চ্যাট খোলা হয় না — শুধু প্লেসহোল্ডার রাখা হয়েছে।')"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 18 0"/><rect x="3" y="11" width="4" height="7" rx="2"/><rect x="17" y="11" width="4" height="7" rx="2"/><path d="M19 18a3 3 0 0 1-3 3h-2"/></svg></span><span class="qa-label">লাইভ চ্যাট</span></button>
+  <a class="qa-tile qa-report" href="#/report"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="3"/><path d="M12 12v6M8 14l-3 2M16 14l3 2M5 9H3M19 9h2M8 7 6 5M16 7l2-2"/></svg></span><span class="qa-label">রিপোর্ট</span></a>
+  <a class="qa-tile qa-profile" href="#/profile"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="#0284c7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg></span><span class="qa-label">প্রোফাইল</span></a>
+  </div></div>`;
  }
  else if(hash==='recharge'){
   h+=`<div class="card"><h2>রিচার্জ — অটো রিচার্জ ২৪ ঘণ্টা 🔥</h2><p class="notice">পেমেন্ট করার পর অবশ্যই সঠিক Transaction ID এবং যে নম্বর থেকে পেমেন্ট করছেন ঐ নম্বর প্রদান করবেন। ভুল তথ্য দিলে আপনার অ্যাকাউন্ট সাসপেন্ড হবে।</p>
@@ -185,7 +200,7 @@ function render(){
  }
  else if(hash==='report'){h+=`<div class="card"><h2>রিপোর্ট</h2><label>সমস্যার বিষয়*</label><input><label>সমস্যার ব্যাখ্যা*</label><textarea></textarea><p class="muted">ছবি যোগ করতে চাইলে লাইভ চ্যাট ব্যবহার করতে বলা আছে (মূল নোট)তে ছবি পাঠানো হয় না।</p><p><button class="btn" onclick="demoMsg('রিপোর্ট Submit')">Submit</button></p></div>`}
  else if(hash==='support'){h+=`<div class="card"><h2>সাপোর্ট</h2><p>মূল সাইটে সাপোর্ট বাইরের WhatsApp গ্রুপের লিংক খুলত। এখানে কোনো গ্রুপ লিংক দেওয়া হয়নি, জয়েন/মেসেজ করা হয় না — শুধু প্লেসহোল্ডার।</p><button class="btn ghost" onclick="demoMsg('সাপোর্ট প্লেসহোল্ডার')">সাপোর্ট</button></div>`}
- else if(hash==='profile'){h+=`<div class="card"><h2>প্রোফাইল</h2><p>নমুনা ব্যবহারকারী • Verified: Yes • Balance: 10 • Joined: তারিখ • Profile Completion: 100%</p>
+ else if(hash==='profile'){h+=`<div class="card"><h2>প্রোফাইল</h2><p>নমুনা ব্যবহারকারী • Verified: Yes • Balance: 10 • Joined: তারিখ</p>
  <h3>Profile Update</h3><label>নাম*</label><input value="নমুনা ব্যবহারকারী"><label>ইমেল* (disabled)</label><input disabled value="demo@example.com"><label>নম্বর*</label><input value="01XXXXXXXXX (মাস্ক করা )"><p><button class="btn" onclick="demoMsg('Update Profile')">Update Profile</button></p>
  <h3>Change Password</h3><label>পুরাতন পাসওয়ার্ড*</label><input type="password"><label>নতুন পাসওয়ার্ড*</label><input type="password"><label>কনফার্ম পাসওয়ার্ড*</label><input type="password"><p><button class="btn" onclick="demoMsg('Update Password')">Update Password</button></p>
  <h3>Theme Color</h3><p><span class="swatch" style="background:#ff4961" onclick="document.documentElement.style.setProperty('--accent','#ff4961')"></span><span class="swatch" style="background:#0f766e" onclick="document.documentElement.style.setProperty('--accent','#0f766e')"></span><span class="swatch" style="background:#2563eb" onclick="document.documentElement.style.setProperty('--accent','#2563eb')"></span> <span class="muted">বর্তমান অ্যাকসেন্ট: #ff4961</span></p>
