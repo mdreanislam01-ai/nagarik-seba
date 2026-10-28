@@ -423,7 +423,7 @@ async function nsOrderSubmit(kind, id) {
   if (kind === 'service' && id === 'sc') { const sel = document.getElementById('apiSel'); option_name = sel && sel.value === '5' ? 'API ৫' : 'API ৩'; }
   try {
     const r = await nsCall('/orders', 'POST', { service_id: id, option_name, payload: nsOrderPayload(def) });
-    NS_STATE.wallet = r.wallet_bdt; await nsRefresh(); render();
+    NS_STATE.wallet = r.wallet_bdt; await nsRefresh(true); render();
     showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}।`);
   } catch (e) { showModal('অর্ডার হয়নি', e.message === 'insufficient_balance' ? 'ব্যালান্স কম — রিচার্জ করুন।' : e.message); }
 }
@@ -432,7 +432,7 @@ async function nsRechargeSubmit() {
   const amt = +document.getElementById('amt').value, method = document.getElementById('rchMethod').value,
     sender = document.getElementById('rchSender').value, trxid = document.getElementById('rchTrx').value.trim();
   if (!amt || amt < 100 || !trxid) { showModal('যাচাই', 'সর্বনিম্ন রিচার্জ 100 টাকা, আর TrxID লাগবে।'); return; }
-  try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(); render(); showModal('রিচার্জ অনুরোধ', `অনুরোধ #${r.recharge.id} — ${r.recharge.amount_bdt} টাকা, স্ট্যাটাস: pending। অ্যাডমিন approve করলে ব্যালেন্স যোগ হবে।`); }
+  try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(true); render(); showModal('রিচার্জ অনুরোধ', `অনুরোধ #${r.recharge.id} — ${r.recharge.amount_bdt} টাকা, স্ট্যাটাস: pending। অ্যাডমিন approve করলে ব্যালেন্স যোগ হবে।`); }
   catch (e) { showModal('রিচার্জ হয়নি', e.message === 'trxid_exists' ? 'এই TrxID আগেই ব্যবহার হয়েছে।' : e.message); }
 }
 async function nsZammpayStart() {
@@ -455,7 +455,7 @@ async function nsZammpayPoll(cancelled) {
   for (let i = 0; i < 12; i++) {
     try {
       const r = await nsCall('/recharge/zammpay/status?trx_id=' + encodeURIComponent(trx));
-      if (r.status === 'Completed' && r.credited) { if (el) el.textContent = `পেমেন্ট সফল — ৳ ${r.recharge.amount_bdt} ব্যালেন্সে যোগ হয়েছে। নতুন ব্যালেন্স: ৳ ${r.wallet_bdt}`; NS_STATE.wallet = r.wallet_bdt; sessionStorage.removeItem('ns_zamm_trx'); await nsRefresh(); return; }
+      if (r.status === 'Completed' && r.credited) { if (el) el.textContent = `পেমেন্ট সফল — ৳ ${r.recharge.amount_bdt} ব্যালেন্সে যোগ হয়েছে। নতুন ব্যালেন্স: ৳ ${r.wallet_bdt}`; NS_STATE.wallet = r.wallet_bdt; sessionStorage.removeItem('ns_zamm_trx'); await nsRefresh(true); return; }
       if (r.status === 'Completed' && !r.credited) { if (el) el.textContent = 'পেমেন্ট সম্পন্ন দেখাচ্ছে কিন্তু অ্যামাউন্ট মেলেনি — সাপোর্টে জানান, ম্যানুয়ালি যাচাই করা হবে।'; sessionStorage.removeItem('ns_zamm_trx'); return; }
       if (r.status === 'Canceled') { if (el) el.textContent = 'পেমেন্ট বাতিল হয়েছে — ব্যালেন্স যোগ হয়নি।'; sessionStorage.removeItem('ns_zamm_trx'); return; }
     } catch (e) { if (el) el.textContent = 'যাচাইয়ে সমস্যা হয়েছে: ' + e.message; return; }
@@ -517,8 +517,10 @@ async function nsDoLogin() {
   const rememberEl = document.getElementById('authRemember');
   const remember_me = !!(rememberEl && rememberEl.checked);
   if (!identifier || !password) { showModal('লগইন হয়নি', 'ইমেইল/ফোন নম্বর ও পাসওয়ার্ড লিখুন।'); return; }
+  const btn = [...document.querySelectorAll('.ns-slide-btn')].find(b => b.textContent.trim() === 'লগইন');
+  if (btn) { btn.disabled = true; btn.textContent = 'লগইন হচ্ছে…'; }
   try { const r = await nsCall('/auth/login', 'POST', { identifier, password, remember_me }); nsSetToken(r.token, remember_me); await nsRefresh(); location.hash = '#/dashboard'; render(); }
-  catch (e) { showModal('লগইন হয়নি', e.message === 'invalid_credentials' ? 'ইমেইল/ফোন নম্বর বা পাসওয়ার্ড ভুল।' : e.message); }
+  catch (e) { if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = 'লগইন'; } showModal('লগইন হয়নি', e.message === 'invalid_credentials' ? 'ইমেইল/ফোন নম্বর বা পাসওয়ার্ড ভুল।' : e.message); }
 }
 async function nsDoForgot() {
   const identifier = document.getElementById('authEmail').value.trim();
@@ -1634,9 +1636,12 @@ render = async function () {
     if (main) main.innerHTML = nsLoginPortalHTML('login');
     return;
   }
+  // Step 36: unhide the app chrome ONLY after the dashboard is painted.
+  // Removing it before the render chain finished showed the sidebar /
+  // topbar around the login card for 1-2s while data was still loading.
+  await _renderStep11Client();
   document.body.classList.remove('ns-login-portal');
   document.body.classList.remove('ns-design-login-page');
-  await _renderStep11Client();
 };
 
 /* ===== Step 22 — আমার তথ্য (RESTRICTED own-record only) =====
@@ -1767,3 +1772,61 @@ activityLogsHTML = function () {
   const last3 = NS_STATE.logs.slice().sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || ''))).slice(0, 3);
   return '<ul>' + last3.map(l => `<li>${esc(l.created_at || '')} — ${esc(l.ip || '—')} — ${esc((l.user_agent || '').slice(0, 60))}</li>`).join('') + '</ul>';
 };
+
+/* ===== Step 36 — Speed + no sample flash + no login peek =====
+   Root causes found (client only, no API/price/route change):
+   1. EVERY navigation ran nsRefresh() twice (gate wrapper + Step 2
+      wrapper), each doing 5 SEQUENTIAL API calls, and login did it
+      a 3rd time — ~15 round trips per login, ~10 per click.
+   2. The very first paint (prototype render at script load) drew the
+      sample user (নমুনা ব্যবহারকারী, ৳ ১০, UID #BD-982410) before
+      the API answered, so a refresh visibly "changed account".
+   3. The gate removed the login-portal chrome class BEFORE the
+      dashboard painted, so the sidebar/topbar showed around the
+      login card for 1-2s (fixed by the gate edit above).
+   Fix: one shared in-flight refresh, 5 calls in PARALLEL, 30s cache
+   keyed by token (mutations force a fresh fetch), and a neutral
+   loading card as the last synchronous paint of script load, so the
+   browser's first paint can never show sample data. */
+let NS_RF_PROMISE = null, NS_RF_AT = 0, NS_RF_TOKEN = null;
+nsRefresh = async function (force) {
+  const tok = nsToken();
+  if (NS_RF_PROMISE && !force) return NS_RF_PROMISE;
+  if (NS_RF_PROMISE && force) { try { await NS_RF_PROMISE; } catch (e) {} }
+  const fresh = Date.now() - NS_RF_AT < 30000 && tok === NS_RF_TOKEN && (NS_STATE.user || !tok);
+  if (!force && fresh) return;
+  NS_RF_PROMISE = (async () => {
+    try {
+      const [svc, me, ord, rch, logs] = await Promise.all([
+        nsCall('/services').catch(() => null),
+        tok ? nsCall('/me').catch(() => null) : Promise.resolve(null),
+        tok ? nsCall('/orders').catch(() => null) : Promise.resolve(null),
+        tok ? nsCall('/recharges').catch(() => null) : Promise.resolve(null),
+        tok ? nsCall('/me/login-logs').catch(() => null) : Promise.resolve(null),
+      ]);
+      if (svc) NS_STATE.services = svc.services || [];
+      if (!tok) { NS_STATE.user = null; NS_STATE.wallet = null; NS_STATE.orders = []; NS_STATE.recharges = []; NS_STATE.logs = []; }
+      else {
+        if (me) { NS_STATE.user = me.user; NS_STATE.wallet = me.wallet_bdt; } else NS_STATE.user = null;
+        if (ord) NS_STATE.orders = ord.orders || [];
+        if (rch) NS_STATE.recharges = rch.recharges || [];
+        if (logs) NS_STATE.logs = logs.login_logs || [];
+      }
+      nsSyncPrices();
+      NS_RF_TOKEN = tok; NS_RF_AT = Date.now();
+    } finally { NS_RF_PROMISE = null; }
+  })();
+  return NS_RF_PROMISE;
+};
+// Last synchronous paint of script load: neutral loading card only.
+// The sample dashboard painted earlier in this script is replaced
+// before the browser's first paint, so it is never seen.
+(function () {
+  const m = document.querySelector('#main');
+  if (m) m.innerHTML = '<div class="card"><h2>লোড হচ্ছে…</h2><p class="muted">আপনার ড্যাশবোর্ড আনা হচ্ছে, একটু অপেক্ষা করুন।</p></div>';
+  const hash = (location.hash || '').replace('#/', '') || 'dashboard';
+  if (!nsToken() || hash === 'login' || hash === 'signup' || hash === 'forgot') {
+    document.body.classList.add('ns-login-portal');
+    document.body.classList.add('ns-design-login-page');
+  }
+})();
