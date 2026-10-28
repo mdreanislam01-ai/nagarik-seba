@@ -1,5 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 :root{--teal:#0f766e;--teal-dark:#115e59;--accent:#ff4961;--bg:#eef3f3;--card:#fff;--text:#16302e;--muted:#64748b;--border:#dbe7e6}
-*{box-sizing:border-box}body{margin:0;font-family:"Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--text)}
+*{box-sizing:border-box}body{margin:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;background:var(--bg);color:var(--text)}
 a{color:var(--teal)}button{cursor:pointer;font-family:inherit}
 .topbar{position:sticky;top:0;z-index:20;background:var(--teal);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px}
 .logo{font-weight:800;font-size:20px}.logo small{display:block;font-size:11px;opacity:.85;font-weight:400}
