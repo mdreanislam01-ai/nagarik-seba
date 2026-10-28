@@ -519,6 +519,9 @@ body.ns-login-portal .main,body.ns-login-portal.ns-design-login-page .main{max-w
 .ns-slide-panel{position:absolute;top:0;bottom:0;left:50%;width:50%;z-index:3;background:#2357BC;color:#fff;clip-path:polygon(14% 0,100% 0,100% 100%,0 100%);transition:left .65s ease,clip-path .65s ease}
 .ns-slide-card.ns-slide-signup .ns-slide-panel{left:0;clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
 .ns-slide-panel-view{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .3s ease .18s}
+/* Step 25 — panel text was clipped by the 14% clip-path slant (slant reaches 64px into the 460px panel at the top, but text had only 32px padding). Clear it on the slanted side only: login view (panel right) gets 80px left padding, signup view (panel left) gets 80px right padding — 80px beats the 64px maximum slant at every height, so no heading, paragraph or button is ever cut. Slant itself unchanged; mobile stacked rules below (clip-path:none) still override this padding. */
+.ns-slide-panel-loginview{padding:32px 32px 32px 80px}
+.ns-slide-panel-signupview{padding:32px 80px 32px 32px}
 .ns-slide-card:not(.ns-slide-signup) .ns-slide-panel-loginview{opacity:1;pointer-events:auto}
 .ns-slide-card.ns-slide-signup .ns-slide-panel-signupview{opacity:1;pointer-events:auto}
 .ns-slide-panel-view h2{margin:0 0 12px;font-size:26px;line-height:1.25}
