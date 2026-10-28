@@ -590,3 +590,7 @@ body.ns-login-portal .main,body.ns-login-portal.ns-design-login-page .main{max-w
 .ns-free{margin-left:auto;font-size:11px;font-weight:700;color:#0E7C7B;background:#CDE8E5;border-radius:999px;padding:1px 8px}
 body.dark .ns-cat-head{color:#e2e8f0}
 body.dark .ns-cat-head:hover,body.dark .ns-cat.open .ns-cat-head{background:#164e63;color:#5eead4}
+
+/* ===== Step 38 — user logo (mark in topbar, full lockup on login) ===== */
+.logo-mark img{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px}
+.ns-logo-lockup{width:min(280px,72vw);height:auto;display:block;margin:0 auto;background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
