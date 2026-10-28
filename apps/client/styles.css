@@ -477,43 +477,62 @@ body.dark .ns-login-card{background:#1e293b;color:#e2e8f0}
 body.dark .ns-login-card label,body.dark .ns-login-foot{color:#e2e8f0}
 body.dark .ns-login-logo .logo-text{color:#e2e8f0}
 
-/* ===== Step 19 — Login portal exactly as supplied (real <img> artwork, no extra branding) =====
-   Step 18's artwork never loaded: its art div used a CSS variable for the artwork image
-   but nothing ever defined that variable, so phones showed only the flat page colour plus white
-   cards, and the extra HTML logo/headings duplicated the name painted in the artwork.
-   Step 19 removes ALL of that: no HTML logo, no headings, no taglines, no white branding
-   panel — the artwork PNG itself is the only logo/text on the page. The artwork is a real
-   <img> in the DOM (data URI in its src, verified byte-identical to the supplied PNG),
-   never a CSS background, variable or blurred pseudo-element. A blurred copy of the same
-   artwork (a real <img>, object-fit:cover) fills the viewport behind it, so there is no
-   flat blank band and no white patch. The sharp foreground <img> sits in a box exactly
-   1145/1374 (the artwork's true ratio), centred, never stretched, never cropped — on
-   phone and on desktop alike. The transparent form is inside that same box, so its %
-   positions always land on the painted fields. If the foreground image ever fails to
-   load, the .ns-portal19-noimg fallback makes the controls visible (white fields, solid
-   buttons) instead of a blank page. The modal (z-index 50) stays above this portal. */
-
-body.ns-login-portal.ns-design-login-page .topbar,body.ns-login-portal.ns-design-login-page .sidebar,body.a-design-login .topbar,body.a-design-login .sidebar{display:none}
-body.ns-login-portal.ns-design-login-page .layout,body.a-design-login .layout{display:block;min-height:0}
-body.ns-login-portal.ns-design-login-page .main,body.a-design-login .main{max-width:none;padding:0;margin:0}
-body.ns-login-portal.ns-design-login-page{overflow:hidden;background:#b9e9ff}
-body.a-design-login{overflow:hidden;background:#b9e9ff}
-.ns-portal19{position:fixed;inset:0;overflow:hidden;background:#b9e9ff;z-index:10}
-.ns-portal19-blur{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(20px) brightness(.88);display:block}
-.ns-portal19-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100vw,calc(100dvh * 1145 / 1374));aspect-ratio:1145/1374;background:#b9e9ff}
-.ns-portal19-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
-.ns-portal19-form{position:absolute;inset:0;z-index:2}
-.ns-portal19-form input[type="text"],.ns-portal19-form input[type="password"]{position:absolute;background:transparent;border:0;outline:0;font-size:16px;color:#1f2937;padding:0 3% 0 11%;box-sizing:border-box;border-radius:8px;touch-action:manipulation}
-.ns-portal19-form input[type="text"]:focus,.ns-portal19-form input[type="password"]:focus{box-shadow:inset 0 0 0 2px rgba(14,124,123,.45)}
-.ns-p19-email{left:48.2%;width:43.7%;top:35.7%;height:8.0%}
-.ns-p19-pass{left:48.2%;width:43.7%;top:47.1%;height:7.8%}
-.ns-p19-eye{position:absolute;left:86.5%;width:5%;top:47.1%;height:7.8%;background:transparent;border:0;cursor:pointer;font-size:0;color:transparent;padding:0;touch-action:manipulation}
-.ns-p19-remember{position:absolute;left:48.2%;top:55.2%;width:3.5%;height:3.2%;min-width:22px;min-height:22px;opacity:0;cursor:pointer;margin:0;touch-action:manipulation}
-.ns-p19-forgot{position:absolute;left:76%;width:16%;top:55.3%;height:max(3.5%,28px);background:transparent;border:0;cursor:pointer;font-size:0;color:transparent;text-decoration:none;display:block;padding:0;touch-action:manipulation}
-.ns-p19-login{position:absolute;left:48.2%;width:43.7%;top:61.3%;height:8.5%;background:transparent;border:0;cursor:pointer;font-size:0;color:transparent;padding:0;touch-action:manipulation}
-.ns-p19-signup{position:absolute;left:71.3%;width:14.1%;top:75.5%;height:max(3.5%,28px);background:transparent;border:0;cursor:pointer;font-size:0;color:transparent;text-decoration:none;display:block;padding:0;touch-action:manipulation}
-.ns-portal19-noimg .ns-portal19-form input[type="text"],.ns-portal19-noimg .ns-portal19-form input[type="password"]{background:#fff;border:1.5px solid #94a3b8;color:#1f2937}
-.ns-portal19-noimg .ns-p19-login{background:linear-gradient(90deg,#22c55e,#0f766e);color:#fff;font-size:16px;font-weight:700;border-radius:10px}
-.ns-portal19-noimg .ns-p19-eye{background:rgba(0,0,0,.15);color:#fff;font-size:14px;border-radius:8px}
-.ns-portal19-noimg .ns-p19-forgot,.ns-portal19-noimg .ns-p19-signup{color:#15803d;font-size:14px;font-weight:700;text-align:center}
-.ns-portal19-noimg .ns-p19-remember{opacity:1}
+/* ===== Step 21 — Sliding login/signup card, customer portal only (original build, video style) =====
+   Replaces the Step 19 artwork portal on the customer side only. No artwork image, no
+   transparent overlay over painted fields: a real floating card on a light-grey page.
+   Desktop: two halves; a solid purple panel with a slanted edge slides horizontally
+   across the card (left 50% -> 0, clip-path slant flips with it) and the other form
+   appears underneath. The panel content swaps (greeting <-> welcome-back) as it slides.
+   Mobile: the card stacks; the purple panel becomes a compact top banner and the
+   active form shows below it, so nothing is scaled down or clipped and the page scrolls.
+   Admin portal styles are in the separate admin repo and are untouched by this block. */
+body.ns-login-portal,body.ns-login-portal.ns-design-login-page{background:#e9e9ee;overflow:visible}
+body.ns-login-portal .topbar,body.ns-login-portal .sidebar,body.ns-login-portal.ns-design-login-page .topbar,body.ns-login-portal.ns-design-login-page .sidebar{display:none}
+body.ns-login-portal .layout,body.ns-login-portal.ns-design-login-page .layout{display:block;min-height:0}
+body.ns-login-portal .main,body.ns-login-portal.ns-design-login-page .main{max-width:none;padding:0;margin:0}
+.ns-slide-page{min-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:#e9e9ee}
+.ns-slide-brand{text-align:center;margin-bottom:16px}
+.ns-slide-brand .ns-login-logo{justify-content:center}
+.ns-slide-brand .ns-login-logo .logo-text{color:#1f2937}
+.ns-slide-tag{margin:6px 0 0;color:#4b5563;font-size:15px}
+.ns-slide-card{position:relative;width:min(920px,100%);min-height:540px;background:#fff;border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.18);overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.ns-slide-form{box-sizing:border-box;padding:40px 36px;display:flex;flex-direction:column;justify-content:center;transition:opacity .45s ease}
+.ns-slide-form h2{margin:0 0 6px;font-size:24px;color:#111827}
+.ns-slide-sub{margin:0 0 18px;color:#6b7280;font-size:14px}
+.ns-slide-form label{display:block;margin:12px 0 5px;font-size:14px;font-weight:600;color:#374151}
+.ns-slide-form input[type="text"],.ns-slide-form input[type="password"]{width:100%;box-sizing:border-box;min-height:48px;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:16px;background:#f3f4f6;color:#111827;outline:0}
+.ns-slide-form input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.18);background:#fff}
+.ns-slide-passwrap{position:relative}
+.ns-slide-passwrap input{padding-right:48px}
+.ns-slide-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:transparent;cursor:pointer;font-size:20px;line-height:1;touch-action:manipulation}
+.ns-slide-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0}
+.ns-slide-remember{display:flex;align-items:center;gap:8px;margin:0!important;font-size:14px;font-weight:500!important;white-space:nowrap}
+.ns-slide-remember input{width:20px;height:20px;accent-color:#6d28d9}
+.ns-slide-row a{font-size:14px;color:#6d28d9;text-decoration:none;white-space:nowrap}
+.ns-slide-btn{width:100%;min-height:52px;border:0;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.ns-slide-btn:active{transform:translateY(1px)}
+.ns-slide-form-login{opacity:1;pointer-events:auto}
+.ns-slide-form-signup{opacity:0;pointer-events:none}
+.ns-slide-card.ns-slide-signup .ns-slide-form-login{opacity:0;pointer-events:none}
+.ns-slide-card.ns-slide-signup .ns-slide-form-signup{opacity:1;pointer-events:auto}
+.ns-slide-panel{position:absolute;top:0;bottom:0;left:50%;width:50%;z-index:3;background:linear-gradient(135deg,#8b5cf6,#7c3aed 45%,#6d28d9);color:#fff;clip-path:polygon(14% 0,100% 0,100% 100%,0 100%);transition:left .65s ease,clip-path .65s ease}
+.ns-slide-card.ns-slide-signup .ns-slide-panel{left:0;clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
+.ns-slide-panel-view{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .3s ease .18s}
+.ns-slide-card:not(.ns-slide-signup) .ns-slide-panel-loginview{opacity:1;pointer-events:auto}
+.ns-slide-card.ns-slide-signup .ns-slide-panel-signupview{opacity:1;pointer-events:auto}
+.ns-slide-panel-view h2{margin:0 0 12px;font-size:26px;line-height:1.25}
+.ns-slide-panel-view p{margin:0 0 22px;font-size:15px;line-height:1.6;color:rgba(255,255,255,.92)}
+.ns-slide-panel-btn{min-height:48px;padding:12px 28px;border:1.5px solid rgba(255,255,255,.9);border-radius:999px;background:transparent;color:#fff;font-size:16px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.ns-slide-panel-btn:active{background:rgba(255,255,255,.18)}
+@media (max-width:720px){
+  .ns-slide-page{justify-content:flex-start;padding:16px 12px}
+  .ns-slide-brand{margin-bottom:12px}
+  .ns-slide-card{display:flex;flex-direction:column;min-height:0}
+  .ns-slide-panel{position:static;order:-1;width:100%;min-height:176px;clip-path:none;transition:none}
+  .ns-slide-card.ns-slide-signup .ns-slide-panel{left:auto;clip-path:none}
+  .ns-slide-panel-view{position:static;padding:24px 20px}
+  .ns-slide-form{order:1;padding:28px 20px}
+  .ns-slide-form-login,.ns-slide-form-signup,.ns-slide-card.ns-slide-signup .ns-slide-form-login,.ns-slide-card.ns-slide-signup .ns-slide-form-signup{display:none;opacity:1;pointer-events:auto}
+  .ns-slide-card:not(.ns-slide-signup) .ns-slide-form-login,.ns-slide-card.ns-slide-signup .ns-slide-form-signup{display:flex}
+  .ns-slide-panel-view h2{font-size:23px}
+}
