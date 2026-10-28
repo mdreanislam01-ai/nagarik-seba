@@ -263,10 +263,12 @@ function render(){
   </div></div>`;
  }
  else if(hash==='recharge'){
-  h+=`<div class="card"><h2>রিচার্জ — অটো রিচার্জ ২৪ ঘণ্টা 🔥</h2><p class="notice">পেমেন্ট করার পর অবশ্যই সঠিক Transaction ID এবং যে নম্বর থেকে পেমেন্ট করছেন ঐ নম্বর প্রদান করবেন। ভুল তথ্য দিলে আপনার অ্যাকাউন্ট সাসপেন্ড হবে।</p>
-  <label>Amount*</label><input id="amt" placeholder="সর্বনিম্ন রিচার্জ 100 টাকা" type="number"><p><button class="btn" onclick="const v=+document.getElementById('amt').value; if(!v||v<100){showModal('যাচাই','সর্বনিম্ন রিচার্জ 100 টাকা।')}else{demoMsg('রিচার্জ')}">Recharge</button></p><p class="muted">পেমেন্ট মাধ্যমের ধাপ  দেখানো হয়নি — কোনো পেমেন্ট করা হয় না।</p>
-  <h3>রিচার্জ ইতিহাস</h3>${tableHTML(['SL','NUMBER','TRXID','AMOUNT','TYPE','DATE','ACTION'],[],'<button class="btn ghost" onclick="demoMsg(\'Delete\')">Delete</button>')}<p><button class="btn accent" onclick="demoMsg('Delete All Recharge History')">Delete All Recharge History</button> <span class="muted">( — কিছু মোছা হয় না)</span></p>
-  <h3>ডিপোজিট ইতিহাস</h3>${tableHTML(['SL','TRXID','AMOUNT','TYPE','STATUS','DATE'],[])}</div>`;
+  h+=`<div class="card ns-rch"><h2>রিচার্জ</h2>
+  <section class="ns-rch-auto"><h3>⚡ অটোমেটিক পেমেন্ট</h3><p class="muted">bKash / Nagad দিয়ে পে করুন — পেমেন্ট মিললেই ব্যালেন্স অটো যোগ হবে, TrxID লিখতে হবে না।</p>
+  <label>Amount*</label><input id="amtAuto" placeholder="সর্বনিম্ন রিচার্জ 100 টাকা" type="number"><p><button class="btn" onclick="nsZammpayStart()">ZammPay দিয়ে পে করুন</button></p></section>
+  <section class="ns-rch-manual"><h3>ম্যানুয়াল পেমেন্ট</h3><p class="notice">পেমেন্ট করার পর অবশ্যই সঠিক Transaction ID এবং যে নম্বর থেকে পেমেন্ট করছেন ঐ নম্বর প্রদান করবেন। ভুল তথ্য দিলে আপনার অ্যাকাউন্ট সাসপেন্ড হবে।</p>
+  <label>Amount*</label><input id="amt" placeholder="সর্বনিম্ন রিচার্জ 100 টাকা" type="number"><p><button class="btn" onclick="const v=+document.getElementById('amt').value; if(!v||v<100){showModal('যাচাই','সর্বনিম্ন রিচার্জ 100 টাকা।')}else{demoMsg('রিচার্জ')}">Recharge</button></p></section>
+  <h3>রিচার্জ ইতিহাস</h3><div id="nsRchHist"></div></div>`;
  }
  else if(parts[0]==='service'){
   const s=SERVICES.find(x=>x.id===parts[1]); if(!s){h+='<p>পাওয়া যায়নি।</p>'}
@@ -433,6 +435,34 @@ async function nsRechargeSubmit() {
   try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(); render(); showModal('রিচার্জ অনুরোধ', `অনুরোধ #${r.recharge.id} — ${r.recharge.amount_bdt} টাকা, স্ট্যাটাস: pending। অ্যাডমিন approve করলে ব্যালেন্স যোগ হবে।`); }
   catch (e) { showModal('রিচার্জ হয়নি', e.message === 'trxid_exists' ? 'এই TrxID আগেই ব্যবহার হয়েছে।' : e.message); }
 }
+async function nsZammpayStart() {
+  if (!nsToken()) { showModal('লগইন প্রয়োজন', 'রিচার্জ করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
+  const amt = +document.getElementById('amtAuto').value;
+  if (!amt || amt < 100) { showModal('যাচাই', 'সর্বনিম্ন রিচার্জ 100 টাকা।'); return; }
+  try {
+    const r = await nsCall('/recharge/zammpay/initiate', 'POST', { amount_bdt: amt });
+    sessionStorage.setItem('ns_zamm_trx', r.zammpay_trx);
+    location.href = r.payment_url;
+  } catch (e) {
+    showModal('অটো পেমেন্ট শুরু হয়নি', e.message === 'zammpay_not_configured' ? 'অটো পেমেন্ট এখনো চালু হয়নি — ম্যানুয়াল পেমেন্ট ব্যবহার করুন।' : e.message);
+  }
+}
+async function nsZammpayPoll(cancelled) {
+  const trx = sessionStorage.getItem('ns_zamm_trx');
+  const el = document.getElementById('nsZammStatus');
+  if (!trx) { if (el) el.textContent = 'এই পেমেন্টের তথ্য পাওয়া যায়নি — রিচার্জ ইতিহাস দেখুন।'; return; }
+  if (cancelled) { if (el) el.textContent = 'পেমেন্ট বাতিল হয়েছে — কোনো টাকা কাটা হয়নি, ব্যালেন্স যোগ হয়নি।'; sessionStorage.removeItem('ns_zamm_trx'); return; }
+  for (let i = 0; i < 12; i++) {
+    try {
+      const r = await nsCall('/recharge/zammpay/status?trx_id=' + encodeURIComponent(trx));
+      if (r.status === 'Completed' && r.credited) { if (el) el.textContent = `পেমেন্ট সফল — ৳ ${r.recharge.amount_bdt} ব্যালেন্সে যোগ হয়েছে। নতুন ব্যালেন্স: ৳ ${r.wallet_bdt}`; NS_STATE.wallet = r.wallet_bdt; sessionStorage.removeItem('ns_zamm_trx'); await nsRefresh(); return; }
+      if (r.status === 'Completed' && !r.credited) { if (el) el.textContent = 'পেমেন্ট সম্পন্ন দেখাচ্ছে কিন্তু অ্যামাউন্ট মেলেনি — সাপোর্টে জানান, ম্যানুয়ালি যাচাই করা হবে।'; sessionStorage.removeItem('ns_zamm_trx'); return; }
+      if (r.status === 'Canceled') { if (el) el.textContent = 'পেমেন্ট বাতিল হয়েছে — ব্যালেন্স যোগ হয়নি।'; sessionStorage.removeItem('ns_zamm_trx'); return; }
+    } catch (e) { if (el) el.textContent = 'যাচাইয়ে সমস্যা হয়েছে: ' + e.message; return; }
+    await new Promise((res) => setTimeout(res, 3000));
+  }
+  if (el) el.textContent = 'পেমেন্ট এখনো Pending — SMS যাচাই হতে কিছু সময় লাগতে পারে। কিছুক্ষণ পর রিচার্জ ইতিহাস দেখুন।';
+}
 function nsLoginLogoHTML() {
   return '<div class="ns-login-logo"><span class="logo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="19" fill="#0f766e"/><circle cx="24" cy="8" r="4" fill="#f59e0b"/><path d="M24 40V22M24 30c-6-1-10-5-11-11 6 1 10 5 11 11zm0 0c6-1 10-5 11-11-6 1-10 5-11 11z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="logo-text">নাগরিক সেবা<small>nagarikseba.com</small></span></div>';
 }
@@ -511,6 +541,10 @@ render = async function () {
     document.querySelector('#main').innerHTML = '<div class="card"><h2>লগআউট</h2><p>সার্ভার সেশন শেষ হয়েছে।</p><p><a class="btn" href="#/login">আবার লগইন</a></p></div>'; return;
   }
   try { await nsRefresh(); } catch (e) {}
+  if (hash === 'recharge/zammpay-success' || hash === 'recharge/zammpay-cancel') {
+    document.querySelector('#main').innerHTML = '<div class="card ns-rch"><h2>রিচার্জ যাচাই</h2><p id="nsZammStatus" class="muted">পেমেন্ট যাচাই হচ্ছে…</p><p><a class="btn" href="#/recharge">রিচার্জ পেজে ফিরুন</a></p></div>';
+    nsZammpayPoll(hash === 'recharge/zammpay-cancel'); return;
+  }
   _origRender();
   // Dashboard: real balance (prototype hard-coded ৳ ১০).
   const bal = document.querySelector('.bal-amount');
@@ -524,9 +558,10 @@ render = async function () {
       wrap.innerHTML = '<label>পেমেন্ট মাধ্যম*</label><select id="rchMethod"><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Bank</option></select><label>যে নম্বর থেকে পেমেন্ট*</label><input id="rchSender" placeholder="01XXXXXXXXX"><label>Transaction ID*</label><input id="rchTrx" placeholder="TrxID">';
       btn.parentNode.insertBefore(wrap, btn); btn.setAttribute('onclick', 'nsRechargeSubmit()');
     }
-    const tables = [...document.querySelectorAll('#main table')];
-    if (tables[0] && NS_STATE.recharges.length) tables[0].innerHTML = '<tr><th>SL</th><th>NUMBER</th><th>TRXID</th><th>AMOUNT</th><th>TYPE</th><th>DATE</th></tr>' + NS_STATE.recharges.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.sender_number || '')}</td><td>${esc(r.trxid)}</td><td>${r.amount_bdt}</td><td>${esc(r.method)}</td><td>${esc(r.created_at || '')}</td></tr>`).join('');
-    if (tables[1] && NS_STATE.recharges.length) tables[1].innerHTML = '<tr><th>SL</th><th>TRXID</th><th>AMOUNT</th><th>TYPE</th><th>STATUS</th><th>DATE</th></tr>' + NS_STATE.recharges.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.trxid)}</td><td>${r.amount_bdt}</td><td>${esc(r.method)}</td><td>${esc(r.status)}</td><td>${esc(r.created_at || '')}</td></tr>`).join('');
+    // Compact history: one small row per recharge (no wide tables,
+    // no Search/pagination chrome). Auto rows show as ZammPay অটো.
+    const hist = document.getElementById('nsRchHist');
+    if (hist) hist.innerHTML = NS_STATE.recharges.length ? NS_STATE.recharges.slice(0, 30).map((r) => `<div class="ns-rch-row"><span class="ns-rch-amt">৳ ${r.amount_bdt}</span><span class="ns-rch-meta">${r.channel === 'zammpay' ? 'ZammPay অটো' : esc(r.method)} · ${esc(r.trxid)}</span><span class="ns-rch-st ns-st-${esc(r.status)}">${esc(r.status)}</span><span class="ns-rch-date">${esc((r.created_at || '').slice(0, 10))}</span></div>`).join('') : '<p class="muted">এখনো কোনো রিচার্জ নেই</p>';
   }
   if (parts[0] === 'service' || parts[0] === 'order') {
     const card = document.querySelector('#main .card');
