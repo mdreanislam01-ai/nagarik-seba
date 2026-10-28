@@ -1,6 +1,21 @@
 /* Nagarik Seba — DESIGN-ONLY demo. No real data service, no submission, no deduction, no real printing. */
 const $=s=>document.querySelector(s);
-function showModal(t,html){$('#modalTitle').textContent=t;$('#modalBody').innerHTML=html;$('#modalBack').classList.add('open')}
+/* Step 50 — every showModal popup renders in the Step 49
+   reference-format card: teal gradient header with the white check
+   badge, body, and বাতিল / ঠিক আছে pills when the body has no button
+   of its own (Autoload forms keep their own buttons). Title stays
+   plain text, as before. */
+function showModal(t,html){
+  const back=$('#modalBack');
+  const hasBtn=html.indexOf('<button')!==-1;
+  back.innerHTML='<div class="ns-rch-card"><div class="ns-rch-head"><span class="ns-rch-badge">✓</span><div><div class="ns-rch-title"></div></div><button type="button" class="ns-rch-x" aria-label="বন্ধ করুন">✕</button></div><div class="ns-rch-body"><div id="modalBody"></div>'+(hasBtn?'':'<div class="ns-rch-btns"><button type="button" class="ns-rch-cancel">বাতিল</button><button type="button" class="ns-rch-ok">ঠিক আছে <span>→</span></button></div>')+'</div></div>';
+  back.querySelector('.ns-rch-title').textContent=t;
+  back.querySelector('#modalBody').innerHTML=html;
+  back.querySelector('.ns-rch-x').addEventListener('click',function(){closeModal();});
+  const c=back.querySelector('.ns-rch-cancel'); if(c)c.addEventListener('click',function(){closeModal();});
+  const o=back.querySelector('.ns-rch-ok'); if(o)o.addEventListener('click',function(){closeModal();});
+  back.classList.add('open');
+}
 function closeModal(){$('#modalBack').classList.remove('open')}
 function demoMsg(what){showModal('নোটিশ',`<p><b>${what}</b> — এই অপশনটি বর্তমানে চালু নয়।</p>`)}
 function toggleDark(){document.body.classList.toggle('dark');const sw=document.querySelector('.switch__input');if(sw){sw.checked=document.body.classList.contains('dark')}}
@@ -550,7 +565,7 @@ async function nsDoLogin() {
   if (!identifier || !password) { showModal('লগইন হয়নি', 'ইমেইল/ফোন নম্বর ও পাসওয়ার্ড লিখুন।'); return; }
   const btn = [...document.querySelectorAll('.ns-slide-btn')].find(b => b.textContent.trim() === 'লগইন');
   if (btn) { btn.disabled = true; btn.textContent = 'লগইন হচ্ছে…'; }
-  try { const r = await nsCall('/auth/login', 'POST', { identifier, password, remember_me }); nsSetToken(r.token, remember_me); await nsRefresh(); location.hash = '#/dashboard'; render(); }
+  try { const r = await nsCall('/auth/login', 'POST', { identifier, password, remember_me }); nsSetToken(r.token, remember_me); await nsRefresh(); nsLoginOkPopup(function () { location.hash = '#/dashboard'; render(); }); }
   catch (e) { if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = 'লগইন'; } showModal('লগইন হয়নি', e.message === 'invalid_credentials' ? 'ইমেইল/ফোন নম্বর বা পাসওয়ার্ড ভুল।' : e.message); }
 }
 async function nsDoForgot() {
@@ -1968,4 +1983,21 @@ function nsRchPopup(o) {
   card.querySelector('.ns-rch-cancel').addEventListener('click', done(o.onCancel));
   card.querySelector('.ns-rch-ok').addEventListener('click', done(o.onOk));
   back.addEventListener('click', function (e) { if (e.target === back) done(o.onCancel)(); });
+}
+
+/* ===== Step 51 — login success popup (reference layout, site colours) =====
+   Shown once on an explicit login click after the API confirms the
+   login, before navigating to the dashboard. Centred check badge,
+   title + subtitle, single ঠিক আছে button — the reference card's
+   layout, but every colour is the site's teal. */
+function nsLoginOkClose() { const el = document.getElementById('nsLoginOkBack'); if (el) el.remove(); }
+function nsLoginOkPopup(onOk) {
+  nsLoginOkClose();
+  const back = document.createElement('div');
+  back.id = 'nsLoginOkBack'; back.className = 'ns-login-ok-back';
+  const card = document.createElement('div'); card.className = 'ns-login-ok-card';
+  card.innerHTML = '<div class="ns-login-ok-badge">✓</div><div class="ns-login-ok-title">লগইন সফল হয়েছে!</div><div class="ns-login-ok-sub">স্বাগতম! সবকিছু প্রস্তুত।</div><button type="button" class="ns-login-ok-btn">ঠিক আছে</button>';
+  back.appendChild(card);
+  document.body.appendChild(back);
+  card.querySelector('.ns-login-ok-btn').addEventListener('click', function () { nsLoginOkClose(); if (onOk) onOk(); });
 }
