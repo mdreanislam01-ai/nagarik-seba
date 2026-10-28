@@ -463,7 +463,7 @@ async function nsRechargeSubmit() {
   const amt = +document.getElementById('amt').value, method = document.getElementById('rchMethod').value,
     sender = document.getElementById('rchSender').value, trxid = document.getElementById('rchTrx').value.trim();
   if (!amt || amt < 100 || !trxid) { showModal('যাচাই', 'সর্বনিম্ন রিচার্জ 100 টাকা, আর TrxID লাগবে।'); return; }
-  try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(true); render(); showModal('রিচার্জ অনুরোধ', `অনুরোধ #${r.recharge.id} — ${r.recharge.amount_bdt} টাকা, স্ট্যাটাস: pending। অ্যাডমিন approve করলে ব্যালেন্স যোগ হবে।`); }
+  try { const r = await nsCall('/recharge/request', 'POST', { method, sender_number: sender, trxid, amount_bdt: amt }); await nsRefresh(true); render(); nsRchPopup({ title: 'রিচার্জ অনুরোধ পাঠানো হয়েছে!', msg: 'অনুরোধ #' + r.recharge.id + ' — <b>৳' + NS_BN_DIG(r.recharge.amount_bdt) + '</b> টাকা, স্ট্যাটাস: pending।', info: 'অ্যাডমিন approve করলে টাকা যোগ হবে।' }); }
   catch (e) { showModal('রিচার্জ হয়নি', e.message === 'trxid_exists' ? 'এই TrxID আগেই ব্যবহার হয়েছে।' : e.message); }
 }
 async function nsZammpayStart() {
@@ -1943,3 +1943,29 @@ render = async function () {
   const main = document.querySelector('#main');
   if (main) main.innerHTML = nsProfPageHTML();
 };
+
+/* ===== Step 49 — customer recharge popup: reference format, site colours =====
+   The manual recharge request success uses the same reference format
+   as the admin popups (gradient header, message, mint info strip,
+   বাতিল / ঠিক আছে pills, site teal only). Wording stays honest: this
+   is a REQUEST (pending), never a completed recharge — approval still
+   comes from the admin. */
+function nsRchClose() { const el = document.getElementById('nsRchBack'); if (el) el.remove(); }
+function nsRchPopup(o) {
+  nsRchClose();
+  const back = document.createElement('div');
+  back.id = 'nsRchBack'; back.className = 'ns-rch-back';
+  const card = document.createElement('div'); card.className = 'ns-rch-card';
+  card.innerHTML =
+    '<div class="ns-rch-head"><span class="ns-rch-badge">✓</span><div><div class="ns-rch-title">' + o.title + '</div>' + (o.sub ? '<div class="ns-rch-sub">' + o.sub + '</div>' : '') + '</div><button type="button" class="ns-rch-x" aria-label="বন্ধ করুন">✕</button></div>' +
+    '<div class="ns-rch-body"><div class="ns-rch-msg"><span class="ns-rch-ico">৳</span><div>' + o.msg + '</div></div>' +
+    (o.info ? '<div class="ns-rch-info"><span>ⓘ</span><span>' + o.info + '</span></div>' : '') +
+    '<div class="ns-rch-btns"><button type="button" class="ns-rch-cancel">বাতিল</button><button type="button" class="ns-rch-ok">ঠিক আছে <span>→</span></button></div></div>';
+  back.appendChild(card);
+  document.body.appendChild(back);
+  const done = function (fn) { return function () { nsRchClose(); if (fn) fn(); }; };
+  card.querySelector('.ns-rch-x').addEventListener('click', done(o.onCancel));
+  card.querySelector('.ns-rch-cancel').addEventListener('click', done(o.onCancel));
+  card.querySelector('.ns-rch-ok').addEventListener('click', done(o.onOk));
+  back.addEventListener('click', function (e) { if (e.target === back) done(o.onCancel)(); });
+}
