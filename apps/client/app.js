@@ -1856,3 +1856,63 @@ render = async function () {
   const main = document.querySelector('#main');
   if (main) main.innerHTML = `<div class="card"><h3>Activity Logs</h3>` + activityLogsHTML() + `</div>`;
 };
+
+/* ===== Step 41 — Profile page rebuilt to the reference design =====
+   Reference: big round avatar, name/email/phone, Profile Completion
+   bar + checklist, Account Details (Verified/Balance/Joined),
+   Profile Update form. Single "প্রোফাইল" title only (the old page
+   repeated it), photo upload integrated under the avatar, Change
+   Password kept below as its own card (wired to nsChangePassword,
+   which reads the 3 password inputs in order). Theme Color, Cards
+   Lists and the in-page logout card are gone (reference has none;
+   logout lives in the sidebar). NO reference-person data is copied:
+   every value comes from the logged-in user's own NS_STATE
+   (name/email/phone/verified/wallet/created_at) and their own
+   recharge list. Profile Completion is computed honestly:
+   Account Created always; Phone added if a phone is on file;
+   Recharged if any recharge is approved; Email verified stays
+   pending because this site has no email-verification system yet
+   (never shown as verified when it is not). Dashboard untouched. */
+function nsProfPageHTML() {
+  const u = NS_STATE.user || {};
+  const done = [
+    ['Account Created.', true],
+    ['Email verified.', false],
+    ['Phone number added.', !!(u.phone || '').trim()],
+    ['Have recharged successfully.', (NS_STATE.recharges || []).some(r => r.status === 'approved')],
+  ];
+  const pct = Math.round(done.filter(d => d[1]).length * 100 / done.length);
+  let joined = '—';
+  try { if (u.created_at) joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }); } catch (e) {}
+  return '<div class="ns-prof-page"><h2>প্রোফাইল</h2>' +
+    '<div class="card ns-prof-head"><div class="ns-prof-avatar" id="photoPreviewWrap">' + profilePreviewHTML() + '</div>' +
+    '<div class="ns-prof-name">' + esc(u.name || '') + '</div>' +
+    '<div class="ns-prof-contact">' + esc(u.email || '') + '</div>' +
+    '<div class="ns-prof-contact">' + esc(u.phone || '') + '</div>' +
+    '<div class="ns-prof-photo-btns"><label class="btn" for="profilePhotoInput">ছবি আপলোড করুন</label>' +
+    '<input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhotoFile(this)">' +
+    '<button class="btn ghost" id="photoSaveBtn" type="button" disabled onclick="saveProfilePhoto()">সংরক্ষণ করুন</button>' +
+    '<button class="btn ghost" type="button" onclick="removeProfilePhoto()">ছবি সরান</button></div>' +
+    '<p class="muted" id="photoMsg">ছবি বাছলে এখানে প্রিভিউ দেখা যাবে। সংরক্ষণ করুন চাপলে হোমপেজের প্রোফাইল কার্ডে এই ছবি দেখা যাবে।</p></div>' +
+    '<div class="card"><div class="ns-prof-comp-head"><span>Profile Completion</span><b>' + pct + '% Complete</b></div>' +
+    '<div class="ns-prof-bar"><div style="width:' + pct + '%"></div></div><ul class="ns-prof-check">' +
+    done.map(d => '<li class="' + (d[1] ? 'ok' : 'no') + '">' + (d[1] ? '✓ ' : '○ ') + d[0] + '</li>').join('') + '</ul></div>' +
+    '<div class="card"><h3>Account Details</h3>' +
+    '<div class="ns-prof-row"><span>Verified:</span>' + (u.verified ? 'Yes' : 'No') + '</div>' +
+    '<div class="ns-prof-row"><span>Balance:</span>৳ ' + (NS_STATE.wallet != null ? NS_STATE.wallet : '') + '</div>' +
+    '<div class="ns-prof-row"><span>Joined:</span>' + joined + '</div></div>' +
+    '<div class="card ns-prof-update"><h3>Profile Update</h3>' +
+    '<label>নাম*</label><input id="profileNameInput" value="' + esc(u.name || '') + '">' +
+    '<label>ইমেল*</label><input disabled value="' + esc(u.email || '') + '">' +
+    '<label>নম্বর*</label><input id="profilePhoneInput" value="' + esc(u.phone || '') + '">' +
+    '<p><button class="btn" onclick="saveProfileUpdate()">Update Profile</button></p></div>' +
+    '<div class="card"><h3>Change Password</h3><label>পুরাতন পাসওয়ার্ড*</label><input type="password"><label>নতুন পাসওয়ার্ড*</label><input type="password"><label>কনফার্ম পাসওয়ার্ড*</label><input type="password"><p><button class="btn" onclick="nsChangePassword()">Update Password</button></p></div></div>';
+}
+const NS_PREV_RENDER_41 = render;
+render = async function () {
+  await NS_PREV_RENDER_41();
+  const hash = (location.hash || '').replace('#/', '') || 'dashboard';
+  if (hash !== 'profile' || !nsToken() || !NS_STATE.user) return;
+  const main = document.querySelector('#main');
+  if (main) main.innerHTML = nsProfPageHTML();
+};

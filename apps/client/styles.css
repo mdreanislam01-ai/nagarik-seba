@@ -595,3 +595,26 @@ body.dark .ns-cat-head:hover,body.dark .ns-cat.open .ns-cat-head{background:#164
 .logo-mark img{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px}
 .ns-logo-lockup{width:min(240px,68vw);height:auto;display:block;margin:0 auto}
 body.dark .ns-logo-lockup{background:#fff;border-radius:14px;padding:10px 14px}
+
+/* ===== Step 41 — Reference profile design ===== */
+.ns-prof-page h2{color:#0E7C7B}
+.ns-prof-head{text-align:center}
+.ns-prof-avatar{width:150px;height:150px;border-radius:50%;overflow:hidden;margin:0 auto 12px;background:#f97316;display:flex;align-items:center;justify-content:center}
+.ns-prof-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.ns-prof-avatar svg{width:90px;height:90px}
+.ns-prof-name{font-size:22px;font-weight:700;color:#1f2937}
+.ns-prof-contact{color:#0E7C7B;margin-top:4px}
+.ns-prof-photo-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.ns-prof-photo-btns .btn{margin:0}
+.ns-prof-comp-head{display:flex;justify-content:space-between;gap:8px;margin:6px 0 10px;align-items:baseline}
+.ns-prof-comp-head span{color:#0E7C7B;font-weight:700;font-size:19px}
+.ns-prof-comp-head b{color:#0E7C7B;white-space:nowrap}
+.ns-prof-bar{height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+.ns-prof-bar div{height:100%;background:#22c55e;border-radius:99px}
+.ns-prof-check{list-style:none;margin:12px 0 0;padding:0}
+.ns-prof-check li{margin:6px 0}
+.ns-prof-check li.ok{color:#0E7C7B}
+.ns-prof-check li.no{color:#94a3b8}
+.ns-prof-row{margin:12px 0}
+.ns-prof-row span{display:block;color:#0E7C7B}
+.ns-prof-update .btn{width:100%}
