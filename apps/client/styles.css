@@ -575,3 +575,18 @@ body.ns-login-portal .main,body.ns-login-portal.ns-design-login-page .main{max-w
 .ns-st-pending{background:#fef3c7;color:#92400e}
 .ns-st-rejected{background:#fee2e2;color:#991b1b}
 .ns-rch-date{color:#94a3b8;font-size:12px}
+
+/* Step 34 — sidebar category accordion (site tokens only: teal #0E7C7B/#0F8483, bg #EEF2F7) */
+.ns-cat{margin:4px 0}
+.ns-cat-head{width:100%;display:flex;align-items:center;gap:8px;padding:10px;border:0;border-radius:8px;background:transparent;cursor:pointer;font-size:14px;font-weight:700;color:#1f2937;text-align:left}
+.ns-cat-head:hover{background:#e6f4f2;color:#0E7C7B}
+.ns-cat.open .ns-cat-head{background:#e6f4f2;color:#0E7C7B}
+.ns-cat-count{margin-left:auto;font-size:12px;font-weight:600;color:#64748b}
+.ns-cat-chev{font-size:20px;line-height:1;transition:transform .25s}
+.ns-cat.open .ns-cat-chev{transform:rotate(90deg)}
+.ns-cat-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.ns-cat.open .ns-cat-body{max-height:720px}
+.ns-cat-body a{padding-left:22px!important}
+.ns-free{margin-left:auto;font-size:11px;font-weight:700;color:#0E7C7B;background:#CDE8E5;border-radius:999px;padding:1px 8px}
+body.dark .ns-cat-head{color:#e2e8f0}
+body.dark .ns-cat-head:hover,body.dark .ns-cat.open .ns-cat-head{background:#164e63;color:#5eead4}

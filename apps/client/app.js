@@ -1689,3 +1689,70 @@ render = async function () {
   await nsMyInfoLoad();
   main.innerHTML = nsMyInfoHTML();
 };
+
+/* ===== Step 34 — Sidebar by category (accordion) =====
+   Presentation only: no route, page, price or API call changes.
+   The old flat sections (সার্ভিস / অর্ডার সার্ভিস / বিনামূল্যে
+   সার্ভিস) are replaced by topic groups. Every link below is built
+   from the existing SERVICES / ORDERS / FREES / HISTORIES tables by
+   id, so no route string is retyped and nothing can be lost.
+   ড্যাশবোর্ড + রিচার্জ stay pinned on top, outside any group.
+   Free tools keep a small "ফ্রি" pill. One group opens at a time;
+   navigating to a link (sidebar, dashboard card, direct hash) opens
+   that link's group automatically. */
+const NS_CAT_SVC = (id) => { const s = SERVICES.find(x => x.id === id); return s ? ['service/' + id, s.name, false] : null; };
+const NS_CAT_ORD = (id) => { const o = ORDERS.find(x => x.id === id); return o ? ['order/' + id, o.name, false] : null; };
+const NS_CAT_FREE = (id) => { const f = FREES.find(x => x.id === id); return f ? ['free/' + id, f.name, true] : null; };
+const NS_CATS = [
+  { id: 'nid', head: '🪪 জাতীয় পরিচয়পত্র', items: ['nid', 'snid', 'ncf'].map(NS_CAT_SVC).concat(['nidcard', 'smartcardpdf', 'smartnidcard', 'sign', 'servercopy'].map(NS_CAT_ORD)).concat(['sc', 'ssc'].map(NS_CAT_SVC)).concat(['nidpsset', 'namethikananid', 'nid2allnumber'].map(NS_CAT_ORD)) },
+  { id: 'brn', head: '👶 জন্ম নিবন্ধন', items: ['brn', 'brni'].map(NS_CAT_SVC).concat(['newbdris'].map(NS_CAT_ORD)).concat(['dobfinder'].map(NS_CAT_FREE)) },
+  { id: 'tin', head: '🧾 টিন ও ভাতা', items: ['tin'].map(NS_CAT_SVC).concat(['tincertificate'].map(NS_CAT_ORD)).concat(['tininfo'].map(NS_CAT_FREE)).concat(['vuk'].map(NS_CAT_SVC)) },
+  { id: 'mobile', head: '🛂 পাসপোর্ট ও মোবাইল তথ্য', items: ['passport', 'location', 'number2imei', 'i2an', 'calllist', 'biomatic', 'info', 'pinset'].map(NS_CAT_ORD) },
+  { id: 'free', head: '✍️ বিনামূল্যে টুলস', items: ['signature'].map(NS_CAT_FREE) },
+  { id: 'history', head: '🕘 হিস্টোরি লিস্ট', items: HISTORIES.map(h => ['history/' + h.id, h.name, false]) },
+  { id: 'help', head: '💬 হেল্পলাইন', items: [['report', 'রিপোর্ট', false], ['support', 'সাপোর্ট', false]] },
+  { id: 'account', head: '👤 অ্যাকাউন্ট', items: [['profile', 'প্রোফাইল', false], ['myinfo', 'আমার তথ্য', false], ['devices', 'ডিভাইস', false], ['logout', 'লগআউট', false]] },
+];
+const NS_BN_DIG = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+function nsCatLinkHTML(r, l, free) {
+  const k = r.split('/').pop();
+  return `<a href="#/${r}" data-r="${r}">${ico(k)}<span>${l}</span>${free ? '<span class="ns-free">ফ্রি</span>' : ''}</a>`;
+}
+navHTML = function () {
+  let h = '<div class="sidebar-scroll">';
+  h += `<a href="#/dashboard" data-r="dashboard">${ico('dashboard')}<span>ড্যাশবোর্ড</span></a>`;
+  h += `<a href="#/recharge" data-r="recharge">${ico('recharge')}<span>রিচার্জ</span></a>`;
+  NS_CATS.forEach(c => {
+    h += `<div class="ns-cat" data-cat="${c.id}"><button type="button" class="ns-cat-head" aria-expanded="false"><span class="ns-cat-title">${c.head}</span><span class="ns-cat-count">${NS_BN_DIG(c.items.length)}টি</span><span class="ns-cat-chev">›</span></button><div class="ns-cat-body">${c.items.filter(Boolean).map(i => nsCatLinkHTML(i[0], i[1], i[2])).join('')}</div></div>`;
+  });
+  h += '</div>';
+  h += `<div class="sidebar-logout"><a href="#/logout" data-r="logout">${ico('logout')}<span>লগআউট</span></a></div>`;
+  return h;
+};
+function nsCatSetOpen(id) {
+  document.querySelectorAll('.ns-cat').forEach(g => {
+    const open = g.dataset.cat === id;
+    g.classList.toggle('open', open);
+    const b = g.querySelector('.ns-cat-head'); if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+function nsCatOpenActive() {
+  const a = document.querySelector('.sidebar a.active');
+  if (!a) return;
+  const g = a.closest('.ns-cat');
+  if (g) nsCatSetOpen(g.dataset.cat);
+}
+document.querySelector('#sidebar').innerHTML = navHTML();
+(function () {
+  const sc = document.querySelector('.sidebar-scroll');
+  if (sc && !document.getElementById('nsSidebarLogin')) { const a = document.createElement('a'); a.id = 'nsSidebarLogin'; a.href = '#/login'; a.innerHTML = '<span>লগইন</span>'; sc.appendChild(a); }
+})();
+document.querySelector('#sidebar').addEventListener('click', e => {
+  const head = e.target.closest('.ns-cat-head');
+  if (!head) return;
+  const g = head.closest('.ns-cat');
+  nsCatSetOpen(g.classList.contains('open') ? null : g.dataset.cat);
+});
+const NS_PREV_RENDER_34 = render;
+render = async function () { await NS_PREV_RENDER_34(); nsCatOpenActive(); };
+nsCatOpenActive();
