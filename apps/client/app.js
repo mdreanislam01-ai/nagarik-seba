@@ -204,7 +204,7 @@ const SIDEBAR=[
  ['বিনামূল্যে সার্ভিস',FREES.map(f=>['free/'+f.id,f.name])],
  ['হিস্টোরি লিস্ট',HISTORIES.map(h=>['history/'+h.id,h.name])],
  ['হেল্পলাইন',[['report','রিপোর্ট'],['support','সাপোর্ট']]],
- ['অ্যাকাউন্ট',[['profile','প্রোফাইল'],['devices','ডিভাইস'],['logout','লগআউট']]],
+ ['অ্যাকাউন্ট',[['profile','প্রোফাইল'],['myinfo','আমার তথ্য'],['devices','ডিভাইস'],['logout','লগআউট']]],
 ];
 function navHTML(){
  // BUG FIX (logout visibility): the old sidebar was one long scrollable
@@ -1602,4 +1602,55 @@ render = async function () {
   document.body.classList.remove('ns-login-portal');
   document.body.classList.remove('ns-design-login-page');
   await _renderStep11Client();
+};
+
+/* ===== Step 22 — আমার তথ্য (RESTRICTED own-record only) =====
+   Only a logged-in, admin-verified user sees ONLY their own record.
+   No search by name, no area search, no match list, no public portal,
+   no charge. Step 1: verified status + whether a record exists
+   (masked, no full NID). Step 2: user enters their OWN NID to confirm.
+   Step 3: only their own plain summary (disclaimer comes from the API
+   response, so this file keeps exactly one disclaimer literal). */
+async function nsMyInfoLoad() {
+  if (!nsToken()) return;
+  try { window.__nsMyInfo = await nsCall('/me/my-record'); }
+  catch (e) { window.__nsMyInfo = { error: e.message }; }
+}
+function nsMyInfoHTML() {
+  const d = window.__nsMyInfo || {};
+  if (d.error) return '<div class="card"><h2>আমার তথ্য</h2><p>তথ্য আনা যায়নি: ' + esc(d.error) + '</p></div>';
+  if (!d.verified) return '<div class="card"><h2>আমার তথ্য</h2><p>অ্যাডমিন ভেরিফিকেশন বাকি আছে। ভেরিফাই হওয়ার পর এখানে আপনার নিজের তথ্য দেখা যাবে।</p></div>';
+  if (!d.has_record) return '<div class="card"><h2>আমার তথ্য</h2><p>ভেরিফাইড। তবে আপনার জন্য কোনো রেকর্ড নেই — অ্যাডমিন রেকর্ড যোগ করলে এখানে দেখা যাবে।</p></div>';
+  const m = d.masked_summary || {};
+  if (window.__nsMyInfoStep === 3 && window.__nsMyInfoSummary) {
+    const s = window.__nsMyInfoSummary;
+    return '<div class="card"><h2>আমার তথ্য</h2><p class="muted">' + esc(s.disclaimer || '') + '</p><p>নাম: ' + esc(s.full_name || '') + '</p><p>আইডির শেষ ৪ সংখ্যা: ••••' + esc(s.nid_last4 || '') + '</p><p>এলাকা: ' + esc(s.area_text || '') + '</p><p>নোট: ' + esc(s.notes || '') + '</p><button class="btn" onclick="nsMyInfoDownload()">সারাংশ ডাউনলোড (টেক্সট)</button> <button class="btn ghost" onclick="nsMyInfoBack()">ফিরে যান</button></div>';
+  }
+  if (window.__nsMyInfoStep === 2) {
+    return '<div class="card"><h2>আমার তথ্য — নিশ্চিত করুন</h2><p>আপনার নিজের নম্বরটি লিখুন। এটি শুধু আপনার ভেরিফাইড রেকর্ডের সাথে মেলানো হবে, অন্য কারো তথ্য খোঁজা হবে না।</p><label>আপনার নিজের নম্বর*</label><input id="nsMyNid" placeholder="আপনার নিজের নম্বর"><button class="btn" onclick="nsMyInfoConfirm()">তথ্য দেখুন</button> <button class="btn ghost" onclick="nsMyInfoBack()">ফিরে যান</button></div>';
+  }
+  return '<div class="card"><h2>আমার তথ্য</h2><p>ভেরিফাইড। আপনার জন্য একটি রেকর্ড আছে।</p><p>নাম: ' + esc(m.full_name || '') + '</p><p>আইডির শেষ ৪ সংখ্যা: ••••' + esc(m.nid_last4 || '') + '</p><p>এলাকা: ' + esc(m.area_text || '') + '</p><button class="btn" onclick="nsMyInfoStep2()">তথ্য দেখুন</button></div>';
+}
+function nsMyInfoStep2() { window.__nsMyInfoStep = 2; render(); }
+function nsMyInfoBack() { window.__nsMyInfoStep = 1; window.__nsMyInfoSummary = null; render(); }
+async function nsMyInfoConfirm() {
+  const el = document.getElementById('nsMyNid'); const nid = el ? el.value.trim() : '';
+  if (!nid) { showModal('নিশ্চিত হয়নি', 'আপনার নিজের নম্বরটি লিখুন।'); return; }
+  try { const r = await nsCall('/me/my-record/confirm', 'POST', { nid }); window.__nsMyInfoSummary = r.summary; window.__nsMyInfoStep = 3; render(); }
+  catch (e) { showModal('নিশ্চিত হয়নি', e.message === 'nid_mismatch' ? 'আপনার নিজের নম্বরের সাথে মেলেনি।' : e.message); }
+}
+function nsMyInfoDownload() {
+  const s = window.__nsMyInfoSummary; if (!s) return;
+  const text = ['নাগরিক সেবা — আমার তথ্য (সারাংশ)', s.disclaimer || '', '', 'নাম: ' + (s.full_name || ''), 'আইডির শেষ ৪ সংখ্যা: ••••' + (s.nid_last4 || ''), 'এলাকা: ' + (s.area_text || ''), 'নোট: ' + (s.notes || '')].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = 'amar-tothyo.txt'; a.click();
+}
+const _renderStep22Client = render;
+render = async function () {
+  await _renderStep22Client();
+  const hash = location.hash.replace('#/', '') || 'dashboard';
+  if (hash !== 'myinfo') return;
+  const main = document.querySelector('#main'); if (!main) return;
+  if (!nsToken()) return; // login gate inside the wrapped render already showed the portal
+  await nsMyInfoLoad();
+  main.innerHTML = nsMyInfoHTML();
 };
