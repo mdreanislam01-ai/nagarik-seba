@@ -1756,3 +1756,14 @@ document.querySelector('#sidebar').addEventListener('click', e => {
 const NS_PREV_RENDER_34 = render;
 render = async function () { await NS_PREV_RENDER_34(); nsCatOpenActive(); };
 nsCatOpenActive();
+
+/* ===== Step 35 — Activity Logs: last 3 only =====
+   Display only: the API still returns the user's own login logs,
+   but the dashboard card now shows only the 3 newest (by
+   created_at, newest first). No "see more", no older entries.
+   Still real logins only — no demo/sample entries are added. */
+activityLogsHTML = function () {
+  if (!NS_STATE.logs.length) return '<p class="muted">এখনো কোনো লগইন রেকর্ড নেই</p>';
+  const last3 = NS_STATE.logs.slice().sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || ''))).slice(0, 3);
+  return '<ul>' + last3.map(l => `<li>${esc(l.created_at || '')} — ${esc(l.ip || '—')} — ${esc((l.user_agent || '').slice(0, 60))}</li>`).join('') + '</ul>';
+};
