@@ -254,7 +254,6 @@ function render(){
   <div class="need-head"><span class="need-dot" aria-hidden="true"></span><h3>প্রয়োজনীয় নাগরিক সেবাসমূহ</h3><button class="all-services" type="button" onclick="document.getElementById('service-cards').scrollIntoView({behavior:'smooth'})">সকল সেবা ›</button></div>
   <div class="card" id="service-cards"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
   <div class="card orders-logs-card"><h3>Orders Logs</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p>`+ordersLogsHTML()+`</div>
-  <div class="card"><h3>Activity Logs</h3>`+activityLogsHTML()+`</div>
   <div class="card qa-card"><h3 class="qa-head"><span class="qa-bolt"><svg viewBox="0 0 24 24" fill="#0f766e" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span><span>Quick Access</span></h3><div class="qa-grid">
   <a class="qa-tile qa-recharge" href="#/recharge"><span class="qa-icon"><span class="qa-dollar">$</span></span><span class="qa-label">রিচার্জ</span></a>
   <button class="qa-tile qa-chat" type="button" onclick="showModal('লাইভ চ্যাট','মূল অডিটে লাইভ চ্যাটের গন্তব্য যাচাই হয়নি। তাই এখানে কোনো চ্যাট খোলা হয় না — শুধু প্লেসহোল্ডার রাখা হয়েছে।')"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 18 0"/><rect x="3" y="11" width="4" height="7" rx="2"/><rect x="17" y="11" width="4" height="7" rx="2"/><path d="M19 18a3 3 0 0 1-3 3h-2"/></svg></span><span class="qa-label">লাইভ চ্যাট</span></button>
@@ -1830,3 +1829,30 @@ nsRefresh = async function (force) {
     document.body.classList.add('ns-design-login-page');
   }
 })();
+
+/* ===== Step 37 — Activity Logs moved off the dashboard =====
+   User instruction only: the dashboard Activity Logs card is gone.
+   It now lives in the sidebar, in the 👤 অ্যাকাউন্ট group, directly
+   above লগআউট (second-to-last item of the menu). Nothing else
+   changes: same card, same list, same last-3-only rule (Step 35),
+   same real logins only. New route #/activity-logs renders the
+   same card on its own page. */
+(function () {
+  const acc = NS_CATS.find(c => c.id === 'account');
+  if (acc) {
+    const li = acc.items.findIndex(i => i && i[0] === 'logout');
+    const entry = ['activity-logs', 'Activity Logs', false];
+    if (li >= 0) acc.items.splice(li, 0, entry); else acc.items.push(entry);
+  }
+  document.querySelector('#sidebar').innerHTML = navHTML();
+  const sc = document.querySelector('.sidebar-scroll');
+  if (sc && !document.getElementById('nsSidebarLogin')) { const a = document.createElement('a'); a.id = 'nsSidebarLogin'; a.href = '#/login'; a.innerHTML = '<span>লগইন</span>'; sc.appendChild(a); }
+})();
+const NS_PREV_RENDER_37 = render;
+render = async function () {
+  await NS_PREV_RENDER_37();
+  const hash = (location.hash || '').replace('#/', '') || 'dashboard';
+  if (hash !== 'activity-logs' || !nsToken()) return;
+  const main = document.querySelector('#main');
+  if (main) main.innerHTML = `<div class="card"><h3>Activity Logs</h3>` + activityLogsHTML() + `</div>`;
+};
