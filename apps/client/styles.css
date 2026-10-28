@@ -501,21 +501,21 @@ body.ns-login-portal .main,body.ns-login-portal.ns-design-login-page .main{max-w
 .ns-slide-sub{margin:0 0 18px;color:#6b7280;font-size:14px}
 .ns-slide-form label{display:block;margin:12px 0 5px;font-size:14px;font-weight:600;color:#374151}
 .ns-slide-form input[type="text"],.ns-slide-form input[type="password"]{width:100%;box-sizing:border-box;min-height:48px;padding:12px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:16px;background:#f3f4f6;color:#111827;outline:0}
-.ns-slide-form input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.18);background:#fff}
+.ns-slide-form input:focus{border-color:#2357BC;box-shadow:0 0 0 3px rgba(35,87,188,.18);background:#fff}
 .ns-slide-passwrap{position:relative}
 .ns-slide-passwrap input{padding-right:48px}
 .ns-slide-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:transparent;cursor:pointer;font-size:20px;line-height:1;touch-action:manipulation}
 .ns-slide-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0}
 .ns-slide-remember{display:flex;align-items:center;gap:8px;margin:0!important;font-size:14px;font-weight:500!important;white-space:nowrap}
-.ns-slide-remember input{width:20px;height:20px;accent-color:#6d28d9}
-.ns-slide-row a{font-size:14px;color:#6d28d9;text-decoration:none;white-space:nowrap}
-.ns-slide-btn{width:100%;min-height:52px;border:0;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.ns-slide-remember input{width:20px;height:20px;accent-color:#2357BC}
+.ns-slide-row a{font-size:14px;color:#2357BC;text-decoration:none;white-space:nowrap}
+.ns-slide-btn{width:100%;min-height:52px;border:0;border-radius:10px;background:#2357BC;color:#fff;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation}
 .ns-slide-btn:active{transform:translateY(1px)}
 .ns-slide-form-login{opacity:1;pointer-events:auto}
 .ns-slide-form-signup{opacity:0;pointer-events:none}
 .ns-slide-card.ns-slide-signup .ns-slide-form-login{opacity:0;pointer-events:none}
 .ns-slide-card.ns-slide-signup .ns-slide-form-signup{opacity:1;pointer-events:auto}
-.ns-slide-panel{position:absolute;top:0;bottom:0;left:50%;width:50%;z-index:3;background:linear-gradient(135deg,#8b5cf6,#7c3aed 45%,#6d28d9);color:#fff;clip-path:polygon(14% 0,100% 0,100% 100%,0 100%);transition:left .65s ease,clip-path .65s ease}
+.ns-slide-panel{position:absolute;top:0;bottom:0;left:50%;width:50%;z-index:3;background:#2357BC;color:#fff;clip-path:polygon(14% 0,100% 0,100% 100%,0 100%);transition:left .65s ease,clip-path .65s ease}
 .ns-slide-card.ns-slide-signup .ns-slide-panel{left:0;clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
 .ns-slide-panel-view{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .3s ease .18s}
 .ns-slide-card:not(.ns-slide-signup) .ns-slide-panel-loginview{opacity:1;pointer-events:auto}
@@ -535,4 +535,25 @@ body.ns-login-portal .main,body.ns-login-portal.ns-design-login-page .main{max-w
   .ns-slide-form-login,.ns-slide-form-signup,.ns-slide-card.ns-slide-signup .ns-slide-form-login,.ns-slide-card.ns-slide-signup .ns-slide-form-signup{display:none;opacity:1;pointer-events:auto}
   .ns-slide-card:not(.ns-slide-signup) .ns-slide-form-login,.ns-slide-card.ns-slide-signup .ns-slide-form-signup{display:flex}
   .ns-slide-panel-view h2{font-size:23px}
+}
+
+/* ===== Step 23 — Colour #2357BC + bulletproof mobile stacking (both portals) =====
+   Mobile root cause found: the viewport tag IS present and a <=720px stacking rule
+   already existed in the served Step 21 file, yet the phone screenshot still showed
+   the desktop side-by-side card scaled down. That happens when the phone renders at
+   a wider CSS width (cached stylesheet, or the browser's desktop-site mode, which
+   ignores width=device-width and lays out at ~980px). The fix therefore (a) re-pushes
+   index.html so the viewport tag is guaranteed live, (b) triggers stacking at
+   <=900px, not just <=720px, and (c) uses !important so no desktop slide rule can
+   win on a phone. If the user's browser is still in Desktop-site mode, that toggle
+   must be switched off — no CSS can override desktop-mode scaling. */
+@media (max-width:900px){
+  .ns-slide-page{justify-content:flex-start!important;padding:16px 12px!important}
+  .ns-slide-card{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;width:100%!important;max-width:100%!important;min-height:0!important}
+  .ns-slide-panel{position:static!important;order:-1!important;left:auto!important;width:100%!important;min-height:176px!important;clip-path:none!important;transition:none!important}
+  .ns-slide-panel-view{position:static!important;padding:24px 20px!important}
+  .ns-slide-form{order:1!important;width:100%!important;padding:28px 20px!important}
+  .ns-slide-form-login,.ns-slide-form-signup{display:none!important;opacity:1!important;pointer-events:auto!important}
+  .ns-slide-card:not(.ns-slide-signup) .ns-slide-form-login,.ns-slide-card.ns-slide-signup .ns-slide-form-signup{display:flex!important}
+  .ns-slide-panel-view h2{font-size:23px!important}
 }
