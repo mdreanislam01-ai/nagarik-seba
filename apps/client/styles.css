@@ -675,3 +675,6 @@ body.ns-inner-page .main .brn-field input,body.ns-inner-page .main .brn-field se
 body.ns-inner-page .main .brn-field textarea{min-height:64px;resize:vertical}
 body.ns-inner-page .main .brn-full{grid-column:1/-1}
 @media(max-width:380px){body.ns-inner-page .main .brn-grid{gap:8px}body.ns-inner-page .main .brn-field label{font-size:13px}}
+
+/* ===== Step 64 — brn top-box status line (brn page only) ===== */
+body.ns-inner-page .main .brn-doc-status{text-align:center;margin:12px 0 0}

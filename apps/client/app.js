@@ -281,7 +281,36 @@ function brnPageHTML(s){
     if(i===24)return `<div class="brn-field brn-full">${lab}<textarea rows="2" placeholder="${esc(ph(f,i))}"></textarea></div>`;
     return `<div class="brn-field">${lab}<input placeholder="${esc(ph(f,i))}"></div>`;
   };
-  return `<div class="card brn-card"><h2>${ico(s.id)} ${s.title}</h2><p class="muted brn-sub">জন্মনিবন্ধনের জন্য এখানে তথ্য প্রদান করুন</p><button type="button" class="brn-dash" onclick="openAutoload('brn')"><span class="brn-dash-ico">📄</span><span>স্বয়ংক্রিয়ভাবে ডেটা লোড করতে<br>এখানে ক্লিক করুন</span></button><div class="brn-grid">${s.fields.map(fld).join('')}</div><p class="notice">${s.note}</p></div>`;
+  return `<div class="card brn-card"><h2>${ico(s.id)} ${s.title}</h2><p class="muted brn-sub">জন্মনিবন্ধনের জন্য এখানে তথ্য প্রদান করুন</p><button type="button" class="brn-dash" onclick="brnTopDocPick()"><span class="brn-dash-ico">📄</span><span>স্বয়ংক্রিয়ভাবে ডেটা লোড করতে<br>এখানে ক্লিক করুন</span></button><p class="muted brn-doc-status" id="brnDocStatus" style="display:none"></p><div class="brn-grid">${s.fields.map(fld).join('')}</div><p class="notice">${s.note}</p></div><input type="file" id="brnTopDoc" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">`;
+}
+function brnTopFilledCount(){
+  var n=0;
+  document.querySelectorAll('.brn-grid input, .brn-grid select, .brn-grid textarea').forEach(function(el){ if(el.value && el.value.trim()!=='') n++; });
+  return n;
+}
+function brnTopDocPick(){
+  var inp=document.getElementById('brnTopDoc'); if(!inp) return;
+  if(!inp.dataset.brnWired){
+    inp.dataset.brnWired='1';
+    inp.addEventListener('change', async function(){
+      var st=document.getElementById('brnDocStatus');
+      var before=brnTopFilledCount();
+      await nsDocOnPick(inp, 'ডকুমেন্ট (ছবি/PDF)');
+      if(!(inp.files && inp.files.length)){ if(st) st.style.display='none'; return; }
+      await nsDocAutoFill();
+      var after=brnTopFilledCount();
+      if(st){
+        if(after>before){ st.style.display='block'; st.innerHTML='ফাইল: '+esc(inp.files[0].name)+' — খালি ঘরে তথ্য বসেছে, যাচাই করে তারপর অর্ডার করুন। <button type="button" class="ns-reset" onclick="brnTopDocReset()">✕ রিসেট</button>'; }
+        else { st.style.display='none'; }
+      }
+    });
+  }
+  inp.click();
+}
+function brnTopDocReset(){
+  Object.keys(NS_DOCS).forEach(function(k){ if(k.indexOf('brn|')===0) delete NS_DOCS[k]; });
+  var inp=document.getElementById('brnTopDoc'); if(inp) inp.value='';
+  var st=document.getElementById('brnDocStatus'); if(st){ st.style.display='none'; st.innerHTML=''; }
 }
 /*BRN_FN_END*/
 function closedBanner(){return `<div class="closed">⚠ নতুন অর্ডারের অনুরোধ বর্তমানে বন্ধ আছে।</div>`}
@@ -1402,6 +1431,7 @@ render = async function () {
   main.querySelectorAll('span.muted').forEach(function (sp) { if (sp.textContent.indexOf('ফাইল আপলোড এই ফর্মে') !== -1) sp.remove(); });
   var svc = parts[1];
   Object.keys(NS_DOCS).forEach(function (k) { if (k.indexOf(svc + '|') === 0) delete NS_DOCS[k]; });
+  if (svc === 'brn') return; // Step 64: brn uses the top dashed box; no bottom picker row.
   function nsWireInput(inp, label) {
     if (inp.dataset.nsWired) return;
     inp.dataset.nsWired = '1';
