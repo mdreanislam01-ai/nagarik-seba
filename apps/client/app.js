@@ -220,7 +220,7 @@ const ORDERS=[
  {id:'info',name:'INFO অর্ডার',label:'নগদ / বিকাশ / রকেট / ইনফো অর্ডার চালু ✅',cost:null,options:[['Bkash',605],['Nagad Personal',605],['Rocket',550],['Bkash Agent',700],['Bkash Merchant',700],['Nagad Agent',2500]],fields:['মোবাইল নম্বর*']},
  {id:'nidpsset',name:'এনআইডি ইউজার পাসওয়ার্ড সেট',label:'এনআইডি ইউজার পাসওয়ার্ড সেট সার্ভিস চালু ✅',cost:50,fields:['Data* (নাম / এনআইডি / জন্ম তারিখ)','এনআইডি নম্বর* (১০ / ১৩ / ১৭ সংখ্যা)','জন্ম তারিখ*']},
  {id:'namethikananid',name:'নাম-ঠিকানা দিয়ে এনআইডি',label:'নাম-ঠিকানা দিয়ে এনআইডি ও সাইন কপি চালু ✅',cost:350,options:[['SIGN COPY',350],['NID',350]],fields:['ফর্ম পূরণ করুন* (নিজ নাম, জন্ম তারিখ, পিতা-মাতার নাম, ছবি, বিভাগ, জেলা, আসন, থানা, ইউনিয়ন, ওয়ার্ড নং, গ্রাম / ভোটার এলাকা)']},
- {id:'newbdris',name:'নতুন জন্ম নিবন্ধন অর্ডার',label:'ঢাকা সিটি নতুন জন্ম নিবন্ধন চালু, সময় ২৪–৪৮ ঘণ্টা ✅',cost:null,options:[['নরমাল',800],['পসিবল',800],['মিনিস্ট্রি',1000],['CTG নরমাল',2000]],fields:['ফরম পূরণ করুন*']},
+ {id:'newbdris',name:'নতুন জন্ম নিবন্ধন আবেদন',label:'ঢাকা সিটি নতুন জন্ম নিবন্ধন চালু, সময় ২৪–৪৮ ঘণ্টা ✅',cost:null,options:[['নরমাল',800],['পসিবল',800],['মিনিস্ট্রি',1000],['CTG নরমাল',2000]],fields:['ফরম পূরণ করুন*']},
  {id:'passport',name:'পাসপোর্ট SB কপি',label:'পাসপোর্ট SB কপি',cost:null,options:[['MRP Passport SB Copy',450],['E Passport SB Copy',600]],fields:['নাম*','Passport / NID / যেকোনো একটি তথ্য*']},
  {id:'calllist',name:'কললিস্ট অর্ডার',label:'কল লিস্ট অর্ডার চালু ✅',cost:null,options:[['৩ মাস কল লিস্ট',1200],['৬ মাস কল লিস্ট',1500]],fields:['Number*']},
  {id:'i2an',name:'IMEI টু অ্যাক্টিভ নম্বর অর্ডার',label:'IMEI To Active Number ও All Number অর্ডার চালু ✅',cost:600,options:[['IMEI To Active Number',600],['IMEI To All Number',600]],fields:['Data* (IMEI 1, IMEI 2, ফোন হারানোর তারিখ)']},
@@ -308,6 +308,20 @@ function brnPageHTML(s){
   };
   return `<div class="card brn-card"><h2>${ico(s.id)} ${s.title}</h2><p class="muted brn-sub">জন্মনিবন্ধনের জন্য এখানে তথ্য প্রদান করুন</p><button type="button" class="brn-dash" onclick="brnTopDocPick()"><span class="brn-dash-ico">${S.doc}</span><span>স্বয়ংক্রিয়ভাবে ডেটা লোড করতে<br>এখানে ক্লিক করুন</span></button><p class="muted brn-doc-status" id="brnDocStatus" style="display:none"></p><div class="brn-grid">${s.fields.map(fld).join('')}</div><p class="notice">${s.note}</p></div><input type="file" id="brnTopDoc" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">`;
 }
+function brnCopyHTML(){
+  var brnDef = SERVICES.find(function(x){return x.id==='brn';}); if(!brnDef) return '';
+  var def = Object.assign({}, brnDef, {title:'জন্ম নিবন্ধন ক্রিয়েট'});
+  var out = brnPageHTML(def);
+  var inpAt = out.indexOf('<input type="file" id="brnTopDoc"');
+  var card = inpAt > 0 ? out.slice(0, inpAt) : out;
+  var rest = inpAt > 0 ? out.slice(inpAt) : '';
+  card = card.replace('<div class="card brn-card">', '<div class="card brn-card" id="brnCopyCard">');
+  var btn = `<p><button class="btn" onclick="nsOrderSubmit('service','brn',document.getElementById('brnCopyCard'))">অর্ডার করুন (ব্যালেন্স থেকে কাটবে)</button></p>`;
+  var lastClose = card.lastIndexOf('</div>');
+  if(lastClose > 0) card = card.slice(0, lastClose) + btn + card.slice(lastClose);
+  return card + rest;
+}
+
 function brnTopFilledCount(){
   var n=0;
   document.querySelectorAll('.brn-grid input, .brn-grid select, .brn-grid textarea').forEach(function(el){ if(el.value && el.value.trim()!=='') n++; });
@@ -320,9 +334,10 @@ function brnTopDocPick(){
     inp.addEventListener('change', async function(){
       var st=document.getElementById('brnDocStatus');
       var before=brnTopFilledCount();
-      await nsDocOnPick(inp, 'ডকুমেন্ট (ছবি/PDF)');
+      var copyCard=document.getElementById('brnCopyCard');
+      await nsDocOnPick(inp, 'ডকুমেন্ট (ছবি/PDF)', copyCard?'brn':undefined);
       if(!(inp.files && inp.files.length)){ if(st) st.style.display='none'; return; }
-      await nsDocAutoFill();
+      await nsDocAutoFill(copyCard||undefined, copyCard?'brn':undefined);
       var after=brnTopFilledCount();
       if(st){
         if(after>before){ st.style.display='block'; st.innerHTML='ফাইল: '+esc(inp.files[0].name)+' — খালি ঘরে তথ্য বসেছে, যাচাই করে তারপর অর্ডার করুন। <button type="button" class="ns-reset" onclick="brnTopDocReset()">✕ রিসেট</button>'; }
@@ -410,6 +425,7 @@ function render(){
    h+=o.fields.map((f,i)=>fieldHTML(f,i)).join('');
    h+=`<p class="notice" id="totalNote">এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ${o.cost??'?'} টাকা কাটা হবে।</p><p class="muted">অর্ডার বন্ধ থাকায় সাবমিট বোতাম নেইতে কোনো অর্ডার করা হয় না।</p>
    <h3>অর্ডার ইতিহাস</h3>${tableHTML(['NO','COST','STATUS','SYNC','CREATED','ACTION'],[])}${o.id==='smartnidcard'?'<p class="muted">মূল সাইটে এই টেবিলে অতিরিক্ত NAME কলাম ছিল।</p>':''}</div>`;
+   if(o.id==='newbdris'){h+=brnCopyHTML();}
   }
  }
  else if(parts[0]==='free'){
@@ -500,8 +516,8 @@ function nsSyncPrices() {
   SERVICES.forEach(s => { const a = byId[s.id]; if (a && a.base_price_bdt != null) s.cost = a.base_price_bdt; });
   ORDERS.forEach(o => { const a = byId[o.id]; if (!a) return; if (a.base_price_bdt != null) o.cost = a.base_price_bdt; if (a.options) o.options = a.options; });
 }
-function nsOrderPayload(def) {
-  const card = document.querySelector('#main .card') || document;
+function nsOrderPayload(def, root) {
+  const card = root || document.querySelector('#main .card') || document;
   const vals = [...card.querySelectorAll('input,select,textarea')].map(el => ({ label: el.closest('label') ? '' : '', value: el.value || '' }));
   // Map values to the page's field labels in order (inputs are rendered in field order).
   const fields = (def.fields || []).map((f, i) => ({ field: f, value: (vals[i] && vals[i].value) || '' }));
@@ -529,7 +545,7 @@ ordersLogsHTML = function () {
   const count = (id, st) => NS_STATE.orders.filter(o => o.service_id === id && o.status === st).length;
   return '<div class="orders-logs">' + ORDERS.map(o => `<section class="ol-section"><h4 class="ol-head">${ico(o.id)}<span>${o.name}</span></h4><div class="ol-grid">` + OL_STATUS.map(s => `<div class="ol-tile ol-${s[0]}"><span class="ol-circle"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">${s[2]}</svg></span><span class="ol-label">${s[1]}</span><b class="ol-count">${count(o.id, s[1])}</b></div>`).join('') + `</div></section>`).join('') + '</div>';
 };
-async function nsOrderSubmit(kind, id) {
+async function nsOrderSubmit(kind, id, root) {
   if (!nsToken()) { showModal('লগইন প্রয়োজন', 'অর্ডার করতে প্রথমে লগইন করুন।'); location.hash = '#/login'; return; }
   const def = kind === 'service' ? SERVICES.find(x => x.id === id) : ORDERS.find(x => x.id === id);
   if (!def) return;
@@ -537,7 +553,7 @@ async function nsOrderSubmit(kind, id) {
   if (kind === 'order' && def.options) { const sel = document.querySelector('#opts .opt.sel'); const txt = sel ? sel.textContent.trim() : ''; option_name = txt.replace(/\s*\(.*$/, ''); }
   if (kind === 'service' && id === 'sc') { const sel = document.getElementById('apiSel'); option_name = sel && sel.value === '5' ? 'API ৫' : 'API ৩'; }
   try {
-    const r = await nsCall('/orders', 'POST', { service_id: id, option_name, payload: nsOrderPayload(def) });
+    const r = await nsCall('/orders', 'POST', { service_id: id, option_name, payload: nsOrderPayload(def, root) });
     NS_STATE.wallet = r.wallet_bdt; await nsRefresh(true); render();
     showModal('অর্ডার সফল', `অর্ডার #${r.order.id} — ${r.order.amount_bdt} টাকা কেটেছে, স্ট্যাটাস: ${r.order.status}।`);
   } catch (e) { showModal('অর্ডার হয়নি', e.message === 'insufficient_balance' ? 'ব্যালান্স কম — রিচার্জ করুন।' : e.message); }
@@ -1129,8 +1145,8 @@ function nsDownscaleImage(buf, type) {
     img.src = url;
   });
 }
-async function nsDocOnPick(input, label) {
-  var svc = nsDocSvcId(); if (!svc) return;
+async function nsDocOnPick(input, label, svcArg) {
+  var svc = svcArg || nsDocSvcId(); if (!svc) return;
   var key = svc + '|' + label, prev = (input.nextElementSibling && input.nextElementSibling.classList && input.nextElementSibling.classList.contains('nsDocPrev')) ? input.nextElementSibling : input.parentNode.querySelector('.nsDocPrev');
   var file = input.files && input.files[0];
   if (!file) { delete NS_DOCS[key]; if (prev) prev.textContent = ''; return; }
@@ -1326,8 +1342,8 @@ function nsDocParseText(text) {
   }
   return slots;
 }
-function nsDocFieldMap() {
-  var card = document.querySelector('#main .card'), map = {};
+function nsDocFieldMap(cardArg) {
+  var card = cardArg || document.querySelector('#main .card'), map = {};
   if (!card) return map;
   card.querySelectorAll('label').forEach(function (lab) {
     var inp = lab.nextElementSibling;
@@ -1335,9 +1351,9 @@ function nsDocFieldMap() {
   });
   return map;
 }
-async function nsDocAutoFill() {
+async function nsDocAutoFill(cardArg, svcArg) {
   var btn = document.getElementById('nsDocFillBtn'), st = document.getElementById('nsDocFillStatus');
-  var docs = Object.keys(NS_DOCS).filter(function (k) { var svc = nsDocSvcId(); return !svc || k.indexOf(svc + '|') === 0; }).map(function (k) { return NS_DOCS[k]; });
+  var docs = Object.keys(NS_DOCS).filter(function (k) { var svc = svcArg || nsDocSvcId(); return !svc || k.indexOf(svc + '|') === 0; }).map(function (k) { return NS_DOCS[k]; });
   if (!docs.length) { showModal('ডকুমেন্ট', 'আগে ফাইল বাছাই থেকে একটি ডকুমেন্ট বাছুন।'); return; }
   if (btn) btn.disabled = true;
   if (st) st.textContent = 'পড়া হচ্ছে… (ফাইলটি শুধু এই ডিভাইসে পড়া হচ্ছে, কোথাও পাঠানো হচ্ছে না)';
@@ -1367,14 +1383,14 @@ async function nsDocAutoFill() {
     }
   }
   if (!slots.blood) slots.blood = (flat.match(/(AB|A|B|O)[+-](?![A-Za-z])/) || [])[0] || '';
-  var map = nsDocFieldMap(), filled = [];
+  var map = nsDocFieldMap(cardArg), filled = [];
   var fillIfEmpty = function (test, val) {
     if (!val) return;
     Object.keys(map).forEach(function (lab) {
       if (test(lab) && map[lab] && !map[lab].value) { map[lab].value = val; filled.push(lab); }
     });
   };
-  var svc = nsDocSvcId();
+  var svc = svcArg || nsDocSvcId();
   fillIfEmpty(function (l) { return l === 'নাম (বাংলা)*' || l === 'নাম*'; }, slots.nameBn);
   fillIfEmpty(function (l) { return l === 'নাম (ইংরেজী)*' || l === 'Name'; }, slots.nameEn);
   fillIfEmpty(function (l) { return l === 'নাম*' && !slots.nameBn; }, slots.nameEn);
@@ -1408,8 +1424,8 @@ async function nsDocAutoFill() {
   showModal('সাজেশন বসানো হয়েছে — যাচাই করুন', msg);
 }
 var _nsOrderPayload7 = nsOrderPayload;
-nsOrderPayload = function (def) {
-  var p = _nsOrderPayload7(def);
+nsOrderPayload = function (def, root) {
+  var p = _nsOrderPayload7(def, root);
   p.documents = nsDocAttachments();
   return p;
 };
