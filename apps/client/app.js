@@ -271,17 +271,19 @@ function tableHTML(cols,rows,actions){
 }
 function fieldHTML(f,i){return `<label>${f}</label><input placeholder="${esc(f)}">`}
 function brnPageHTML(s){
-  const IC=[['🏢','#dbeafe'],['📍','#dcfce7'],['🗺️','#fef3c7'],['🪪','#ede9fe'],['👤','#fce7f3'],['📅','#dbeafe'],['📜','#fef9c3'],['📊','#ccfbf1'],['🔳','#e0e7ff'],['🎂','#ffe4e6'],['✍️','#fef3c7'],['👶','#dcfce7'],['🔤','#dbeafe'],['👨','#e0e7ff'],['🧔','#fef3c7'],['🇧🇩','#dcfce7'],['🌍','#dbeafe'],['👩','#fce7f3'],['👩‍🦱','#ede9fe'],['🇧🇩','#dcfce7'],['🌏','#ccfbf1'],['🏥','#ffe4e6'],['📌','#fef9c3'],['🏠','#dbeafe'],['🏡','#dcfce7']];
+  const svg=(inner)=>'<svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+inner+'</svg>';
+  const S={b:svg('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/>'),p:svg('<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),c:svg('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c1-1.5 2-2 3-2s2 .5 3 2"/><path d="M14 9h4M14 13h4"/>'),u:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>'),d:svg('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>'),r:svg('<path d="M4 7v10M8 7v10M11 7v6M14 7v10M17 7v6M20 7v10"/>'),q:svg('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/><path d="M18 14h3v3"/>'),h:svg('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'),doc:svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v4"/><path d="M12 8h.01"/>')};
+  const IC=[S.b,S.p,S.p,S.c,S.u,S.d,S.d,S.r,S.q,S.d,S.d,S.u,S.u,S.u,S.u,S.u,S.u,S.u,S.u,S.u,S.u,S.p,S.p,S.h,S.h];
   const ph=(f,i)=>{if(i===3)return 'XXXXXXXXXXXXXXXXX';if(i===5||i===6||i===9)return 'DD/MM/YYYY';if(i===10)return 'Eleventh August two thousand three';return f;};
   const fld=(f,i)=>{
-    const ic=IC[i]||['📄','#e0e7ff'];
-    const lab=`<label><span class="brn-ico" style="--ic:${ic[1]}">${ic[0]}</span><span>${esc(f)}</span></label>`;
+
+    const lab=`<label><span class="brn-ico">${IC[i]||''}</span><span>${esc(f)}</span></label>`;
     if(i===4)return `<div class="brn-field">${lab}<select><option>Male</option><option>Female</option></select></div>`;
     if(i===23)return `<div class="brn-field">${lab}<textarea rows="2" placeholder="${esc(ph(f,i))}"></textarea></div>`;
     if(i===24)return `<div class="brn-field brn-full">${lab}<textarea rows="2" placeholder="${esc(ph(f,i))}"></textarea></div>`;
     return `<div class="brn-field">${lab}<input placeholder="${esc(ph(f,i))}"></div>`;
   };
-  return `<div class="card brn-card"><h2>${ico(s.id)} ${s.title}</h2><p class="muted brn-sub">জন্মনিবন্ধনের জন্য এখানে তথ্য প্রদান করুন</p><button type="button" class="brn-dash" onclick="brnTopDocPick()"><span class="brn-dash-ico">📄</span><span>স্বয়ংক্রিয়ভাবে ডেটা লোড করতে<br>এখানে ক্লিক করুন</span></button><p class="muted brn-doc-status" id="brnDocStatus" style="display:none"></p><div class="brn-grid">${s.fields.map(fld).join('')}</div><p class="notice">${s.note}</p></div><input type="file" id="brnTopDoc" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">`;
+  return `<div class="card brn-card"><h2>${ico(s.id)} ${s.title}</h2><p class="muted brn-sub">জন্মনিবন্ধনের জন্য এখানে তথ্য প্রদান করুন</p><button type="button" class="brn-dash" onclick="brnTopDocPick()"><span class="brn-dash-ico">${S.doc}</span><span>স্বয়ংক্রিয়ভাবে ডেটা লোড করতে<br>এখানে ক্লিক করুন</span></button><p class="muted brn-doc-status" id="brnDocStatus" style="display:none"></p><div class="brn-grid">${s.fields.map(fld).join('')}</div><p class="notice">${s.note}</p></div><input type="file" id="brnTopDoc" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">`;
 }
 function brnTopFilledCount(){
   var n=0;
