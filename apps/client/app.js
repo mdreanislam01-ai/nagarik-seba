@@ -270,6 +270,27 @@ function tableHTML(cols,rows,actions){
  return `<table>${head}${body}</table>`;
 }
 function fieldHTML(f,i){return `<label>${f}</label><input placeholder="${esc(f)}">`}
+var dobCaptchaAns=null;
+function dobCaptchaNew(){
+  var a=10+Math.floor(Math.random()*90),b=10+Math.floor(Math.random()*90),op=Math.random()<0.5?'+':'-',t;
+  if(op==='-'&&b>a){t=a;a=b;b=t;}
+  dobCaptchaAns=(op==='+'?a+b:a-b);
+  var dots='',i;
+  for(i=0;i<70;i++){dots+='<circle cx="'+Math.floor(Math.random()*300)+'" cy="'+Math.floor(Math.random()*90)+'" r="'+(1+Math.random()*1.5).toFixed(1)+'" fill="#93c5fd" opacity="0.45"/>';}
+  return '<svg viewBox="0 0 300 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:90px;display:block"><rect width="300" height="90" fill="#f8fafc"/>'+dots+'<text x="150" y="58" text-anchor="middle" font-size="34" font-weight="700" fill="#1d4ed8" font-family="monospace" transform="rotate(-2 150 45)">'+a+' '+op+' '+b+' = ?</text></svg>';
+}
+function dobCaptchaRefresh(){var box=document.getElementById('dobCaptchaBox');if(box)box.innerHTML=dobCaptchaNew();var t=document.getElementById('dobCaptchaText');if(t)t.value='';}
+function dobFinderCheck(){
+  var t=document.getElementById('dobCaptchaText'),v=t?t.value.trim():'';
+  if(!v){showModal('ক্যাপচা','ক্যাপচার উত্তর লিখুন।');return;}
+  if(parseInt(v,10)!==dobCaptchaAns){showModal('ক্যাপচা ভুল','ক্যাপচার উত্তর সঠিক নয় — নতুন ক্যাপচা দেওয়া হয়েছে, আবার চেষ্টা করুন।');dobCaptchaRefresh();return;}
+  var f=(typeof FREES!=='undefined')?FREES.find(function(x){return x.id==='dobfinder';}):null;
+  showModal('যাচাই বার্তা',f?f.err:'');
+  dobCaptchaRefresh();
+}
+function dobFinderHTML(f){
+  return `<div class="card dob-card"><h2 class="dob-title">${esc(f.name)}</h2><div class="dob-field"><label>ডাটার ধরণ*</label><select><option>জন্মনিবন্ধন নম্বর</option><option>এনআইডি নম্বর</option></select></div><div class="dob-field"><label>${esc(f.field)}</label><input id="freeIn" placeholder="XXXXXXXXXXXXXXXXX"></div><div class="dob-field"><label>Captcha Image</label><div class="dob-captcha" id="dobCaptchaBox">${dobCaptchaNew()}</div></div><div class="dob-field"><label>Captcha Text *</label><div class="dob-captcha-row"><input id="dobCaptchaText" placeholder="XX"><button type="button" class="dob-refresh" onclick="dobCaptchaRefresh()">↻</button></div></div><p class="dob-hint">🙂 Hint: Try it yourself.</p><p><button class="btn dob-btn" onclick="dobFinderCheck()">${esc(f.btn)}</button></p><p class="muted">কোনো আসল নাম/নম্বর দিয়ে লুকআপ চালানো হয় না।</p></div>`;
+}
 function brnPageHTML(s){
   const svg=(inner)=>'<svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+inner+'</svg>';
   const S={b:svg('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/>'),p:svg('<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),c:svg('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c1-1.5 2-2 3-2s2 .5 3 2"/><path d="M14 9h4M14 13h4"/>'),u:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>'),d:svg('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>'),r:svg('<path d="M4 7v10M8 7v10M11 7v6M14 7v10M17 7v6M20 7v10"/>'),q:svg('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/><path d="M18 14h3v3"/>'),h:svg('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'),doc:svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v4"/><path d="M12 8h.01"/>')};
@@ -391,9 +412,9 @@ function render(){
  }
  else if(parts[0]==='free'){
   const f=FREES.find(x=>x.id===parts[1]);
-  if(parts[1]==='signature') h+=`<div class="card"><h2>স্বাক্ষর তৈরি</h2><p class="muted">সঠিক ট্যাব শিরোনাম: “স্বাক্ষর তৈরি” (মূল সাইটে ভুল করে “Date of Birth Finder” দেখাত)।</p>`;
+  if(parts[1]==='dobfinder' && f){h+=dobFinderHTML(f)} else if(parts[1]==='signature') h+=`<div class="card"><h2>স্বাক্ষর তৈরি</h2><p class="muted">সঠিক ট্যাব শিরোনাম: “স্বাক্ষর তৈরি” (মূল সাইটে ভুল করে “Date of Birth Finder” দেখাত)।</p>`;
   else if(f) h+=`<div class="card"><h2>${f.name}</h2>`;
-  if(f){h+=`<label>${f.field}</label>${f.id==='dobfinder'?'<label>ডাটার ধরণ*</label><select><option>জন্মনিবন্ধন নম্বর</option><option>এনআইডি নম্বর</option></select>':''}<input id="freeIn"><p><button class="btn" onclick="showModal('যাচাই বার্তা','${f.err}')">${f.btn}</button></p><p class="muted">কোনো আসল নাম/নম্বর দিয়ে লুকআপ চালানো হয় না।</p></div>`}
+  if(f && parts[1]!=='dobfinder'){h+=`<label>${f.field}</label>${f.id==='dobfinder'?'<label>ডাটার ধরণ*</label><select><option>জন্মনিবন্ধন নম্বর</option><option>এনআইডি নম্বর</option></select>':''}<input id="freeIn"><p><button class="btn" onclick="showModal('যাচাই বার্তা','${f.err}')">${f.btn}</button></p><p class="muted">কোনো আসল নাম/নম্বর দিয়ে লুকআপ চালানো হয় না।</p></div>`}
  }
  else if(parts[0]==='history'){
   const hh=HISTORIES.find(x=>x.id===parts[1]);

@@ -680,3 +680,13 @@ body.ns-inner-page .main .brn-full{grid-column:1/-1}
 
 /* ===== Step 64 — brn top-box status line (brn page only) ===== */
 body.ns-inner-page .main .brn-doc-status{text-align:center;margin:12px 0 0}
+
+body.ns-inner-page .main .card.dob-card{max-width:520px;margin-left:auto;margin-right:auto}
+body.ns-inner-page .main .card h2.dob-title{text-align:center;color:#2563eb;font-size:24px;margin-bottom:18px}
+body.ns-inner-page .main .dob-field{margin-bottom:12px}
+body.ns-inner-page .main .dob-captcha{border:1px solid #d1d5db;border-radius:8px;overflow:hidden;background:#fff}
+body.ns-inner-page .main .dob-captcha-row{display:flex;gap:10px}
+body.ns-inner-page .main .dob-captcha-row input{flex:1;min-width:0}
+body.ns-inner-page .main .dob-refresh{width:46px;min-width:46px;border:1px solid #2563eb;color:#2563eb;background:#fff;border-radius:8px;font-size:20px;line-height:1;cursor:pointer}
+body.ns-inner-page .main .dob-hint{background:#e5e7eb;border-radius:6px;padding:10px 12px;text-align:center;color:#374151;margin:14px 0}
+body.ns-inner-page .main .dob-btn{width:100%;background:#2563eb;border-color:#2563eb;font-size:16px;font-weight:700}
