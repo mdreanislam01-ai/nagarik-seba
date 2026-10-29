@@ -270,6 +270,20 @@ function tableHTML(cols,rows,actions){
  return `<table>${head}${body}</table>`;
 }
 function fieldHTML(f,i){return `<label>${f}</label><input placeholder="${esc(f)}">`}
+function brnPageHTML(s){
+  const IC=[['🏢','#dbeafe'],['📍','#dcfce7'],['🗺️','#fef3c7'],['🪪','#ede9fe'],['👤','#fce7f3'],['📅','#dbeafe'],['📜','#fef9c3'],['📊','#ccfbf1'],['🔳','#e0e7ff'],['🎂','#ffe4e6'],['✍️','#fef3c7'],['👶','#dcfce7'],['🔤','#dbeafe'],['👨','#e0e7ff'],['🧔','#fef3c7'],['🇧🇩','#dcfce7'],['🌍','#dbeafe'],['👩','#fce7f3'],['👩‍🦱','#ede9fe'],['🇧🇩','#dcfce7'],['🌏','#ccfbf1'],['🏥','#ffe4e6'],['📌','#fef9c3'],['🏠','#dbeafe'],['🏡','#dcfce7']];
+  const ph=(f,i)=>{if(i===3)return 'XXXXXXXXXXXXXXXXX';if(i===5||i===6||i===9)return 'DD/MM/YYYY';if(i===10)return 'Eleventh August two thousand three';return f;};
+  const fld=(f,i)=>{
+    const ic=IC[i]||['📄','#e0e7ff'];
+    const lab=`<label><span class="brn-ico" style="--ic:${ic[1]}">${ic[0]}</span><span>${esc(f)}</span></label>`;
+    if(i===4)return `<div class="brn-field">${lab}<select><option>Male</option><option>Female</option></select></div>`;
+    if(i===23)return `<div class="brn-field">${lab}<textarea rows="2" placeholder="${esc(ph(f,i))}"></textarea></div>`;
+    if(i===24)return `<div class="brn-field brn-full">${lab}<textarea rows="2" placeholder="${esc(ph(f,i))}"></textarea></div>`;
+    return `<div class="brn-field">${lab}<input placeholder="${esc(ph(f,i))}"></div>`;
+  };
+  return `<div class="card brn-card"><h2>${ico(s.id)} ${s.title}</h2><p class="muted brn-sub">জন্মনিবন্ধনের জন্য এখানে তথ্য প্রদান করুন</p><button type="button" class="brn-dash" onclick="openAutoload('brn')"><span class="brn-dash-ico">📄</span><span>স্বয়ংক্রিয়ভাবে ডেটা লোড করতে<br>এখানে ক্লিক করুন</span></button><div class="brn-grid">${s.fields.map(fld).join('')}</div><p class="notice">${s.note}</p></div>`;
+}
+/*BRN_FN_END*/
 function closedBanner(){return `<div class="closed">⚠ নতুন অর্ডারের অনুরোধ বর্তমানে বন্ধ আছে।</div>`}
 
 // Real login activity only: this prototype has no auth backend, so the store
@@ -318,6 +332,7 @@ function render(){
  }
  else if(parts[0]==='service'){
   const s=SERVICES.find(x=>x.id===parts[1]); if(!s){h+='<p>পাওয়া যায়নি।</p>'}
+  else if(s.id==='brn'){h+=brnPageHTML(s)}
   else{
    const insufficient=[100,40,25].includes(s.cost)&&s.cost>10;
    h+=`<div class="card"><h2>${ico(s.id)} ${s.title}</h2><p class="notice">${s.note}</p>`;
