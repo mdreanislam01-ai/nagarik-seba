@@ -522,7 +522,7 @@ async function nsSlideSignup() {
   var name = document.getElementById('suName').value.trim(), email = document.getElementById('suEmail').value.trim(),
     phone = document.getElementById('suPhone').value.trim(), password = document.getElementById('suPass').value;
   try { await nsCall('/auth/signup', 'POST', { name: name, email: email, phone: phone, password: password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); location.hash = '#/login'; }
-  catch (e) { showModal('সাইনআপ হয়নি', e.message); }
+  catch (e) { showModal('সাইনআপ হয়নি', e.message === 'registration_closed' ? 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' : e.message); }
 }
 function nsLoginPortalHTML(mode) {
   mode = mode || 'login';
@@ -578,7 +578,7 @@ async function nsDoSignup() {
   const name = document.getElementById('authName').value.trim(), email = document.getElementById('authEmail').value.trim(),
     phone = document.getElementById('authPhone').value.trim(), password = document.getElementById('authPass').value;
   try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); location.hash = '#/login'; }
-  catch (e) { showModal('সাইনআপ হয়নি', e.message); }
+  catch (e) { showModal('সাইনআপ হয়নি', e.message === 'registration_closed' ? 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' : e.message); }
 }
 const _origRender = render;
 render = async function () {
