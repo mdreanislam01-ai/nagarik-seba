@@ -282,6 +282,8 @@ function dobCaptchaNew(){
 function dobCaptchaRefresh(){var box=document.getElementById('dobCaptchaBox');if(box)box.innerHTML=dobCaptchaNew();var t=document.getElementById('dobCaptchaText');if(t)t.value='';}
 function dobFinderCheck(){
   var t=document.getElementById('dobCaptchaText'),v=t?t.value.trim():'';
+  var d=document.getElementById('dobDate');
+  if(!d||!d.value){showModal('জন্ম তারিখ','জন্ম তারিখ বসান।');return;}
   if(!v){showModal('ক্যাপচা','ক্যাপচার উত্তর লিখুন।');return;}
   if(parseInt(v,10)!==dobCaptchaAns){showModal('ক্যাপচা ভুল','ক্যাপচার উত্তর সঠিক নয় — নতুন ক্যাপচা দেওয়া হয়েছে, আবার চেষ্টা করুন।');dobCaptchaRefresh();return;}
   var f=(typeof FREES!=='undefined')?FREES.find(function(x){return x.id==='dobfinder';}):null;
@@ -289,7 +291,7 @@ function dobFinderCheck(){
   dobCaptchaRefresh();
 }
 function dobFinderHTML(f){
-  return `<div class="card dob-card"><h2 class="dob-title">${esc(f.name)}</h2><div class="dob-field"><label>ডাটার ধরণ*</label><select><option>জন্মনিবন্ধন নম্বর</option><option>এনআইডি নম্বর</option></select></div><div class="dob-field"><label>${esc(f.field)}</label><input id="freeIn" placeholder="XXXXXXXXXXXXXXXXX"></div><div class="dob-field"><label>Captcha Image</label><div class="dob-captcha" id="dobCaptchaBox">${dobCaptchaNew()}</div></div><div class="dob-field"><label>Captcha Text *</label><div class="dob-captcha-row"><input id="dobCaptchaText" placeholder="XX"><button type="button" class="dob-refresh" onclick="dobCaptchaRefresh()">↻</button></div></div><p class="dob-hint">🙂 Hint: Try it yourself.</p><p><button class="btn dob-btn" onclick="dobFinderCheck()">${esc(f.btn)}</button></p><p class="muted">কোনো আসল নাম/নম্বর দিয়ে লুকআপ চালানো হয় না।</p></div>`;
+  return `<div class="card dob-card"><h2 class="dob-title">${esc(f.name)}</h2><div class="dob-field"><label>ডাটার ধরণ*</label><select><option>জন্মনিবন্ধন নম্বর</option><option>এনআইডি নম্বর</option></select></div><div class="dob-field"><label>${esc(f.field)}</label><input id="freeIn" placeholder="XXXXXXXXXXXXXXXXX"></div><div class="dob-field"><label>Date of Birth *</label><input type="date" id="dobDate"></div><div class="dob-field"><label>Captcha Image</label><div class="dob-captcha" id="dobCaptchaBox">${dobCaptchaNew()}</div></div><div class="dob-field"><label>Captcha Text *</label><div class="dob-captcha-row"><input id="dobCaptchaText" placeholder="XX"><button type="button" class="dob-refresh" onclick="dobCaptchaRefresh()">↻</button></div></div><p class="dob-hint">🙂 Hint: Try it yourself.</p><p><button class="btn dob-btn" onclick="dobFinderCheck()">${esc(f.btn)}</button></p><p class="muted">কোনো আসল নাম/নম্বর দিয়ে লুকআপ চালানো হয় না।</p></div>`;
 }
 function brnPageHTML(s){
   const svg=(inner)=>'<svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+inner+'</svg>';
