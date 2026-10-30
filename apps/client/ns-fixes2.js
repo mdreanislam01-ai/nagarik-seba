@@ -28,14 +28,14 @@
     if (document.getElementById('nsTicker')) return;
     var div = document.createElement('div');
     div.id = 'nsTicker'; div.className = 'ns-ticker';
-    div.innerHTML = '<span class="ns-ticker-label">খবর</span><span class="ns-ticker-text" id="nsTickerText">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span>';
+    div.innerHTML = '<span class="ns-ticker-label">খবর</span><span class="ns-ticker-track"><span class="ns-ticker-move"><span class="ns-ticker-text">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span><span class="ns-ticker-text" aria-hidden="true">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span></span></span>';
     main.insertBefore(div, main.firstChild);
     try {
       fetch('/api/notices').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
         var list = j && (j.notices || j.data || j.items);
-        var el = document.getElementById('nsTickerText');
-        if (el && Array.isArray(list) && list.length) {
-          el.textContent = 'আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  ' + list.map(function (n) { return typeof n === 'string' ? n : (n.title || n.text || ''); }).filter(Boolean).join('  •  ');
+        if (Array.isArray(list) && list.length) {
+          var txt = 'আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  ' + list.map(function (n) { return typeof n === 'string' ? n : (n.title || n.text || ''); }).filter(Boolean).join('  •  ');
+          document.querySelectorAll('#nsTicker .ns-ticker-text').forEach(function (el) { el.textContent = txt; });
         }
       }).catch(function () {});
     } catch (e) {}
@@ -44,6 +44,8 @@
     try {
       var main = document.getElementById('main'); if (!main) return;
       ensureTicker();
+      // Separate static notice card is turned off (ticker carries notices).
+      var oldNotice = document.getElementById('nsNotices'); if (oldNotice) oldNotice.remove();
       txtReplace(main, [
         ['মূল অডিটে লাইভ চ্যাটের গন্তব্য যাচাই হয়নি। তাই এখানে কোনো চ্যাট খোলা হয় না — শুধু প্লেসহোল্ডার রাখা হয়েছে।', 'লাইভ চ্যাট শীঘ্রই আসছে।'],
         ['মূল অডিটে ক্যাপচা ছবি “NO IMAGE” ছিল এবং Reload-এ API ত্রুটি এসেছিল। এখানে কোনো আসল ক্যাপচা সিস্টেম নেই।', 'ক্যাপচা শীঘ্রই আসছে।'],

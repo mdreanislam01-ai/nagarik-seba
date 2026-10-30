@@ -19,7 +19,16 @@ a{ color:var(--ns-teal-dark); }
    Sticky so it stays visible under the sticky topbar while scrolling. */
 .ns-ticker{ position:sticky; top:60px; z-index:19; display:flex; gap:10px; align-items:center; background:#fff; border:1px solid #dbe7e6; border-left:5px solid #0f766e; border-radius:12px; padding:10px 14px; margin-bottom:16px; overflow:hidden; }
 .ns-ticker-label{ flex:0 0 auto; background:#0f766e; color:#fff; font-weight:700; border-radius:999px; padding:4px 10px; font-size:13px; }
-.ns-ticker-text{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Continuous marquee: the moving strip holds the text twice and
+   slides left by exactly one copy, so it loops seamlessly,
+   train-like, always moving, one side to the other, no pause. */
+.ns-ticker-track{ flex:1 1 auto; min-width:0; overflow:hidden; }
+.ns-ticker-move{ display:flex; width:max-content; animation:ns-ticker-scroll 28s linear infinite; will-change:transform; }
+.ns-ticker-text{ flex:0 0 auto; white-space:nowrap; padding-right:64px; }
+@keyframes ns-ticker-scroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+/* Separate static notice card on the dashboard is turned off:
+   notices now live only in the moving headline ticker above. */
+#nsNotices{ display:none !important; }
 /* Touch targets */
 button, .sidebar a, .qa-tile, .opt{ touch-action:manipulation; }
 @media (max-width:800px){
