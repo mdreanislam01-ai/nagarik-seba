@@ -43,15 +43,20 @@ a{ color:var(--ns-teal-dark); }
 .svc-card{ cursor:pointer; }
 .svc-card, .qa-tile, .opt, .ns-cat-head{ min-height:44px; }
 /* News / headline ticker, shown at the top of every client page.
-   Sticky so it stays visible under the sticky topbar while scrolling.
-   2026-10-30 slim/flush change (user-marked strip): the ticker is
-   now inserted directly after the header (see ns-fixes2.js), not
-   inside #main, so no main padding creates white space above it.
-   It is a small full-width strip, no rounded card, no margins,
-   attached directly to the heading below the topbar, and when a
+   2026-10-30 flush-with-heading change (user: no gap above the
+   ticker at all, it must be one with the heading): the ticker is
+   now inserted INSIDE header.topbar itself (see ns-fixes2.js),
+   as a full-width second flex row. The header is already
+   sticky (top:0), so the ticker rides with it — no separate
+   sticky top value that can drift from the real header height
+   and leave a gap. Header padding-bottom and the flex row gap
+   are zeroed and the ticker's negative side margins cancel the
+   header's side padding, so the white strip touches the teal
+   heading row directly above and spans the full width. When a
    ticker is present the main's top padding is also removed so
    there is no white gap below it either. */
-.ns-ticker{ position:sticky; top:60px; z-index:19; display:flex; gap:8px; align-items:center; background:#fff; border:none; border-bottom:1px solid #dbe7e6; border-radius:0; padding:6px 10px; margin:0; overflow:hidden; font-size:13px; }
+.topbar, .topbar-new{ flex-wrap:wrap !important; row-gap:0 !important; padding:8px 10px 0 10px !important; }
+.ns-ticker{ position:static; flex:1 1 100%; order:100; z-index:19; display:flex; gap:8px; align-items:center; background:#fff; border:none; border-bottom:1px solid #dbe7e6; border-radius:0; padding:6px 10px; margin:0 -10px; overflow:hidden; font-size:13px; }
 body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .ns-ticker-label{ flex:0 0 auto; background:#0f766e; color:#fff; font-weight:700; border-radius:999px; padding:3px 8px; font-size:12px; }
 /* Continuous marquee: the moving strip holds the text twice and
