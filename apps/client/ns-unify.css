@@ -102,11 +102,11 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
    This page only uses the screenshots' blue; the rest of the
    site keeps its teal. DOM order of brn inputs is NOT changed;
    visual order below is CSS order only, on this card only. */
-#main.ns-nb-page{ background:linear-gradient(180deg,#eaf4ff,#f8fbff); padding:16px 12px 24px; }
+#main.ns-nb-page{ background:linear-gradient(180deg,#ecfdf5,#f0fdfa); padding:16px 12px 24px; }
 #main.ns-nb-page .card{ background:#fff; }
 .ns-nb-hero{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 4px 14px; }
 .ns-nb-hero-text{ display:flex; gap:14px; align-items:flex-start; min-width:0; }
-.ns-nb-hero-ico{ width:56px; height:56px; min-width:56px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#1e40af); color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 8px 20px rgba(37,99,235,.35); }
+.ns-nb-hero-ico{ width:56px; height:56px; min-width:56px; border-radius:50%; background:linear-gradient(135deg,#0f766e,#115e59); color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 8px 20px rgba(15,118,110,.35); }
 .ns-nb-hero-logo{ width:56px; height:56px; min-width:56px; border-radius:50%; object-fit:cover; flex:none; }
 .ns-nb-hero-text > div{ display:flex; flex-direction:column; gap:2px; }
 .ns-nb-hero-text b{ font-size:24px; color:#0f766e; line-height:1.2; }
@@ -118,25 +118,25 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 @media (max-width:560px){ .ns-nb-hero-art svg{ width:84px; height:76px; } .ns-nb-hero-text b{ font-size:20px; } }
 #nsAutoCard{ margin:0 0 18px; }
 #nsAutoCard .ns-auto-card{ background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(15,23,42,.10); overflow:hidden; }
-.ns-auto-bar, .ns-nb-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; background:linear-gradient(90deg,#2563eb,#1e40af); color:#fff; font-weight:800; font-size:15px; }
+.ns-auto-bar, .ns-nb-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; background:linear-gradient(90deg,#0f766e,#115e59); color:#fff; font-weight:800; font-size:15px; }
 .ns-auto-bar-r, .ns-nb-head-r{ font-size:12px; font-weight:600; opacity:.95; text-align:right; }
 .ns-auto-body{ padding:16px; display:flex; flex-direction:column; gap:14px; }
 .ns-auto-field{ display:flex; gap:10px; align-items:flex-start; }
-.ns-auto-fico{ width:36px; height:36px; min-width:36px; background:#dbeafe; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.ns-auto-fico{ width:36px; height:36px; min-width:36px; background:#ccfbf1; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
 .ns-auto-fmain{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
 .ns-auto-label{ font-size:13px; font-weight:700; color:#0f766e; }
 .ns-auto-input{ width:100%; box-sizing:border-box; padding:11px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; outline:none; background:#fff; }
-.ns-auto-input:focus{ border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+.ns-auto-input:focus{ border-color:#0f766e; box-shadow:0 0 0 3px rgba(15,118,110,.15); }
 .ns-auto-with-ico{ position:relative; }
 .ns-auto-with-ico .ns-auto-input{ padding-right:40px; }
-.ns-auto-in-ico{ position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#2563eb; }
+.ns-auto-in-ico{ position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#0f766e; }
 .ns-auto-cap-row{ display:flex; gap:10px; align-items:stretch; }
-.ns-auto-cap-img{ flex:1; display:flex; align-items:center; justify-content:center; background:#f1f5f9; background-image:radial-gradient(#cbd5e1 1px, transparent 1px); background-size:8px 8px; border:1px solid #cbd5e1; border-radius:10px; font-size:28px; font-weight:800; color:#2563eb; letter-spacing:2px; padding:10px 6px; }
-.ns-auto-cap-refresh{ border:1px solid #2563eb; background:#fff; color:#2563eb; border-radius:10px; padding:8px 12px; font-weight:700; cursor:pointer; white-space:nowrap; }
-.ns-auto-btn{ width:100%; border:none; border-radius:10px; padding:14px; margin-top:2px; background:linear-gradient(90deg,#2563eb,#1e40af); color:#fff; font-size:16px; font-weight:800; cursor:pointer; }
+.ns-auto-cap-img{ flex:1; display:flex; align-items:center; justify-content:center; background:#f1f5f9; background-image:radial-gradient(#cbd5e1 1px, transparent 1px); background-size:8px 8px; border:1px solid #cbd5e1; border-radius:10px; font-size:28px; font-weight:800; color:#0f766e; letter-spacing:2px; padding:10px 6px; }
+.ns-auto-cap-refresh{ border:1px solid #0f766e; background:#fff; color:#0f766e; border-radius:10px; padding:8px 12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.ns-auto-btn{ width:100%; border:none; border-radius:10px; padding:14px; margin-top:2px; background:linear-gradient(90deg,#0f766e,#115e59); color:#fff; font-size:16px; font-weight:800; cursor:pointer; }
 .ns-auto-msg{ margin:0; padding:8px 10px; border-radius:8px; font-size:13px; line-height:1.5; }
 .ns-auto-msg:empty{ display:none; }
-.ns-auto-note{ margin:0; padding:10px 12px; background:#eff6ff; border-radius:10px; font-size:12px; color:#115e59; line-height:1.6; }
+.ns-auto-note{ margin:0; padding:10px 12px; background:#f0fdfa; border-radius:10px; font-size:12px; color:#115e59; line-height:1.6; }
 /* Option card on this page, restyled to the new design (kept:
    without a selected option there is no price to order with). */
 #main.ns-nb-page .card:not(#brnCopyCard) h2{ color:#0f172a; }
@@ -145,18 +145,18 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 /* Personal-info card, screenshot style, same icons. */
 #brnCopyCard.ns-nb-design{ background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(15,23,42,.10); overflow:hidden; padding:0 0 16px; }
 #brnCopyCard.ns-nb-design .ns-nb-head{ border-radius:0; margin:0 0 14px; }
-#brnCopyCard.ns-nb-design .brn-dash{ width:calc(100% - 32px); box-sizing:border-box; margin:0 16px 14px; background:#f0f9ff; border:1.5px dashed #2563eb; border-radius:12px; padding:20px 12px; color:#2563eb; }
+#brnCopyCard.ns-nb-design .brn-dash{ width:calc(100% - 32px); box-sizing:border-box; margin:0 16px 14px; background:#f0fdfa; border:1.5px dashed #0f766e; border-radius:12px; padding:20px 12px; color:#0f766e; }
 #brnCopyCard.ns-nb-design .brn-grid{ margin:0 16px; }
 #brnCopyCard.ns-nb-design .brn-field label{ font-weight:700; color:#0f766e; }
-#brnCopyCard.ns-nb-design .brn-ico{ width:32px !important; height:32px !important; min-width:32px !important; background:#dbeafe; border-radius:8px; }
+#brnCopyCard.ns-nb-design .brn-ico{ width:32px !important; height:32px !important; min-width:32px !important; background:#ccfbf1; border-radius:8px; color:#0f766e; }
 #brnCopyCard.ns-nb-design .brn-field input, #brnCopyCard.ns-nb-design .brn-field select, #brnCopyCard.ns-nb-design .brn-field textarea{ border:1px solid #cbd5e1; border-radius:10px; padding:11px 12px; background:#fff; }
-#brnCopyCard.ns-nb-design .brn-field input:focus, #brnCopyCard.ns-nb-design .brn-field select:focus, #brnCopyCard.ns-nb-design .brn-field textarea:focus{ border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); outline:none; }
+#brnCopyCard.ns-nb-design .brn-field input:focus, #brnCopyCard.ns-nb-design .brn-field select:focus, #brnCopyCard.ns-nb-design .brn-field textarea:focus{ border-color:#0f766e; box-shadow:0 0 0 3px rgba(15,118,110,.15); outline:none; }
 #brnCopyCard.ns-nb-design .notice{ margin:12px 16px 0; color:#0f766e; font-weight:700; }
-#brnCopyCard.ns-nb-design #nsBdrisOrderBtn{ width:calc(100% - 32px); margin:14px 16px 0; padding:14px; border-radius:10px; background:linear-gradient(90deg,#2563eb,#1e40af); color:#fff; font-size:16px; font-weight:800; border:none; }
+#brnCopyCard.ns-nb-design #nsBdrisOrderBtn{ width:calc(100% - 32px); margin:14px 16px 0; padding:14px; border-radius:10px; background:linear-gradient(90deg,#0f766e,#115e59); color:#fff; font-size:16px; font-weight:800; border:none; }
 .ns-nb-foot{ margin:12px 16px 0; }
 .ns-nb-note{ margin:0; padding:10px 12px; background:#f0fdf4; border-radius:10px; font-size:12px; color:#0f766e; line-height:1.6; }
 .ns-nb-back{ text-align:center; margin:12px 0 0; }
-.ns-nb-back a{ color:#2563eb; font-weight:700; text-decoration:none; }
+.ns-nb-back a{ color:#0f766e; font-weight:700; text-decoration:none; }
 /* Responsive, desktop + mobile (2026-10-30, user request):
    nothing may be cut off on either. Inputs are border-box so
    padding cannot push them outside the card; header bars wrap;
