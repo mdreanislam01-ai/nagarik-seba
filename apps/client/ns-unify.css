@@ -1,0 +1,28 @@
+/* Nagarik Seba client — design unification, client only.
+   Dominant client colour is teal (#0f766e, also #0E7C7B/#0F8483 in
+   styles.css). Admin navy/dark colours are NOT used here, so the
+   customer portal stays separate from the admin portal.
+   This file only overrides presentation: no price, route or flow. */
+:root{ --ns-teal:#0f766e; --ns-teal-dark:#115e59; --ns-teal-light:#e6f4f2; }
+.topbar, .topbar-new{ background:var(--ns-teal) !important; }
+.sidebar a.active, .sidebar a:hover{ background:var(--ns-teal-light) !important; color:var(--ns-teal-dark) !important; }
+.btn{ background:var(--ns-teal) !important; border-color:var(--ns-teal) !important; }
+.btn.ghost{ background:#fff !important; color:var(--ns-teal-dark) !important; border:1px solid var(--ns-teal) !important; }
+a{ color:var(--ns-teal-dark); }
+.card{ border-radius:16px !important; box-shadow:0 2px 10px rgba(15,118,110,.08) !important; }
+.card h2, .card h3{ color:var(--ns-teal-dark); }
+/* Service cards: one teal header instead of a different colour per service */
+.svc-card .svc-head{ background:linear-gradient(135deg,#0f766e,#0E7C7B) !important; color:#fff !important; }
+.svc-card{ cursor:pointer; }
+.svc-card, .qa-tile, .opt, .ns-cat-head{ min-height:44px; }
+/* News / headline ticker, shown at the top of every client page.
+   Sticky so it stays visible under the sticky topbar while scrolling. */
+.ns-ticker{ position:sticky; top:60px; z-index:19; display:flex; gap:10px; align-items:center; background:#fff; border:1px solid #dbe7e6; border-left:5px solid #0f766e; border-radius:12px; padding:10px 14px; margin-bottom:16px; overflow:hidden; }
+.ns-ticker-label{ flex:0 0 auto; background:#0f766e; color:#fff; font-weight:700; border-radius:999px; padding:4px 10px; font-size:13px; }
+.ns-ticker-text{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Touch targets */
+button, .sidebar a, .qa-tile, .opt{ touch-action:manipulation; }
+@media (max-width:800px){
+  .main{ padding:14px !important; }
+  .grid{ grid-template-columns:1fr 1fr !important; }
+}
