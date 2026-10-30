@@ -77,8 +77,8 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 /* WhatsApp support icon inside the profile card (2026-10-30):
    green round icon next to the QR button; the long wa-card
    below the profile is removed by ns-wa-profile.js. */
-.ns-wa-profile{ width:40px; height:40px; min-width:40px; border-radius:12px; background:#22c55e; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; }
-.ns-wa-profile svg{ width:24px; height:24px; display:block; }
+.ns-wa-profile{ width:46px; height:46px; min-width:46px; flex:none; border-radius:12px; background:#25d366; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; }
+.ns-wa-profile svg{ width:30px; height:30px; flex:none; display:block; }
 .wa-card{ display:none !important; }
 /* Login portal exception: ticker is extra on the login page,
    so it is hidden there only; all other pages keep it. */
