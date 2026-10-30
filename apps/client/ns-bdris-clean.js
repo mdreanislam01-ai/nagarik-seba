@@ -24,10 +24,12 @@
     var txt = (sel.textContent || '').trim();
     return { name: txt.replace(/\s*\(.*$/, ''), text: txt };
   }
+  var applying = false;
   function updateTotal() {
     var el = document.getElementById('nsBdrisTotal');
     var sel = selectedOption();
-    if (el) el.textContent = sel ? ('এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + sel.text + ' কাটা হবে।') : 'অপশন বাছুন।';
+    var txt = sel ? ('এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + sel.text + ' কাটা হবে।') : 'অপশন বাছুন।';
+    if (el && el.textContent !== txt) el.textContent = txt;
   }
   window.nsNewBdrisOrder = async function () {
     try {
@@ -52,6 +54,8 @@
     }
   };
   function apply() {
+    if (applying) return; applying = true;
+    try {
     if (!isNewBdris()) return;
     var main = document.getElementById('main'); if (!main) return;
     var cards = main.querySelectorAll('.card');
@@ -64,6 +68,7 @@
         if (child.tagName === 'H2') return;
         if (child.classList && child.classList.contains('closed')) return;
         if (child.id === 'opts') return;
+        if (child.id === 'nsBdrisTotal') return; // BUG FIX: previously this total note was removed and re-added on every observer run, looping forever and freezing the page.
         if (child.tagName === 'LABEL' && txt.indexOf('অপশন বাছুন') !== -1) return;
         if (child.tagName === 'P' && txt.indexOf('ঢাকা সিটি') !== -1) return;
         child.remove();
@@ -81,7 +86,7 @@
       var sub = brnCard.querySelector('.brn-sub'); if (sub) sub.remove();
       // Replace the misleading 5 tk note with the option-price note.
       var notice = brnCard.querySelector('p.notice');
-      if (notice) notice.textContent = 'নির্বাচিত অপশনের দাম অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।';
+      if (notice && notice.textContent !== 'নির্বাচিত অপশনের দাম অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।') notice.textContent = 'নির্বাচিত অপশনের দাম অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।';
       // Replace the old brn-service order button with the unified order button.
       var oldBtn = null;
       brnCard.querySelectorAll('button').forEach(function (b) {
@@ -96,6 +101,7 @@
       }
       brnCard.style.marginTop = '0';
     }
+    } finally { applying = false; }
   }
   document.addEventListener('click', function (e) {
     if (e.target && e.target.closest && e.target.closest('#opts .opt')) setTimeout(updateTotal, 50);
