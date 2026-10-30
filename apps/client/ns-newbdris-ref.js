@@ -108,11 +108,81 @@
     if (pv) pv.disabled = histPage <= 1;
     if (nx) nx.disabled = histPage >= pages;
   }
+
+  var FORM_TEMPLATE = [
+    '*🔹 নাম (বাংলা):*',
+    '*🔹 Name (English):*',
+    '',
+    '*🔹 পিতার নাম (বাংলা):*',
+    "*🔹 Father's Name:*",
+    '',
+    '*🔹 মাতার নাম (বাংলা):*',
+    "*🔹 Mother's Name:*",
+    '',
+    '*🔹 জন্ম তারিখ:*',
+    '*🔹 Date of Birth:*',
+    '',
+    '*🔹 লিঙ্গ:*',
+    '*🔹 সন্তানক্রমে:*',
+    '*🔹 মোবাইল নম্বর:*',
+    '',
+    '*🔹 ঠিকানা (বাংলা):*',
+    '*🔹 ঠিকানা (English):*',
+    '',
+    '*🔹 পিতার জন্মনিবন্ধন নম্বর:*',
+    '*🔹 পিতার NID:*',
+    '*🔹 পিতার জন্ম তারিখ:*',
+    '',
+    '*🔹 মাতার জন্মনিবন্ধন নম্বর:*',
+    '*🔹 মাতার NID:*',
+    '*🔹 মাতার জন্ম তারিখ:*'
+  ].join('\n');
+  function totalText(name, price) { return '⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + name + ' (' + price + ' টাকা) কাটা হবে।'; }
+  function submitRefOrder(btn) {
+    try {
+      if (typeof nsToken === 'function' && !nsToken()) {
+        if (typeof showModal === 'function') showModal('লগইন প্রয়োজন', 'অর্ডার করতে প্রথমে লগইন করুন।');
+        location.hash = '#/login'; return;
+      }
+      var ta = document.getElementById('nsRefFormText');
+      var text = ta ? ta.value.trim() : '';
+      if (!text || text === FORM_TEMPLATE) {
+        if (typeof showModal === 'function') showModal('ফরম পূরণ করুন', 'ফরমের ঘরগুলোতে আপনার তথ্য লিখে তারপর Order Now চাপুন।');
+        return;
+      }
+      var sel = document.querySelector('#opts .opt.sel');
+      var name = sel ? sel.getAttribute('data-name') : 'নরমাল';
+      var price = sel ? sel.getAttribute('data-price') : '800';
+      btn.disabled = true; btn.textContent = 'অর্ডার হচ্ছে…';
+      nsCall('/orders', 'POST', { service_id: 'newbdris', option_name: name, payload: { details: text } }).then(function (r) {
+        if (typeof NS_STATE !== 'undefined') NS_STATE.wallet = r.wallet_bdt;
+        if (typeof nsRefresh === 'function') return nsRefresh(true).then(function () { return r; });
+        return r;
+      }).then(function (r) {
+        if (typeof render === 'function') render();
+        if (typeof showModal === 'function') showModal('অর্ডার সফল', 'অর্ডার #' + r.order.id + ' — ' + r.order.amount_bdt + ' টাকা কেটেছে, স্ট্যাটাস: ' + r.order.status + '।');
+      }).catch(function (e) {
+        var msg = 'আবার চেষ্টা করুন।';
+        if (e && e.message === 'insufficient_balance') msg = 'ব্যালান্স কম — রিচার্জ করুন।';
+        else if (e && e.message === 'orders_closed') msg = 'অর্ডার গ্রহণ বর্তমানে বন্ধ আছে।';
+        else if (e && e.message) msg = e.message;
+        if (typeof showModal === 'function') showModal('অর্ডার হয়নি', msg);
+      }).finally(function () { btn.disabled = false; btn.textContent = 'Order Now'; });
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Order Now';
+    }
+  }
   function build() {
     var main = document.getElementById('main');
-    var card = document.getElementById('brnCopyCard');
-    if (!main || !card) return;
+    if (!main) return;
     if (main.querySelector('.profile-card')) return;
+    /* Crossed-out section removed (user instruction): the old
+       personal-info card, autoload card and new-birth heroes go,
+       on this page only. The brn service page is not touched,
+       because this only runs while the hash is newbdris. */
+    var oldCard = document.getElementById('brnCopyCard'); if (oldCard) oldCard.remove();
+    var autoCard = document.getElementById('nsAutoCard'); if (autoCard) autoCard.remove();
+    main.querySelectorAll('.ns-nb-hero, .ns-nb-head, .ns-nb-foot').forEach(function (el) { el.remove(); });
     if (!document.getElementById('nsNbPageTitle')) {
       var title = document.createElement('div');
       title.id = 'nsNbPageTitle';
@@ -134,12 +204,25 @@
           tc.querySelectorAll('#opts .opt').forEach(function (o) { o.classList.remove('sel'); });
           opt.classList.add('sel');
           var tot = document.getElementById('nsBdrisTotal');
-          var txt = 'এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + opt.getAttribute('data-name') + ' (' + opt.getAttribute('data-price') + ' টাকা) কাটা হবে।';
+          var txt = totalText(opt.getAttribute('data-name'), opt.getAttribute('data-price'));
           if (tot) tot.textContent = txt;
+          var tot2 = document.getElementById('nsRefTotal');
+          if (tot2) tot2.textContent = txt;
           var notice = card.querySelector('p.notice');
           if (notice) notice.textContent = opt.getAttribute('data-name') + ' (' + opt.getAttribute('data-price') + ' টাকা) অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।';
         });
       });
+    }
+    if (!document.getElementById('nsRefFormCard')) {
+      var fc = document.createElement('div');
+      fc.id = 'nsRefFormCard'; fc.className = 'card';
+      fc.innerHTML = '<div class="ns-ref-form-label">ফরম পূরণ করুন: <span>*</span></div><textarea id="nsRefFormText" class="ns-ref-form-text"></textarea><p id="nsRefTotal" class="ns-type-total">⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে নরমাল (800 টাকা) কাটা হবে।</p><button type="button" id="nsRefOrderBtn" class="ns-ref-order-btn">Order Now</button><p class="ns-ref-note">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>';
+      var hs0 = document.getElementById('nsOrderHistory');
+      if (hs0) main.insertBefore(fc, hs0); else main.appendChild(fc);
+      var ta = document.getElementById('nsRefFormText');
+      if (ta) ta.value = FORM_TEMPLATE;
+      var ob = document.getElementById('nsRefOrderBtn');
+      if (ob) ob.addEventListener('click', function () { submitRefOrder(ob); });
     }
     if (!document.getElementById('nsOrderHistory')) {
       var hs = document.createElement('div');
@@ -161,7 +244,7 @@
     try {
       if (!isNewBdris()) {
         setTicker(false);
-        ['nsNbPageTitle', 'nsTypeCard', 'nsOrderHistory'].forEach(function (id) {
+        ['nsNbPageTitle', 'nsTypeCard', 'nsRefFormCard', 'nsOrderHistory'].forEach(function (id) {
           var el = document.getElementById(id); if (el) el.remove();
         });
         lastHistKey = '';
@@ -176,5 +259,5 @@
   /* No MutationObserver by design: a 1-second read-only check that
      only writes when something changed cannot storm, unlike an
      observer that fires on every write it just made. */
-  setInterval(tick, 1000);
+  setInterval(tick, 500);
 })();

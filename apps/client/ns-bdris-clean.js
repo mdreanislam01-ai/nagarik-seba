@@ -86,7 +86,7 @@
     var main = document.getElementById('main'); if (!main) return;
     var cards = main.querySelectorAll('.card');
     var orderCard = null, brnCard = document.getElementById('brnCopyCard');
-    cards.forEach(function (c) { if (c.id !== 'brnCopyCard' && c.id !== 'nsTypeCard' && c.id !== 'nsOrderHistory' && !orderCard) orderCard = c; });
+    cards.forEach(function (c) { if (c.id !== 'brnCopyCard' && c.id !== 'nsTypeCard' && c.id !== 'nsOrderHistory' && c.id !== 'nsRefFormCard' && !orderCard) orderCard = c; });
     if (orderCard) {
       // The whole order card is removed (user instruction,
       // 2026-10-30). Removing it outright — not pruning children
