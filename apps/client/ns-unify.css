@@ -32,6 +32,46 @@ a{ color:var(--ns-teal-dark); }
 /* Login portal exception: ticker is extra on the login page,
    so it is hidden there only; all other pages keep it. */
 body.ns-login-portal .ns-ticker, body.ns-design-login-page .ns-ticker{ display:none !important; }
+/* Birth registration form field order — visual only (CSS order).
+   The DOM order is NOT changed, so order submission, document
+   auto-fill and DOB-in-words (which all map by DOM index) keep
+   working exactly as before. No field is removed.
+   New visual order: applicant name -> gender/DOB -> father ->
+   mother -> birth place/address -> office -> certificate details.
+   DOM nth-child -> visual order:
+   12 নাম=1, 13 Name=2, 5 Gender=3, 10 DOB=4, 11 DOB Word=5,
+   14 পিতার নাম=6, 15 Father Name=7, 16 পিতার জাতীয়তা=8,
+   17 Father Nationality=9, 18 মাতার নাম=10, 19 Mother Name=11,
+   20 মাতার জাতীয়তা=12, 21 Mother Nationality=13,
+   22 জন্মস্থান=14, 23 Place of Birth=15, 24 স্থায়ী ঠিকানা=16,
+   25 Permanent Address=17, 1 Register Office=18, 2 Upazila=19,
+   3 Zila=20, 4 BRN=21, 6 Date of Registration=22,
+   7 Date of Issuance=23, 8 Left Bar Code=24, 9 QR Link=25. */
+.brn-grid .brn-field:nth-child(1){ order:18; }
+.brn-grid .brn-field:nth-child(2){ order:19; }
+.brn-grid .brn-field:nth-child(3){ order:20; }
+.brn-grid .brn-field:nth-child(4){ order:21; }
+.brn-grid .brn-field:nth-child(5){ order:3; }
+.brn-grid .brn-field:nth-child(6){ order:22; }
+.brn-grid .brn-field:nth-child(7){ order:23; }
+.brn-grid .brn-field:nth-child(8){ order:24; }
+.brn-grid .brn-field:nth-child(9){ order:25; }
+.brn-grid .brn-field:nth-child(10){ order:4; }
+.brn-grid .brn-field:nth-child(11){ order:5; }
+.brn-grid .brn-field:nth-child(12){ order:1; }
+.brn-grid .brn-field:nth-child(13){ order:2; }
+.brn-grid .brn-field:nth-child(14){ order:6; }
+.brn-grid .brn-field:nth-child(15){ order:7; }
+.brn-grid .brn-field:nth-child(16){ order:8; }
+.brn-grid .brn-field:nth-child(17){ order:9; }
+.brn-grid .brn-field:nth-child(18){ order:10; }
+.brn-grid .brn-field:nth-child(19){ order:11; }
+.brn-grid .brn-field:nth-child(20){ order:12; }
+.brn-grid .brn-field:nth-child(21){ order:13; }
+.brn-grid .brn-field:nth-child(22){ order:14; }
+.brn-grid .brn-field:nth-child(23){ order:15; }
+.brn-grid .brn-field:nth-child(24){ order:16; }
+.brn-grid .brn-field:nth-child(25){ order:17; }
 /* Touch targets */
 button, .sidebar a, .qa-tile, .opt{ touch-action:manipulation; }
 @media (max-width:800px){
