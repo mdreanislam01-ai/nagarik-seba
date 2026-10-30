@@ -59,8 +59,16 @@
     var btn = document.querySelector('.ns-bell'); if (!btn) return;
     var n = loggedIn() ? pendingCount() : 0, badge = btn.querySelector('.ns-bell-badge');
     if (!badge){ badge = document.createElement('span'); badge.className = 'ns-bell-badge'; btn.appendChild(badge); }
-    badge.textContent = n > 9 ? '9+' : String(n);
-    badge.style.display = n > 0 ? 'flex' : 'none';
+    /* BUG FIX 2026-10-30: the old version set badge.textContent
+       on EVERY observer callback, even when unchanged. Setting
+       textContent replaces the text node, which fired the body's
+       MutationObserver again, which called setup again, which set
+       textContent again — an infinite loop that hogged the main
+       thread and froze clicks/scroll, especially on the login
+       page. Now touch the DOM only when the value actually changes. */
+    var txt = n > 9 ? '9+' : String(n), disp = n > 0 ? 'flex' : 'none';
+    if (badge.textContent !== txt) badge.textContent = txt;
+    if (badge.style.display !== disp) badge.style.display = disp;
   }
   function setup(){
     var header = document.querySelector('header.topbar'); if (!header) return;
@@ -76,6 +84,10 @@
   }
   document.addEventListener('DOMContentLoaded', setup);
   if (document.readyState !== 'loading') setup();
-  new MutationObserver(function(){ setup(); }).observe(document.body, {childList:true, subtree:true});
+  /* No body MutationObserver any more (see bug fix above): the
+     header is static HTML, never re-rendered by app.js, so the
+     bell only needs inserting once on load. Badge refreshes on
+     hashchange and once a minute, both idempotent. */
   window.addEventListener('hashchange', function(){ setTimeout(updateBadge, 300); });
+  setInterval(updateBadge, 60000);
 })();
