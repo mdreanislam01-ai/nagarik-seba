@@ -9,8 +9,8 @@
 .ns-type-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
 #nsTypeCard #opts .opt{ border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; cursor:pointer; padding:0; text-align:center; }
 #nsTypeCard #opts .opt.sel{ border:2px solid #0f766e; box-shadow:0 4px 14px rgba(15,118,110,.25); }
-.ns-type-img{ height:96px; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#0f172a 0%,#115e59 70%,#0f766e 100%); border-bottom:3px solid #16a34a; }
-.ns-type-badge{ width:52px; height:52px; border-radius:50%; background:#fff; color:#0f766e; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; border:3px solid #fbbf24; }
+.ns-type-img{ height:96px; display:flex; align-items:center; justify-content:center; background:#ffffff; border-bottom:3px solid #16a34a; }
+.ns-type-logo{ width:84px; height:84px; object-fit:contain; display:block; }
 .ns-type-name{ padding:8px 4px 0; font-weight:600; font-size:15px; }
 .ns-type-price{ padding:2px 4px 10px; color:#374151; font-size:14px; }
 .ns-type-total{ background:#e0f2fe; color:#0c4a6e; border-radius:10px; padding:10px 12px; text-align:center; margin:12px 0 0; font-size:15px; }
@@ -33,7 +33,7 @@
 }
 @media (max-width:560px){
   .ns-type-img{ height:72px; }
-  .ns-type-badge{ width:44px; height:44px; font-size:16px; }
+  .ns-type-logo{ width:64px; height:64px; }
   .ns-type-name{ font-size:14px; }
   .ns-hist-controls{ flex-direction:column; align-items:stretch; }
   .ns-hist-controls input{ width:100%; box-sizing:border-box; }
