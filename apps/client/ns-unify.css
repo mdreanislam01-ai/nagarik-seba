@@ -96,6 +96,13 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .topbar .switch__icon{ background:#fff !important; width:44px !important; min-width:44px !important; height:24px !important; border:1px solid #fff !important; }
 .topbar .switch__icon-part--1{ width:20px !important; height:20px !important; left:2px !important; top:2px !important; background:#0f766e !important; }
 .topbar .switch__input:checked + .switch__icon .switch__icon-part--1{ transform:translateX(20px) !important; }
+/* Brand logo + text, enlarged exactly as marked 2026-10-30:
+   logo bigger, text moved a bit right (larger gap) and a bit
+   bigger. Nothing else in the header is changed here. */
+.logo-new{ gap:14px !important; }
+.logo-mark, .logo-mark img, .logo-mark svg{ width:56px !important; height:56px !important; min-width:56px !important; }
+.logo-text{ font-size:22px !important; line-height:1.15 !important; }
+.logo-text small{ font-size:14px !important; }
 /* Topbar search bar (2026-10-30): in the marked area of the
    header, with a live dropdown below it. White pill on teal,
    dark text, so it is clearly visible. */
