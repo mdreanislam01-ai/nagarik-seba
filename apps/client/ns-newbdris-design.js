@@ -220,17 +220,24 @@
     var start = total ? (histPage - 1) * histShow + 1 : 0;
     var end = Math.min(total, histPage * histShow);
     var page = rows.slice((histPage - 1) * histShow, histPage * histShow);
+    /* FREEZE FIX 2026-10-31: this runs on every #main mutation, so
+       writing innerHTML unconditionally re-fired the observer and
+       looped forever, freezing clicks/navigation on this page.
+       Now nothing is written unless it actually changed. */
+    var html;
     if (!page.length) {
-      body.innerHTML = '<tr><td colspan="6" class="ns-hist-empty">No data available in table</td></tr>';
+      html = '<tr><td colspan="6" class="ns-hist-empty">No data available in table</td></tr>';
     } else {
-      body.innerHTML = page.map(function (o) {
+      html = page.map(function (o) {
         return '<tr><td data-label="NO">' + (o.id || '') + '</td><td data-label="COST">' + (o.amount_bdt || '') + ' টাকা</td><td data-label="STATUS">' + (o.status || '') + '</td><td data-label="SYNC">—</td><td data-label="CREATED">' + fmtCreated(o.created_at) + '</td><td data-label="ACTION">—</td></tr>';
       }).join('');
     }
-    if (foot) foot.textContent = 'Showing ' + start + ' to ' + end + ' of ' + total + ' entries';
+    if (body.innerHTML !== html) body.innerHTML = html;
+    var footTxt = 'Showing ' + start + ' to ' + end + ' of ' + total + ' entries';
+    if (foot && foot.textContent !== footTxt) foot.textContent = footTxt;
     var pv = document.getElementById('nsHistPrev'), nx = document.getElementById('nsHistNext');
-    if (pv) pv.disabled = histPage <= 1;
-    if (nx) nx.disabled = histPage >= pages;
+    if (pv && pv.disabled !== (histPage <= 1)) pv.disabled = histPage <= 1;
+    if (nx && nx.disabled !== (histPage >= pages)) nx.disabled = histPage >= pages;
   }
   function setTicker(page) {
     var texts = document.querySelectorAll('#nsTicker .ns-ticker-text');
@@ -254,10 +261,19 @@
       var main = document.getElementById('main');
       var card = document.getElementById('brnCopyCard');
       if (!main || !card) return;
-      if (!document.getElementById('nsNbPageTitle')) {
+      /* HEADLINE FIX 2026-10-31: only ONE headline on this page —
+         the header ticker, whose text becomes PAGE_HEADLINE here
+         and is restored elsewhere (setTicker). The page notice bar
+         duplicated the same headline, so it is removed, not added.
+         The page keeps only its title. */
+      var oldTitle = document.getElementById('nsNbPageTitle');
+      if (oldTitle) {
+        var oldNotice = oldTitle.querySelector('.ns-nb-page-notice');
+        if (oldNotice) oldNotice.remove();
+      } else {
         var title = document.createElement('div');
         title.id = 'nsNbPageTitle';
-        title.innerHTML = '<h2>নতুন জন্ম নিবন্ধন অর্ডার</h2><div class="ns-nb-page-notice">' + PAGE_HEADLINE + '</div>';
+        title.innerHTML = '<h2>নতুন জন্ম নিবন্ধন অর্ডার</h2>';
         main.insertBefore(title, main.firstChild);
       }
       if (!document.getElementById('nsTypeCard')) {
