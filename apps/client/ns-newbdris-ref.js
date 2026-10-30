@@ -220,7 +220,7 @@
     if (!document.getElementById('nsRefFormCard')) {
       var fc = document.createElement('div');
       fc.id = 'nsRefFormCard'; fc.className = 'card';
-      fc.innerHTML = '<div class="ns-ref-form-label">ফরম পূরণ করুন: <span>*</span></div><textarea id="nsRefFormText" class="ns-ref-form-text"></textarea><p id="nsRefTotal" class="ns-type-total">⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে নরমাল (800 টাকা) কাটা হবে।</p><button type="button" id="nsRefOrderBtn" class="ns-ref-order-btn">Order Now</button><p class="ns-ref-note">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>';
+      fc.innerHTML = '<div class="ns-ref-form-label">ফরম পূরণ করুন: <span>*</span></div><textarea id="nsRefFormText" class="ns-ref-form-text" rows="24" style="min-height:600px"></textarea><p id="nsRefTotal" class="ns-type-total">⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে নরমাল (800 টাকা) কাটা হবে।</p><button type="button" id="nsRefOrderBtn" class="ns-ref-order-btn">Order Now</button><p class="ns-ref-note">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>';
       var hs0 = document.getElementById('nsOrderHistory');
       if (hs0) main.insertBefore(fc, hs0); else main.appendChild(fc);
       var ta = document.getElementById('nsRefFormText');

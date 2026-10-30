@@ -49,9 +49,9 @@
 }
 
 #nsRefFormCard{ max-width:100%; box-sizing:border-box; }
-.ns-ref-form-label{ font-size:16px; font-weight:600; margin-bottom:10px; }
+.ns-ref-form-label{ font-size:18px; font-weight:700; margin-bottom:12px; }
 .ns-ref-form-label span{ color:#dc2626; }
-.ns-ref-form-text{ width:100%; box-sizing:border-box; min-height:340px; padding:12px; border:1px solid #d1d5db; border-radius:12px; font-size:15px; line-height:1.7; resize:vertical; }
+.ns-ref-form-text{ width:100%; box-sizing:border-box; min-height:600px; padding:14px; border:1px solid #d1d5db; border-radius:12px; font-size:16px; line-height:1.7; resize:vertical; }
 .ns-ref-order-btn{ width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px; background:linear-gradient(180deg,#0f766e,#115e59); color:#fff; font-size:17px; font-weight:700; cursor:pointer; }
 .ns-ref-order-btn:disabled{ opacity:.6; cursor:default; }
 .ns-ref-note{ text-align:center; color:#6b7280; font-size:13px; margin:10px 0 0; }
