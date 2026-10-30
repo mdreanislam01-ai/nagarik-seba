@@ -23,8 +23,15 @@
       if (v !== o) tn.nodeValue = v;
     });
   }
+  function isLoginPage() {
+    var h = location.hash || '';
+    return h.indexOf('#/login') === 0 || h.indexOf('#/signup') === 0 || h.indexOf('#/forgot') === 0 ||
+      document.body.classList.contains('ns-login-portal') || document.body.classList.contains('ns-design-login-page');
+  }
   function ensureTicker() {
     var main = document.getElementById('main'); if (!main) return;
+    // Login page exception: no ticker there, other pages keep it.
+    if (isLoginPage()) { var old = document.getElementById('nsTicker'); if (old) old.remove(); return; }
     if (document.getElementById('nsTicker')) return;
     var div = document.createElement('div');
     div.id = 'nsTicker'; div.className = 'ns-ticker';

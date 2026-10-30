@@ -29,6 +29,9 @@ a{ color:var(--ns-teal-dark); }
 /* Separate static notice card on the dashboard is turned off:
    notices now live only in the moving headline ticker above. */
 #nsNotices{ display:none !important; }
+/* Login portal exception: ticker is extra on the login page,
+   so it is hidden there only; all other pages keep it. */
+body.ns-login-portal .ns-ticker, body.ns-design-login-page .ns-ticker{ display:none !important; }
 /* Touch targets */
 button, .sidebar a, .qa-tile, .opt{ touch-action:manipulation; }
 @media (max-width:800px){
