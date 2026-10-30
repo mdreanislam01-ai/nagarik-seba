@@ -276,10 +276,14 @@
     }
     renderHist();
   }
+  function allBuilt() {
+    return document.getElementById('nsNbPageTitle') && document.getElementById('nsTypeCard') && document.getElementById('nsRefFormCard') && document.getElementById('nsOrderHistory');
+  }
   function tick() {
     try {
       if (!isNewBdris()) {
         setTicker(false);
+        document.documentElement.classList.remove('ns-nb-hide-old');
         ['nsNbPageTitle', 'nsTypeCard', 'nsRefFormCard', 'nsOrderHistory'].forEach(function (id) {
           var el = document.getElementById(id); if (el) el.remove();
         });
@@ -287,7 +291,16 @@
         return;
       }
       setTicker(true);
+      /* Flash fix 2026-10-31: while the reference sections are not
+         all built yet (first load, or right after an app re-render
+         wiped #main), keep the old app cards hidden via the CSS
+         class, so the old design never shows for seconds. Once
+         everything is built, the class comes off. After the
+         30s safety expiry set by the inline head script, never
+         re-add it, so a failed build cannot blank the page. */
+      if (!window._nsNbHideExpired && !allBuilt()) document.documentElement.classList.add('ns-nb-hide-old');
       build();
+      if (allBuilt()) document.documentElement.classList.remove('ns-nb-hide-old');
     } catch (e) {}
   }
   tick();

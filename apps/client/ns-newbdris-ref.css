@@ -55,3 +55,11 @@
 .ns-ref-order-btn{ width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px; background:linear-gradient(180deg,#0f766e,#115e59); color:#fff; font-size:17px; font-weight:700; cursor:pointer; }
 .ns-ref-order-btn:disabled{ opacity:.6; cursor:default; }
 .ns-ref-note{ text-align:center; color:#6b7280; font-size:13px; margin:10px 0 0; }
+
+/* Flash fix 2026-10-31: from the first paint (class is added by a
+   tiny inline script in index.html <head>, before app.js runs),
+   hide the old app cards/heroes on newbdris until the reference
+   sections are built. Reference cards are exempt, so they show
+   the moment they are created. No extra download, no delay. */
+html.ns-nb-hide-old #main .card:not(#nsTypeCard):not(#nsRefFormCard):not(#nsOrderHistory){ display:none !important; }
+html.ns-nb-hide-old #main .ns-nb-hero, html.ns-nb-hide-old #main #nsAutoCard{ display:none !important; }
