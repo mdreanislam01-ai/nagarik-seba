@@ -77,7 +77,7 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 /* WhatsApp support icon inside the profile card (2026-10-30):
    green round icon next to the QR button; the long wa-card
    below the profile is removed by ns-wa-profile.js. */
-.ns-wa-profile{ flex:none; display:inline-flex; flex-direction:column; align-items:center; gap:3px; text-decoration:none; }
+.ns-wa-profile{ flex:none; display:inline-flex; flex-direction:column; align-items:center; gap:3px; text-decoration:none; background:transparent; border:none; padding:0; cursor:pointer; color:inherit; font:inherit; }
 .ns-wa-ico{ width:46px; height:46px; min-width:46px; border-radius:12px; background:#25d366; display:inline-flex; align-items:center; justify-content:center; }
 .ns-wa-ico svg{ width:30px; height:30px; flex:none; display:block; }
 .ns-wa-label{ color:#fff; font-size:12px; font-weight:800; letter-spacing:.4px; line-height:1; text-shadow:0 1px 2px rgba(0,0,0,.35); }
