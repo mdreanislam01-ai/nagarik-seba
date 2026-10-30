@@ -4,7 +4,17 @@
    customer portal stays separate from the admin portal.
    This file only overrides presentation: no price, route or flow. */
 :root{ --ns-teal:#0f766e; --ns-teal-dark:#115e59; --ns-teal-light:#e6f4f2; }
-.topbar, .topbar-new{ background:var(--ns-teal) !important; }
+.topbar, .topbar-new{ background:var(--ns-teal) !important; color:#fff !important; }
+/* Topbar brand — 2026-10-30 fix: the logo JPEG had a white box
+   around it, and the brand texts were dark on teal, so neither
+   was clearly readable. The logo image itself is now a PNG with
+   its outer white background made transparent (inner white of
+   the card is kept, it is part of the logo), and the texts are
+   forced white / light mint on teal, on every client page, since
+   all pages share this one topbar header. */
+.logo-mark, .logo-mark img{ background:transparent !important; box-shadow:none !important; }
+.logo-text{ color:#fff !important; }
+.logo-text small{ color:#CDE8E5 !important; }
 .sidebar a.active, .sidebar a:hover{ background:var(--ns-teal-light) !important; color:var(--ns-teal-dark) !important; }
 .btn{ background:var(--ns-teal) !important; border-color:var(--ns-teal) !important; }
 .btn.ghost{ background:#fff !important; color:var(--ns-teal-dark) !important; border:1px solid var(--ns-teal) !important; }
