@@ -1,19 +1,22 @@
 /* ns-gate.js — Entry notice gate (2026-10-30).
    The gate is painted in index.html before app.js runs, so login /
-   registration are never visible first. Consent is per browser
-   session (sessionStorage): a fresh visit shows the notice again,
-   and inside one session it never reappears on navigation.
+   registration are never visible first. The gate shows on EVERY
+   page load; consent only removes it until the next load, and
+   inside one page it never reappears on navigation.
    Cross does NOT dismiss to the site — it shows the blocked screen,
    with only "notice again" as a way back. No login is reachable
    without consent in this session. */
 (function () {
   var gate = document.getElementById('nsGate');
   if (!gate) return;
-  try {
-    if (sessionStorage.getItem('ns_gate_ok') === '1') { gate.remove(); return; }
-  } catch (e) {}
+  /* 2026-10-30 fix: NO stored consent. Earlier the consent was saved
+     in sessionStorage, so the notice showed only once and never again
+     in the same tab/session — that is why the user saw it once and
+     then never. Now the gate shows on EVERY page load / fresh entry,
+     and consent only removes it until the next load. SPA navigation
+     (hash change) does not reload the page, so it does not reappear
+     while moving inside the site. */
   window.nsGateConsent = function () {
-    try { sessionStorage.setItem('ns_gate_ok', '1'); } catch (e) {}
     gate.remove();
   };
   window.nsGateClose = function () {
