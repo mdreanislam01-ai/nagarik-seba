@@ -75,11 +75,41 @@
     if (!box) return;
     function render() {
       box.innerHTML = '';
+      var oldDl = document.getElementById('nsQrDl'); if (oldDl) oldDl.remove();
       try {
         new window.QRCode(box, { text: payload, width: 220, height: 220, correctLevel: window.QRCode.CorrectLevel.M });
       } catch (e) {
         box.innerHTML = '<p>QR তৈরি হয়নি। আবার চেষ্টা করুন।</p>';
+        return;
       }
+      // Save / download button (2026-10-30): the QR is generated
+      // locally, so its canvas/img can be exported as a PNG file
+      // without sending anything anywhere. On a phone this
+      // downloads the QR image, which can then be shared/saved.
+      var dl = document.createElement('button');
+      dl.id = 'nsQrDl';
+      dl.type = 'button';
+      dl.className = 'btn';
+      dl.style.cssText = 'display:block;margin:12px auto 0';
+      dl.textContent = '⬇ QR সেভ / ডাউনলোড করুন';
+      dl.onclick = function () {
+        var dataUrl = '';
+        var canvas = box.querySelector('canvas');
+        if (canvas) { try { dataUrl = canvas.toDataURL('image/png'); } catch (e) {} }
+        if (!dataUrl) {
+          var img = box.querySelector('img');
+          if (img && img.src) dataUrl = img.src;
+        }
+        if (!dataUrl) { dl.textContent = 'সেভ করা যায়নি, আবার চেষ্টা করুন'; return; }
+        var a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'nagarikseba-qr-' + uid + '.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        dl.textContent = '✓ QR ডাউনলোড হয়েছে';
+      };
+      box.insertAdjacentElement('afterend', dl);
     }
     if (typeof window.QRCode !== 'undefined') render();
     else {
