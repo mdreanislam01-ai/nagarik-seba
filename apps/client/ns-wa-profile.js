@@ -25,7 +25,7 @@
       a.href = '#/support';
       a.title = 'WhatsApp সাপোর্ট';
       a.setAttribute('aria-label', 'WhatsApp সাপোর্ট');
-      a.innerHTML = '<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="' + WA_PATH + '"/></svg>';
+      a.innerHTML = '<span class="ns-wa-ico"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="' + WA_PATH + '"/></svg></span><span class="ns-wa-label">Support</span>';
       row.appendChild(a);
     } catch (e) {}
   }
