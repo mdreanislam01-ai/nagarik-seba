@@ -81,11 +81,27 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .ns-wa-ico{ width:46px; height:46px; min-width:46px; border-radius:12px; background:#25d366; display:inline-flex; align-items:center; justify-content:center; }
 .ns-wa-ico svg{ width:30px; height:30px; flex:none; display:block; }
 .ns-wa-label{ color:#fff; font-size:12px; font-weight:800; letter-spacing:.4px; line-height:1; text-shadow:0 1px 2px rgba(0,0,0,.35); }
-/* Topbar search bar (2026-10-30): in the marked empty area of
-   the header, with a live dropdown below it. */
-.ns-search{ position:relative; flex:1 1 auto; min-width:90px; display:flex; }
-.ns-search input{ width:100%; min-width:0; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.45); background:rgba(255,255,255,.18); color:#fff; font-size:14px; outline:none; }
-.ns-search input::placeholder{ color:rgba(255,255,255,.85); }
+/* Topbar layout, marked by the user 2026-10-30 (no extra height):
+   Row 1: brand (left) + dark-mode switch (right, top).
+   Row 2: three-line menu button (left) + search bar (middle,
+   filling the rest). Ticker is the row after that, as before.
+   The spacer is hidden so no empty gap is left. Menu, search
+   and switch are all given high-contrast colours so each is
+   clearly visible on the teal header. */
+.topbar, .topbar-new{ row-gap:8px !important; }
+.topbar .logo-new{ order:1; }
+.topbar label.switch{ order:2; margin-left:auto !important; }
+.topbar .menu-btn{ order:3; flex:none; background:#fff !important; color:#0f766e !important; border:1px solid #fff !important; }
+.topbar .spacer{ display:none !important; }
+.topbar .switch__icon{ background:#fff !important; width:44px !important; min-width:44px !important; height:24px !important; border:1px solid #fff !important; }
+.topbar .switch__icon-part--1{ width:20px !important; height:20px !important; left:2px !important; top:2px !important; background:#0f766e !important; }
+.topbar .switch__input:checked + .switch__icon .switch__icon-part--1{ transform:translateX(20px) !important; }
+/* Topbar search bar (2026-10-30): in the marked area of the
+   header, with a live dropdown below it. White pill on teal,
+   dark text, so it is clearly visible. */
+.ns-search{ position:relative; flex:1 1 auto; min-width:0; display:flex; order:4; }
+.ns-search input{ width:100%; min-width:0; padding:8px 12px; border-radius:999px; border:none; background:#fff; color:#0f172a; font-size:14px; outline:none; }
+.ns-search input::placeholder{ color:#64748b; }
 .ns-search-drop{ position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; color:#0f172a; border:1px solid #dbe7e6; border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.18); max-height:320px; overflow:auto; z-index:30; }
 .ns-search-item{ display:flex; justify-content:space-between; gap:8px; padding:10px 12px; text-decoration:none; color:#0f172a; border-bottom:1px solid #eef2f2; }
 .ns-search-item:last-child{ border-bottom:none; }

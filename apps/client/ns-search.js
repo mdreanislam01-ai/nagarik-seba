@@ -44,7 +44,7 @@
     var box = document.createElement('div');
     box.id = 'nsSearchBox';
     box.className = 'ns-search';
-    box.innerHTML = '<input id="nsSearchInput" type="search" placeholder="সার্চ করুন…" autocomplete="off" aria-label="সেবা সার্চ করুন"><div id="nsSearchDrop" class="ns-search-drop" hidden></div>';
+    box.innerHTML = '<input id="nsSearchInput" type="search" placeholder="🔍 সার্চ করুন…" autocomplete="off" aria-label="সেবা সার্চ করুন"><div id="nsSearchDrop" class="ns-search-drop" hidden></div>';
     if (spacer) { spacer.style.flex = '0 0 4px'; header.insertBefore(box, spacer); }
     else header.appendChild(box);
     var input = box.querySelector('#nsSearchInput');
