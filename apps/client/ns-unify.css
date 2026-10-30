@@ -56,7 +56,12 @@ a{ color:var(--ns-teal-dark); }
    ticker is present the main's top padding is also removed so
    there is no white gap below it either. */
 .topbar, .topbar-new{ flex-wrap:wrap !important; row-gap:0 !important; padding:8px 10px 0 10px !important; }
-.ns-ticker{ position:static; flex:1 1 100%; order:100; z-index:19; display:flex; gap:8px; align-items:center; background:#fff; border:none; border-bottom:1px solid #dbe7e6; border-radius:0; padding:6px 10px; margin:0 -10px; overflow:hidden; font-size:13px; }
+.ns-ticker{ position:static; flex:1 1 100%; order:100; z-index:19; display:flex; gap:8px; align-items:center; background:#fff; color:#0f172a !important; border:none; border-bottom:1px solid #dbe7e6; border-radius:0; padding:6px 10px; margin:0 -10px; overflow:hidden; font-size:13px; }
+/* Bug fix 2026-10-30: the ticker now lives inside header.topbar,
+   whose colour is forced white — without this, the ticker text
+   inherited white on a white background and was invisible, even
+   though the "খবর" label (white on teal) still showed. */
+.ns-ticker-track, .ns-ticker-move, .ns-ticker-text{ color:#0f172a !important; }
 body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .ns-ticker-label{ flex:0 0 auto; background:#0f766e; color:#fff; font-weight:700; border-radius:999px; padding:3px 8px; font-size:12px; }
 /* Continuous marquee: the moving strip holds the text twice and
