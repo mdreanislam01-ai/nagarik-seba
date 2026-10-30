@@ -196,9 +196,14 @@
         return '<div class="opt' + (i === 0 ? ' sel' : '') + '" data-name="' + ty.name + '" data-price="' + ty.price + '"><div class="ns-type-img"><img class="ns-type-logo" src="' + ty.logo + '" alt="' + ty.name + '"></div><div class="ns-type-name">🌟 ' + ty.name + ' 🌟</div><div class="ns-type-price">(' + ty.price + ' টাকা)</div></div>';
       }).join('');
       tc.innerHTML = '<div class="ns-type-label">Type <span>*</span></div><div id="opts" class="ns-type-grid">' + grid + '</div><p id="nsBdrisTotal" class="ns-type-total">এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে নরমাল (800 টাকা) কাটা হবে।</p>';
-      var hero = card.previousElementSibling;
-      if (hero && hero.classList.contains('ns-nb-hero')) card.parentNode.insertBefore(tc, hero);
-      else card.parentNode.insertBefore(tc, card);
+      /* BUG FIX 2026-10-31: the old card is removed now, so the
+         Type card can no longer be placed relative to it — the
+         undefined 'card' threw here and stopped the form/history
+         from ever building (title only, blank below). Place it
+         right after the title instead. */
+      var titleEl = document.getElementById('nsNbPageTitle');
+      if (titleEl && titleEl.nextSibling) main.insertBefore(tc, titleEl.nextSibling);
+      else main.appendChild(tc);
       tc.querySelectorAll('#opts .opt').forEach(function (opt) {
         opt.addEventListener('click', function () {
           tc.querySelectorAll('#opts .opt').forEach(function (o) { o.classList.remove('sel'); });
@@ -208,8 +213,7 @@
           if (tot) tot.textContent = txt;
           var tot2 = document.getElementById('nsRefTotal');
           if (tot2) tot2.textContent = txt;
-          var notice = card.querySelector('p.notice');
-          if (notice) notice.textContent = opt.getAttribute('data-name') + ' (' + opt.getAttribute('data-price') + ' টাকা) অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।';
+          /* Old personal card (and its notice) no longer exists; nsRefTotal above is the total note now. */
         });
       });
     }
