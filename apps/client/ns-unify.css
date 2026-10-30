@@ -89,7 +89,7 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
    and switch are all given high-contrast colours so each is
    clearly visible on the teal header. */
 .topbar, .topbar-new{ row-gap:8px !important; }
-.topbar .logo-new{ order:1; }
+.topbar .logo-new{ order:2; }
 .topbar label.switch{ order:2; margin-left:auto !important; }
 .topbar .menu-btn{ order:3; flex:none; background:#fff !important; color:#0f766e !important; border:1px solid #fff !important; }
 .topbar .spacer{ display:none !important; }
@@ -116,9 +116,9 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
    2026-10-30: logo 1, bell 2 (margin-left:auto pushes the whole
    right cluster right), switch 3, menu 4, search 5, ticker 100.
    No extra header row and no extra height. */
-.topbar .ns-bell{ order:2 !important; margin-left:auto !important; }
-.topbar label.switch{ order:3 !important; margin-left:0 !important; }
-.topbar .menu-btn{ order:4 !important; }
+.topbar .ns-bell{ order:3 !important; margin-left:auto !important; }
+.topbar label.switch{ order:4 !important; margin-left:0 !important; }
+.topbar .menu-btn{ order:1 !important; font-size:18px !important; padding:9px 12px !important; }
 .ns-search{ order:5 !important; }
 /* Notification bell (2026-10-30): white circle, same visual
    weight as the menu button, teal bell, red pending badge. */
