@@ -12,7 +12,7 @@
      from option_name, exactly as before. If the user wants a
      different fixed price, change DEFAULT_OPTION below.
    - 2026-10-31 (reference redesign): Type cards are BACK on this
-     page, built by ns-newbdris-design.js as #nsTypeCard with
+     page, built by ns-newbdris-ref.js as #nsTypeCard with
      #opts .opt cards carrying data-name/data-price. The order
      therefore follows the SELECTED type again, not a fixed price.
      Prices are the site's own (নরমাল 800, পসিবল 800, মিনিস্ট্রি
@@ -23,7 +23,7 @@
      selected (the নরমাল card is selected by default).
    - This script must NOT remove #nsTypeCard or #nsOrderHistory
      (the reference-style order-history section, also built by
-     ns-newbdris-design.js): they are page furniture, not the old
+     ns-newbdris-ref.js): they are page furniture, not the old
      order card.
    - The remaining order button at the bottom of the brn form
      submits the newbdris ORDER with that option and the filled
