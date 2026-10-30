@@ -256,11 +256,21 @@
   }
   function buildRef() {
     try {
-      if (!isNewBdris()) { setTicker(false); return; }
+      if (!isNewBdris()) {
+        setTicker(false);
+        ['nsNbPageTitle', 'nsTypeCard', 'nsOrderHistory'].forEach(function (id) {
+          var el = document.getElementById(id); if (el) el.remove();
+        });
+        return;
+      }
       setTicker(true);
       var main = document.getElementById('main');
       var card = document.getElementById('brnCopyCard');
       if (!main || !card) return;
+      /* Dashboard-stage guard: ns-fast can paint a dashboard
+         profile into #main before the order render lands. Never
+         insert newbdris furniture into that stage. */
+      if (main.querySelector('.profile-card')) return;
       /* HEADLINE FIX 2026-10-31: only ONE headline on this page —
          the header ticker, whose text becomes PAGE_HEADLINE here
          and is restored elsewhere (setTicker). The page notice bar
@@ -320,12 +330,11 @@
     try { buildRef(); } catch(e){}
   }
   apply();
-  /* Page-headline guard: the global ticker's notices fetch can land
-     after buildRef() runs on a direct load, so re-assert the page
-     headline every 3s while on this page. Text is only written
-     when it differs, so there is no flicker or loop. */
-  setInterval(function(){ try { if (isNewBdris()) setTicker(true); } catch(e){} }, 3000);
   window.addEventListener('hashchange', function(){ setTimeout(apply, 100); });
+  /* Independent ticker restore: runs on hash change even if a
+     #main observer is delayed, so leaving newbdris can never
+     leave the page headline stuck on another page. */
+  window.addEventListener('hashchange', function(){ try { setTicker(isNewBdris()); } catch(e){} });
   var mainEl = document.getElementById('main');
   if (mainEl && typeof MutationObserver !== 'undefined') {
     // Idempotent only: build() returns early when its elements
