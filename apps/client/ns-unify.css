@@ -112,12 +112,17 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .logo-mark, .logo-mark img, .logo-mark svg{ width:56px !important; height:56px !important; min-width:56px !important; }
 .logo-text{ font-size:22px !important; line-height:1.15 !important; }
 .logo-text small{ font-size:14px !important; }
-/* Brand text alignment (2026-10-30, user request): logo size
-   unchanged (56px), but the text block is stretched to the same
-   56px height with the two lines spread top-to-bottom, so the
-   small "nagarikseba.com" line sits at the bottom, level with
-   the logo's bottom edge, and "নাগরিক সেবা" sits at the top. */
-.logo-text{ height:56px !important; justify-content:space-between !important; }
+/* Brand text alignment, corrected 2026-10-30 from the user's
+   screenshot: "নাগরিক সেবা" must NOT move up — it stays where it
+   was. Only the bottom line must line up straight with the
+   logo's bottom edge. So: text block is bottom-aligned with the
+   logo (flex-end), and the gap between the two lines is widened
+   by 8px, which pushes the small line down to the logo's bottom
+   while the main line stays at its original top position.
+   Logo size unchanged (56px). This replaces the previous
+   space-between version, which wrongly lifted the main line. */
+.logo-text{ height:auto !important; justify-content:flex-start !important; gap:8px !important; }
+.logo-new{ align-items:flex-end !important; }
 /* Header right cluster, re-ordered for the notification bell
    2026-10-30: logo 1, bell 2 (margin-left:auto pushes the whole
    right cluster right), switch 3, menu 4, search 5, ticker 100.
