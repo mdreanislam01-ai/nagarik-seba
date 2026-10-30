@@ -19,11 +19,10 @@
      separate inputs, so both stay, adjacent, with their own
      labels — merging them would send an empty Zila and break
      the order).
-   - Option pills MUST stay, restyled to the new blue design:
-     without a selected option the order has no price (800/800/
-     1000/2000) and cannot be submitted. They sit between the
-     autoload card and the personal-info card, labelled
-     "অপশন বাছুন".
+   - 2026-10-30 the user had the whole option card removed
+     (see ns-bdris-clean.js): no option pills remain on this
+     page. The order now always goes as নরমাল (800 টাকা),
+     the option that was selected by default before removal.
    - The autoload "লোড করুন" button does NOT fetch government/
      BDRIS data and does NOT pretend to (no agreed external
      lookup exists). After the math captcha it pre-fills the BRN
