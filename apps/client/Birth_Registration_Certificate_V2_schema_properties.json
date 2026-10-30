@@ -1,0 +1,79 @@
+{
+  "headerText": {
+    "type": "string",
+    "description": "Extracts the general header information, such as the government name, office name, zone, corporation, and document title."
+  },
+  "logoText": {
+    "type": "string",
+    "description": "Extracts any text specifically associated with logos on the document."
+  },
+  "birthRegistrationNumber": {
+    "type": "string",
+    "description": "The unique birth registration number assigned to the certificate."
+  },
+  "dateOfRegistration": {
+    "type": "string",
+    "format": "date",
+    "description": "The date when the birth was registered."
+  },
+  "dateOfIssuance": {
+    "type": "string",
+    "format": "date",
+    "description": "The date when the certificate was issued."
+  },
+  "dateOfBirth": {
+    "type": "string",
+    "format": "date",
+    "description": "The date of birth of the registered individual."
+  },
+  "name": {
+    "type": "string",
+    "description": "Full name of the person whose birth is registered."
+  },
+  "sex": {
+    "type": "string",
+    "description": "Sex/gender of the registered individual.",
+    "enum": [
+      "Male",
+      "Female",
+      "Other",
+      "Unknown"
+    ]
+  },
+  "mother": {
+    "type": "object",
+    "description": "Information about the mother of the registered individual.",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Full name of the mother."
+      },
+      "nationality": {
+        "type": "string",
+        "description": "Nationality of the mother."
+      }
+    }
+  },
+  "father": {
+    "type": "object",
+    "description": "Information about the father of the registered individual.",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Full name of the father."
+      },
+      "nationality": {
+        "type": "string",
+        "description": "Nationality of the father."
+      }
+    }
+  },
+  "placeOfBirth": {
+    "type": "string",
+    "description": "Location where the birth occurred, typically city/district and country."
+  },
+  "permanentAddress": {
+    "type": "string",
+    "description": "The permanent residential address of the registered individual or family, including ward, zone, and area details."
+  }
+}
