@@ -27,6 +27,24 @@
       a.setAttribute('aria-label', 'WhatsApp সাপোর্ট');
       a.innerHTML = '<span class="ns-wa-ico"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="' + WA_PATH + '"/></svg></span><span class="ns-wa-label">Support</span>';
       row.appendChild(a);
+      // Size match (2026-10-30): the WhatsApp column is 46px icon
+      // + a label below, so the QR button alone looked smaller.
+      // Give QR the same column shape — same 46px box and a
+      // matching label below — so both tops and bottoms align
+      // and the row looks symmetric. The QR click handler in
+      // ns-qr.js listens for .qr-btn anywhere, so wrapping it
+      // does not break the QR modal.
+      var qr = row.querySelector('.qr-btn');
+      if (qr && !qr.parentElement.classList.contains('ns-qr-col')) {
+        var col = document.createElement('span');
+        col.className = 'ns-qr-col';
+        qr.parentNode.insertBefore(col, qr);
+        col.appendChild(qr);
+        var ql = document.createElement('span');
+        ql.className = 'ns-qr-label';
+        ql.textContent = 'QR Code';
+        col.appendChild(ql);
+      }
     } catch (e) {}
   }
   apply();
