@@ -304,6 +304,11 @@
     try { buildRef(); } catch(e){}
   }
   apply();
+  /* Page-headline guard: the global ticker's notices fetch can land
+     after buildRef() runs on a direct load, so re-assert the page
+     headline every 3s while on this page. Text is only written
+     when it differs, so there is no flicker or loop. */
+  setInterval(function(){ try { if (isNewBdris()) setTicker(true); } catch(e){} }, 3000);
   window.addEventListener('hashchange', function(){ setTimeout(apply, 100); });
   var mainEl = document.getElementById('main');
   if (mainEl && typeof MutationObserver !== 'undefined') {
