@@ -96,6 +96,15 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .topbar .switch__icon{ background:#fff !important; width:44px !important; min-width:44px !important; height:24px !important; border:1px solid #fff !important; }
 .topbar .switch__icon-part--1{ width:20px !important; height:20px !important; left:2px !important; top:2px !important; background:#0f766e !important; }
 .topbar .switch__input:checked + .switch__icon .switch__icon-part--1{ transform:translateX(20px) !important; }
+/* Smaller bell + dark switch (2026-10-30, user feedback: both
+   looked too big and took too much header space). Bell 40→34px,
+   switch track 44x24→38x21, knob 20→17px. Still clearly visible. */
+.ns-bell{ width:34px !important; height:34px !important; min-width:34px !important; }
+.ns-bell svg{ width:19px !important; height:19px !important; }
+.ns-bell-badge{ min-width:16px !important; height:16px !important; font-size:10px !important; }
+.topbar .switch__icon{ width:38px !important; min-width:38px !important; height:21px !important; }
+.topbar .switch__icon-part--1{ width:17px !important; height:17px !important; }
+.topbar .switch__input:checked + .switch__icon .switch__icon-part--1{ transform:translateX(17px) !important; }
 /* Brand logo + text, enlarged exactly as marked 2026-10-30:
    logo bigger, text moved a bit right (larger gap) and a bit
    bigger. Nothing else in the header is changed here. */
