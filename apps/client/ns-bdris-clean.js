@@ -11,6 +11,20 @@
      by default in the user's screenshot — resolved server-side
      from option_name, exactly as before. If the user wants a
      different fixed price, change DEFAULT_OPTION below.
+   - 2026-10-31 (reference redesign): Type cards are BACK on this
+     page, built by ns-newbdris-design.js as #nsTypeCard with
+     #opts .opt cards carrying data-name/data-price. The order
+     therefore follows the SELECTED type again, not a fixed price.
+     Prices are the site's own (নরমাল 800, পসিবল 800, মিনিস্ট্রি
+     1000, CTG নরমাল 2000) — NOT the reference screenshot's
+     780/1920, because the server resolves the price from its own
+     options; showing 780 while charging 800 would mislead buyers.
+     DEFAULT_OPTION below is only the fallback when no card is
+     selected (the নরমাল card is selected by default).
+   - This script must NOT remove #nsTypeCard or #nsOrderHistory
+     (the reference-style order-history section, also built by
+     ns-newbdris-design.js): they are page furniture, not the old
+     order card.
    - The remaining order button at the bottom of the brn form
      submits the newbdris ORDER with that option and the filled
      brn fields as payload, instead of the old brn-service
@@ -23,11 +37,13 @@
   }
   var DEFAULT_OPTION = { name: 'নরমাল', text: 'নরমাল (800 টাকা)' };
   function selectedOption() {
-    // The option card was removed entirely (user instruction,
-    // 2026-10-30), so there is no pill to read any more. The
-    // order always uses the default option above.
     var sel = document.querySelector('#opts .opt.sel');
     if (!sel) return DEFAULT_OPTION;
+    // Reference Type cards (2026-10-31) carry exact data attrs,
+    // so the server gets a clean option_name, never label text.
+    var dn = sel.getAttribute && sel.getAttribute('data-name');
+    var dp = sel.getAttribute && sel.getAttribute('data-price');
+    if (dn && dp) return { name: dn, text: dn + ' (' + dp + ' টাকা)' };
     var txt = (sel.textContent || '').trim();
     return { name: txt.replace(/\s*\(.*$/, ''), text: txt };
   }
@@ -37,6 +53,10 @@
     var sel = selectedOption();
     var txt = sel ? ('এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + sel.text + ' কাটা হবে।') : 'অপশন বাছুন।';
     if (el && el.textContent !== txt) el.textContent = txt;
+    var bc = document.getElementById('brnCopyCard');
+    var notice = bc && bc.querySelector('p.notice');
+    var noteTxt = sel ? (sel.text + ' অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।') : '';
+    if (notice && noteTxt && notice.textContent !== noteTxt) notice.textContent = noteTxt;
   }
   window.nsNewBdrisOrder = async function () {
     try {
@@ -66,7 +86,7 @@
     var main = document.getElementById('main'); if (!main) return;
     var cards = main.querySelectorAll('.card');
     var orderCard = null, brnCard = document.getElementById('brnCopyCard');
-    cards.forEach(function (c) { if (c.id !== 'brnCopyCard' && !orderCard) orderCard = c; });
+    cards.forEach(function (c) { if (c.id !== 'brnCopyCard' && c.id !== 'nsTypeCard' && c.id !== 'nsOrderHistory' && !orderCard) orderCard = c; });
     if (orderCard) {
       // The whole order card is removed (user instruction,
       // 2026-10-30). Removing it outright — not pruning children
@@ -83,7 +103,9 @@
       // Replace the misleading 5 tk note with the fixed-price note
       // (the option card is gone, so the price is no longer a choice).
       var notice = brnCard.querySelector('p.notice');
-      if (notice && notice.textContent !== 'নরমাল (800 টাকা) অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।') notice.textContent = 'নরমাল (800 টাকা) অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।';
+      var selNote = selectedOption();
+      var noteTxt2 = selNote ? (selNote.text + ' অনুযায়ী অ্যাকাউন্ট থেকে কাটা হবে।') : '';
+      if (notice && noteTxt2 && notice.textContent !== noteTxt2) notice.textContent = noteTxt2;
       // Replace the old brn-service order button with the unified order button.
       var oldBtn = null;
       brnCard.querySelectorAll('button').forEach(function (b) {

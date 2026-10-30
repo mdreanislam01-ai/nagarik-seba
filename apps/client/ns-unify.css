@@ -276,3 +276,52 @@ button, .sidebar a, .qa-tile, .opt{ touch-action:manipulation; }
   .main{ padding:14px !important; }
   .grid{ grid-template-columns:1fr 1fr !important; }
 }
+
+/* ---- 2026-10-31 newbdris reference redesign (first reference image) ---- */
+#nsNbPageTitle{ max-width:100%; box-sizing:border-box; margin:0 0 12px; }
+#nsNbPageTitle h2{ color:#0f766e; font-size:26px; margin:0 0 8px; }
+.ns-nb-page-notice{ background:#fff; border:1px solid #99f6e4; border-radius:10px; padding:10px 12px; color:#134e4a; font-size:15px; line-height:1.7; overflow-wrap:anywhere; }
+#nsTypeCard{ max-width:100%; box-sizing:border-box; }
+.ns-type-label{ font-size:16px; font-weight:600; margin-bottom:10px; }
+.ns-type-label span{ color:#dc2626; }
+.ns-type-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+#nsTypeCard #opts .opt{ border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; cursor:pointer; padding:0; text-align:center; }
+#nsTypeCard #opts .opt.sel{ border:2px solid #0f766e; box-shadow:0 4px 14px rgba(15,118,110,.25); }
+.ns-type-img{ height:96px; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#0f172a 0%,#115e59 70%,#0f766e 100%); border-bottom:3px solid #16a34a; }
+.ns-type-badge{ width:52px; height:52px; border-radius:50%; background:#fff; color:#0f766e; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; border:3px solid #fbbf24; }
+.ns-type-name{ padding:8px 4px 0; font-weight:600; font-size:15px; }
+.ns-type-price{ padding:2px 4px 10px; color:#374151; font-size:14px; }
+.ns-type-total{ background:#e0f2fe; color:#0c4a6e; border-radius:10px; padding:10px 12px; text-align:center; margin:12px 0 0; font-size:15px; }
+#nsOrderHistory{ max-width:100%; box-sizing:border-box; overflow-x:hidden; }
+#nsOrderHistory h2{ color:#0f766e; font-size:22px; margin:0 0 10px; }
+.ns-hist-controls{ display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:14px; }
+.ns-hist-controls input, .ns-hist-controls select{ padding:6px 8px; border:1px solid #d1d5db; border-radius:8px; max-width:100%; }
+.ns-hist-wrap{ overflow-x:auto; }
+#nsOrderHistory table{ width:100%; border-collapse:collapse; font-size:14px; }
+#nsOrderHistory th, #nsOrderHistory td{ border:1px solid #e5e7eb; padding:9px 8px; text-align:left; }
+#nsOrderHistory th{ background:#f8fafc; }
+.ns-hist-empty{ text-align:center; color:#6b7280; background:#f9fafb; }
+.ns-hist-foot{ display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-top:10px; font-size:14px; }
+.ns-hist-foot button{ padding:7px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; cursor:pointer; }
+.ns-hist-foot button:disabled{ opacity:.5; cursor:default; }
+@media (max-width:800px){
+  .ns-type-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .ns-type-img{ height:80px; }
+  #nsNbPageTitle h2{ font-size:22px; }
+}
+@media (max-width:560px){
+  .ns-type-img{ height:72px; }
+  .ns-type-badge{ width:44px; height:44px; font-size:16px; }
+  .ns-type-name{ font-size:14px; }
+  .ns-hist-controls{ flex-direction:column; align-items:stretch; }
+  .ns-hist-controls input{ width:100%; box-sizing:border-box; }
+  /* History as stacked cards: nothing overflows right, all visible. */
+  #nsOrderHistory table, #nsOrderHistory tbody, #nsOrderHistory tr, #nsOrderHistory td{ display:block; width:100%; box-sizing:border-box; }
+  #nsOrderHistory thead{ display:none; }
+  #nsOrderHistory tr{ border:1px solid #e5e7eb; border-radius:12px; margin-bottom:10px; overflow:hidden; }
+  #nsOrderHistory td{ display:flex; justify-content:space-between; gap:12px; border:none; border-bottom:1px solid #f1f5f9; text-align:right; }
+  #nsOrderHistory td:last-child{ border-bottom:none; }
+  #nsOrderHistory td::before{ content:attr(data-label); font-weight:700; color:#0f766e; text-align:left; }
+  #nsOrderHistory td.ns-hist-empty{ display:block; text-align:center; }
+  #nsOrderHistory td.ns-hist-empty::before{ content:none; }
+}
