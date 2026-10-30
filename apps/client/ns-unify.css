@@ -136,6 +136,10 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
    dark text, so it is clearly visible. */
 .ns-search{ position:relative; flex:1 1 auto; min-width:0; display:flex; order:4; }
 .ns-search input{ width:100%; min-width:0; padding:8px 12px; border-radius:999px; border:none; background:#fff; color:#0f172a; font-size:14px; outline:none; }
+/* Search bar thinner (2026-10-30, user request): length/width
+   unchanged, only vertical padding 8px→5px, so the bar is a bit
+   slimmer and the content below gets a bit more room. */
+.ns-search input{ padding-top:5px !important; padding-bottom:5px !important; }
 .ns-search input::placeholder{ color:#64748b; }
 .ns-search-drop{ position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; color:#0f172a; border:1px solid #dbe7e6; border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.18); max-height:320px; overflow:auto; z-index:30; }
 .ns-search-item{ display:flex; justify-content:space-between; gap:8px; padding:10px 12px; text-decoration:none; color:#0f172a; border-bottom:1px solid #eef2f2; }
