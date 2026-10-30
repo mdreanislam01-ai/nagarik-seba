@@ -107,6 +107,7 @@ body:has(.ns-ticker) .main{ padding-top:0 !important; }
 .ns-nb-hero{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 4px 14px; }
 .ns-nb-hero-text{ display:flex; gap:14px; align-items:flex-start; min-width:0; }
 .ns-nb-hero-ico{ width:56px; height:56px; min-width:56px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#1e40af); color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 8px 20px rgba(37,99,235,.35); }
+.ns-nb-hero-logo{ width:56px; height:56px; min-width:56px; border-radius:50%; object-fit:cover; flex:none; }
 .ns-nb-hero-text > div{ display:flex; flex-direction:column; gap:2px; }
 .ns-nb-hero-text b{ font-size:24px; color:#0f172a; line-height:1.2; }
 .ns-nb-hero-text small{ font-size:15px; color:#334155; }
