@@ -11,8 +11,25 @@
 a{ color:var(--ns-teal-dark); }
 .card{ border-radius:16px !important; box-shadow:0 2px 10px rgba(15,118,110,.08) !important; }
 .card h2, .card h3{ color:var(--ns-teal-dark); }
-/* Service cards: one teal header instead of a different colour per service */
-.svc-card .svc-head{ background:linear-gradient(135deg,#0f766e,#0E7C7B) !important; color:#fff !important; }
+/* Dashboard service cards: one DIFFERENT colour per option, as in
+   the user's Infinity Waves example screenshot (2026-10-30). This
+   replaces the earlier all-teal unification for .svc-head only;
+   the topbar and other unified design stay teal. Order is the
+   SERVICES order: nid, snid, brn, brni, sc, ssc, tin, ncf, vuk.
+   Colours follow the example (dark blue, teal, sky, cyan, blue,
+   cyan, red, green, indigo) with the two example duplicates made
+   distinct so all 9 cards differ: brni is deep cyan instead of a
+   second teal, and vuk is indigo instead of a second navy. */
+.svc-card .svc-head{ color:#fff !important; }
+.svc-grid .svc-card:nth-child(1) .svc-head{ background:#1e3a8a !important; }
+.svc-grid .svc-card:nth-child(2) .svc-head{ background:#0f766e !important; }
+.svc-grid .svc-card:nth-child(3) .svc-head{ background:#0ea5e9 !important; }
+.svc-grid .svc-card:nth-child(4) .svc-head{ background:#0891b2 !important; }
+.svc-grid .svc-card:nth-child(5) .svc-head{ background:#1d4ed8 !important; }
+.svc-grid .svc-card:nth-child(6) .svc-head{ background:#06b6d4 !important; }
+.svc-grid .svc-card:nth-child(7) .svc-head{ background:#dc2626 !important; }
+.svc-grid .svc-card:nth-child(8) .svc-head{ background:#16a34a !important; }
+.svc-grid .svc-card:nth-child(9) .svc-head{ background:#4338ca !important; }
 .svc-card{ cursor:pointer; }
 .svc-card, .qa-tile, .opt, .ns-cat-head{ min-height:44px; }
 /* News / headline ticker, shown at the top of every client page.
