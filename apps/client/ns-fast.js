@@ -58,6 +58,28 @@
   // 1. Remove the loading card text immediately.
   var main = document.getElementById('main');
   if (main && main.textContent.indexOf('লোড হচ্ছে') !== -1) main.innerHTML = '';
+  // 1b. Fallback 2026-10-30: if the first paint is still stuck on
+  // loading/empty after 4 seconds (slow or hanging API calls in
+  // nsRefresh / the render wrapper), paint directly with the
+  // pre-wrapper render, which does not wait for photo/stats/
+  // tickets. The background nsRefresh still repaints with fresh
+  // data when it arrives, so this never leaves a stuck page.
+  (function(){
+    var tries = 0;
+    var t = setInterval(function(){
+      tries++;
+      var m = document.getElementById('main');
+      if (!m) { if (tries > 10) clearInterval(t); return; }
+      var stuck = m.textContent.indexOf('লোড হচ্ছে') !== -1 || m.innerHTML.trim() === '';
+      if (!stuck || tries > 10) { clearInterval(t); return; }
+      try {
+        if (typeof _renderStep3Client === 'function') _renderStep3Client();
+        else if (typeof render === 'function') render();
+      } catch (e) {}
+      if (tries > 10) clearInterval(t);
+    }, 1000);
+    setTimeout(function(){ clearInterval(t); }, 12000);
+  })();
   // 2. Instant paint from cache, if available.
   var cache = token() ? getCache() : null;
   if (cache) {
