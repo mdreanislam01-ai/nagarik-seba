@@ -35,7 +35,12 @@
     if (document.getElementById('nsTicker')) return;
     var div = document.createElement('div');
     div.id = 'nsTicker'; div.className = 'ns-ticker';
-    div.innerHTML = '<span class="ns-ticker-label">খবর</span><span class="ns-ticker-track"><span class="ns-ticker-move"><span class="ns-ticker-text">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span><span class="ns-ticker-text" aria-hidden="true">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span></span></span>';
+    // Detailed welcome headline (2026-10-30, user request):
+    // used as the ticker text itself, and as the prefix when
+    // admin notices arrive, so the welcome/order message always runs.
+    var headline = 'সবাইকে স্বাগতম নাগরিক সেবা ওয়েবসাইটে  •  আপনারা এখানে সহজেই অর্ডার করুন — জন্ম নিবন্ধন, এনআইডি, স্মার্ট এনআইডি, সার্ভার কপি, টিনসহ সকল নাগরিক সেবা পাবেন  •  ব্যালান্স রিচার্জ করে অর্ডার করুন, অর্ডার সফল হলে ব্যালান্স থেকে টাকা কেটে যাবে  •  ‘বিশ্বাস আপনার, সেবা আমার’';
+    var disclaimer = 'এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।';
+    div.innerHTML = '<span class="ns-ticker-label">খবর</span><span class="ns-ticker-track"><span class="ns-ticker-move"><span class="ns-ticker-text">' + headline + '  •  ' + disclaimer + '</span><span class="ns-ticker-text" aria-hidden="true">' + headline + '  •  ' + disclaimer + '</span></span></span>';
     // Flush-with-heading placement (2026-10-30): INSIDE the
     // header itself, as its last flex child, so the ticker is
     // one unit with the sticky heading — no gap above it, ever,
@@ -48,7 +53,7 @@
       fetch('/api/notices').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
         var list = j && (j.notices || j.data || j.items);
         if (Array.isArray(list) && list.length) {
-          var txt = 'আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  ' + list.map(function (n) { return typeof n === 'string' ? n : (n.title || n.text || ''); }).filter(Boolean).join('  •  ');
+          var txt = headline + '  •  ' + list.map(function (n) { return typeof n === 'string' ? n : (n.title || n.text || ''); }).filter(Boolean).join('  •  ') + '  •  ' + disclaimer;
           document.querySelectorAll('#nsTicker .ns-ticker-text').forEach(function (el) { el.textContent = txt; });
         }
       }).catch(function () {});
