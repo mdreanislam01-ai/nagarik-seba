@@ -43,9 +43,17 @@ a{ color:var(--ns-teal-dark); }
 .svc-card{ cursor:pointer; }
 .svc-card, .qa-tile, .opt, .ns-cat-head{ min-height:44px; }
 /* News / headline ticker, shown at the top of every client page.
-   Sticky so it stays visible under the sticky topbar while scrolling. */
-.ns-ticker{ position:sticky; top:60px; z-index:19; display:flex; gap:10px; align-items:center; background:#fff; border:1px solid #dbe7e6; border-left:5px solid #0f766e; border-radius:12px; padding:10px 14px; margin-bottom:16px; overflow:hidden; }
-.ns-ticker-label{ flex:0 0 auto; background:#0f766e; color:#fff; font-weight:700; border-radius:999px; padding:4px 10px; font-size:13px; }
+   Sticky so it stays visible under the sticky topbar while scrolling.
+   2026-10-30 slim/flush change (user-marked strip): the ticker is
+   now inserted directly after the header (see ns-fixes2.js), not
+   inside #main, so no main padding creates white space above it.
+   It is a small full-width strip, no rounded card, no margins,
+   attached directly to the heading below the topbar, and when a
+   ticker is present the main's top padding is also removed so
+   there is no white gap below it either. */
+.ns-ticker{ position:sticky; top:60px; z-index:19; display:flex; gap:8px; align-items:center; background:#fff; border:none; border-bottom:1px solid #dbe7e6; border-radius:0; padding:6px 10px; margin:0; overflow:hidden; font-size:13px; }
+body:has(.ns-ticker) .main{ padding-top:0 !important; }
+.ns-ticker-label{ flex:0 0 auto; background:#0f766e; color:#fff; font-weight:700; border-radius:999px; padding:3px 8px; font-size:12px; }
 /* Continuous marquee: the moving strip holds the text twice and
    slides left by exactly one copy, so it loops seamlessly,
    train-like, always moving, one side to the other, no pause. */

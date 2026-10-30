@@ -36,7 +36,12 @@
     var div = document.createElement('div');
     div.id = 'nsTicker'; div.className = 'ns-ticker';
     div.innerHTML = '<span class="ns-ticker-label">খবর</span><span class="ns-ticker-track"><span class="ns-ticker-move"><span class="ns-ticker-text">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span><span class="ns-ticker-text" aria-hidden="true">আপনাকে স্বাগতম। ‘বিশ্বাস আপনার, সেবা আমার’।  •  অর্ডার গ্রহণ চালু আছে — তথ্য দিয়ে অর্ডার করুন। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</span></span></span>';
-    main.insertBefore(div, main.firstChild);
+    // Slim/flush placement (2026-10-30): directly after the header,
+    // not inside #main, so no main padding leaves white space
+    // above or below the strip. Falls back to top of #main.
+    var header = document.querySelector('header.topbar');
+    if (header && header.parentNode) header.parentNode.insertBefore(div, header.nextSibling);
+    else main.insertBefore(div, main.firstChild);
     try {
       fetch('/api/notices').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
         var list = j && (j.notices || j.data || j.items);

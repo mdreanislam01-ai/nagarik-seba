@@ -46,10 +46,15 @@
 
   function showQr() {
     if (typeof window.showModal !== 'function') return;
+    /* NOTE (bug fix 2026-10-30): NS_STATE and nsToken are top-level
+       consts in app.js, NOT window properties, so window.NS_STATE /
+       window.nsToken are always undefined and the QR used to show
+       "login required" even when logged in. Use the bare globals,
+       which later classic scripts share. */
     var user = null;
-    try { user = window.NS_STATE && window.NS_STATE.user ? window.NS_STATE.user : null; } catch (e) { user = null; }
+    try { user = typeof NS_STATE !== 'undefined' && NS_STATE.user ? NS_STATE.user : null; } catch (e) { user = null; }
     var loggedIn = false;
-    try { loggedIn = typeof window.nsToken === 'function' ? !!window.nsToken() : false; } catch (e) { loggedIn = false; }
+    try { loggedIn = typeof nsToken === 'function' ? !!nsToken() : false; } catch (e) { loggedIn = false; }
     if (!loggedIn || !user) {
       window.showModal('লগইন প্রয়োজন', 'QR দেখতে প্রথমে লগইন করুন।');
       return;
