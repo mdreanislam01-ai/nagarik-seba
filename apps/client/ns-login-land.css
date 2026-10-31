@@ -173,3 +173,8 @@
 .ns-ll-socimg.wa{width:36px;height:36px;border-radius:9px}
 .ns-ll-wa{display:inline-flex;align-items:center;flex:none}
 .ns-ll-foot .ns-ll-soc-row{display:flex;margin-top:14px}
+
+/* v7: never flash the OLD login card — hide it until the landing builds it in.
+   The moved real card sits outside .ns-slide-page, so it stays visible. */
+body.ns-login-portal #main .ns-slide-page{visibility:hidden}
+body.ns-login-portal.ns-ll-show-old #main .ns-slide-page{visibility:visible}
