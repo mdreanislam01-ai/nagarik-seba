@@ -1,4 +1,4 @@
-/* ns-deathcert-form.js v2 — মৃত্যু সনদ আবেদন: নিজের ডিজাইন করা নেটিভ ফরম।
+/* ns-deathcert-form.js v3 — মৃত্যু সনদ আবেদন: নিজের ডিজাইন করা নেটিভ ফরম।
    ছবির ওভারলে ডিজাইন (v1–v6) সম্পূর্ণ বাদ দেওয়া হয়েছে ব্যবহারকারীর নির্দেশে:
    ওভারলেতে ইনপুটের placeholder ছবির ছাপা লেখার ওপরে ডাবল দেখাত, তাই খালি
    ঘরে লেখা-লেখা লাগত। এই ফরমে লেবেল ঘরের ওপরে, ঘর খালি থাকলে সত্যিই খালি —
@@ -62,7 +62,7 @@
   var NS_DCF_CSS = [
     '/* ns-deathcert-form.css v2 — মৃত্যু সনদ আবেদন নেটিভ ফরম (সাইটের টিল) */',
     '.nsdcf-wrap{max-width:720px;margin:0 auto;padding:0 0 24px}',
-    '.nsdcf-head{background-image:url(data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2290%22 height=%2290%22%3E%3Ccircle cx=%2270%22 cy=%2220%22 r=%2222%22 fill=%22%23ffffff%22 fill-opacity=%220.07%22/%3E%3Ccircle cx=%2215%22 cy=%2275%22 r=%2214%22 fill=%22%23ffffff%22 fill-opacity=%220.06%22/%3E%3Ccircle cx=%2245%22 cy=%2245%22 r=%226%22 fill=%22%23ffffff%22 fill-opacity=%220.05%22/%3E%3C/svg%3E),linear-gradient(135deg,#0f766e,#115e59);color:#fff;border-radius:14px;padding:18px 16px;margin:0 0 14px}',
+    '.nsdcf-head{background-color:#0f766e;background-image:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2290%22%20height=%2290%22%3E%3Ccircle%20cx=%2270%22%20cy=%2220%22%20r=%2222%22%20fill=%22%23ffffff%22%20fill-opacity=%220.07%22/%3E%3Ccircle%20cx=%2215%22%20cy=%2275%22%20r=%2214%22%20fill=%22%23ffffff%22%20fill-opacity=%220.06%22/%3E%3Ccircle%20cx=%2245%22%20cy=%2245%22%20r=%226%22%20fill=%22%23ffffff%22%20fill-opacity=%220.05%22/%3E%3C/svg%3E"),linear-gradient(135deg,#0f766e,#115e59);color:#fff;border-radius:14px;padding:18px 16px;margin:0 0 14px}',
     '.nsdcf-head h2{margin:0 0 4px;font-size:22px}',
     '.nsdcf-head p{margin:0;opacity:.9;font-size:14px}',
     '.nsdcf-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px}',
