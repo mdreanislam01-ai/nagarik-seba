@@ -1,16 +1,18 @@
-/* ns-deathcert.js v3 — মৃত্যু সনদ আবেদন: ব্যবহারকারীর ছবিই ফরম।
-   v2 থেকে বদল: (১) ছবি আর JS-এ বসানো নেই — ছবি আসে ns-deathcert-pic.txt
-   থেকে (retry করা যায়, ক্যাশে থাকে, লোডের অগ্রগতি দেখায়), তাই JS ছোট
-   (~১২KB) আর জেনেরিক পেজ প্রায় সঙ্গে সঙ্গে "লোড হচ্ছে" অবস্থায় বদলে যায়।
-   (২) সংরক্ষণ বাটন এখন আসল অর্ডার: POST /orders, প্রতিটা আবেদন ৫০ টাকা।
-   সার্ভারে deathcert সার্ভিস-রো না থাকলে service_not_found আসবে — সেটা
-   পরিষ্কারভাবে জানানো হয়, চার্জ হয় না। */
+/* ns-deathcert.js v4 — মৃত্যু সনদ আবেদন: সম্পূর্ণ পেজ = ব্যবহারকারীর ছবি + নিচে ৫০ টাকার বার।
+   v3 থেকে বদল: (১) ছবি আর একটা ৫৫০KB ফাইলে নয় — ৪টি টুকরো (strip), প্রতিটি
+   ~১১০-১৫০KB। টুকরো উপর থেকে নিচে একটার পর একটা আসে, তাই স্লো নেটেও কয়েক
+   সেকেন্ডের মধ্যে ছবির উপরের অংশ দেখা যায়, আর কোনো টুকরো আটকালে শুধু
+   সেটাই আবার আনা হয়। (২) এই পেজে সাইটের টপবার/সাইডবার লুকিয়ে যায়, তাই
+   পেজে পুরনো জেনেরিক কার্ড/ইতিহাস/বাটন কিছুই থাকে না — শুধু ছবি + নিচে
+   মূল্যের বার। (৩) সংরক্ষণ বাটন = আসল অর্ডার, প্রতিটা আবেদন ৫০ টাকা।
+   বাইনারি JPG সরাসরি আপলোড করা যায় না (টুল শুধু টেক্সট ফাইল নেয়), তাই
+   ছবির টুকরোগুলো টেক্সট (.txt) হিসেবে আপলোড করা — দেখতে হুবহু একই। */
 (function () {
   'use strict';
-  var PIC_TXT = 'ns-deathcert-pic.txt?v=1';
+  var STRIPS = ['ns-deathcert-pic-1.txt?v=1', 'ns-deathcert-pic-2.txt?v=1',
+    'ns-deathcert-pic-3.txt?v=1', 'ns-deathcert-pic-4.txt?v=1'];
   var DRAFT_KEY = 'ns_deathcert_draft_v1';
-  var picState = 'idle'; // idle | loading | ready | failed
-  var picAttempts = 0;
+  var loaded = 0, attempts = [0, 0, 0, 0], loading = false;
 
   function isDeathCert() {
     return (location.hash || '') === '#/order/deathcert';
@@ -33,7 +35,7 @@
     }).join('');
     return '<select class="nsdc2-inp nsdc2-sel" id="' + id + '" ' + st(l, t, w, h) + '>' + o + '</select>';
   }
-  // ছবির সাদা ঘরগুলোর ওপরে ওভারলে (v2-এর মাপ হুবহু)।
+  // ছবির সাদা ঘরগুলোর ওপরে ওভারলে (v2/v3-এর মাপ হুবহু)।
   function overlaysHTML() {
     var h = '';
     h += '<input class="nsdc2-file" id="nsDcDoc" type="file" accept="image/*,application/pdf" ' + st(24, 19.8, 50, 7.7) + '>';
@@ -189,112 +191,97 @@
     var btn = document.getElementById('nsDcSave');
     if (btn) btn.addEventListener('click', submit);
   }
-  function showOverlays(img) {
+  function setLoad(text, showRetry) {
+    var s = document.getElementById('nsDcLoadStatus');
+    if (s) s.textContent = text;
+    var r = document.getElementById('nsDcRetry');
+    if (r) r.hidden = !showRetry;
+  }
+  function showOverlays() {
     var pic = document.getElementById('nsDcPic');
     if (!pic || document.getElementById('nsDcSave')) return;
     pic.insertAdjacentHTML('beforeend', overlaysHTML());
-    var load = document.getElementById('nsDcLoading');
-    if (load) load.remove();
+    setLoad('', false);
     wireOverlays();
     prefill();
-    picState = 'ready';
   }
-  function setProg(text) {
-    var p = document.getElementById('nsDcProg');
-    if (p) p.textContent = text;
-  }
-  function setLoadMsg(text, showRetry) {
-    var m = document.getElementById('nsDcLoadMsg');
-    if (m) m.textContent = text;
-    var r = document.getElementById('nsDcRetry');
-    if (r) r.hidden = !showRetry;
-    setProg('');
-  }
-  function loadPic() {
-    var img = document.getElementById('nsDcImg');
-    if (!img || picState === 'ready') return;
-    picState = 'loading';
-    picAttempts++;
-    fetch(PIC_TXT).then(function (r) {
+  function loadStrip(i) {
+    if (!document.getElementById('nsDcWrap')) { loading = false; return; }
+    if (i >= STRIPS.length) { loading = false; showOverlays(); return; }
+    loading = true;
+    attempts[i]++;
+    setLoad('ছবি লোড হচ্ছে… (' + (i + 1) + '/' + STRIPS.length + ' অংশ)', false);
+    fetch(STRIPS[i]).then(function (r) {
       if (!r.ok) throw new Error('http ' + r.status);
-      var total = 0;
-      try { total = parseInt(r.headers.get('Content-Length') || '0', 10) || 0; } catch (e) {}
-      if (r.body && typeof r.body.getReader === 'function') {
-        var reader = r.body.getReader();
-        var chunks = [], done = 0, lastShown = 0;
-        var dec = new TextDecoder();
-        function pump() {
-          return reader.read().then(function (res) {
-            if (res.done) return chunks.join('');
-            chunks.push(dec.decode(res.value, { stream: true }));
-            done += res.value.length;
-            if (done - lastShown > 50 * 1024) {
-              lastShown = done;
-              setProg(Math.round(done / 1024) + ' KB লোড হয়েছে' + (total ? ' / ' + Math.round(total / 1024) + ' KB' : '…'));
-            }
-            return pump();
-          });
-        }
-        return pump().then(function (t) { return t + dec.decode(); });
-      }
       return r.text();
     }).then(function (b64) {
-      if (!document.getElementById('nsDcWrap')) return;
-      img.onload = function () { showOverlays(img); };
-      img.onerror = function () { onPicFail(); };
-      img.src = 'data:image/jpeg;base64,' + b64.trim();
-      img.hidden = false;
-    }).catch(function () { onPicFail(); });
+      var pic = document.getElementById('nsDcPic');
+      if (!pic) { loading = false; return; }
+      pic.insertAdjacentHTML('beforeend', '<img class="nsdc2-strip" src="data:image/jpeg;base64,' + b64.trim() + '" alt="">');
+      loaded = i + 1;
+      loadStrip(i + 1);
+    }).catch(function () {
+      if (!document.getElementById('nsDcWrap')) { loading = false; return; }
+      if (attempts[i] < 3) {
+        setLoad('নেট দুর্বল — ছবির ' + (i + 1) + ' নম্বর অংশ আবার আনা হচ্ছে…', false);
+        setTimeout(function () { loadStrip(i); }, attempts[i] === 1 ? 2000 : 4000);
+      } else {
+        loading = false;
+        setLoad('ছবির ' + (i + 1) + ' নম্বর অংশ লোড হয়নি — নেট চেক করে আবার চেষ্টা করুন।', true);
+      }
+    });
   }
-  function onPicFail() {
-    if (!document.getElementById('nsDcWrap')) return;
-    if (picAttempts < 3) {
-      setLoadMsg('নেট দুর্বল — ছবি আবার লোড হচ্ছে… (চেষ্টা ' + (picAttempts + 1) + ')', false);
-      setTimeout(function () {
-        if (document.getElementById('nsDcWrap') && picState !== 'ready') loadPic();
-      }, picAttempts === 1 ? 2000 : 4000);
-    } else {
-      picState = 'failed';
-      setLoadMsg('ছবি লোড হয়নি — নেট চেক করে আবার চেষ্টা করুন।', true);
-    }
+  function startLoad() {
+    if (loading) return;
+    var pic = document.getElementById('nsDcPic');
+    if (!pic) return;
+    if (loaded >= STRIPS.length) { showOverlays(); return; }
+    loadStrip(loaded);
+  }
+  function setFullPage(on) {
+    try {
+      if (on) document.body.classList.add('nsdc2-full');
+      else document.body.classList.remove('nsdc2-full');
+    } catch (e) {}
+  }
+  function cleanup() {
+    var wrap = document.getElementById('nsDcWrap');
+    if (wrap) wrap.remove();
+    setFullPage(false);
+    loaded = 0; attempts = [0, 0, 0, 0]; loading = false;
   }
   function build() {
     var main = document.getElementById('main');
     if (!main || document.getElementById('nsDcWrap')) return;
-    main.innerHTML = '<div class="nsdc2-wrap" id="nsDcWrap">' +
-      '<div class="nsdc2-pic" id="nsDcPic">' +
-      '<div class="nsdc2-loading" id="nsDcLoading">' +
-      '<div>মৃত্যু সনদ আবেদন ফরম লোড হচ্ছে…</div>' +
-      '<div class="nsdc2-prog" id="nsDcProg"></div>' +
-      '<div class="nsdc2-prog" id="nsDcLoadMsg"></div>' +
-      '<button type="button" class="nsdc2-retry" id="nsDcRetry" hidden>আবার চেষ্টা করুন</button>' +
-      '</div>' +
-      '<img class="nsdc2-img" id="nsDcImg" hidden alt="মৃত্যু সনদ আবেদন ফরম">' +
-      '</div>' +
-      '<p id="nsDcDocStatus" class="nsdc2-status"></p>' +
-      '<p id="nsDcErr" class="nsdc2-err"></p>' +
-      '<p class="nsdc2-hint">প্রতিটা আবেদনের মূল্য ৫০ টাকা — ছবির সংরক্ষণ বাটনে চাপ দিলেই অর্ডার হবে, ব্যালেন্স থেকে ৫০ টাকা কাটবে। ছবি ছোট দেখালে দুই আঙুলে জুম করে ঘরগুলো পূরণ করুন।</p>' +
-      '</div>';
+    main.innerHTML = '<div class="nsdc2-wrap" id="nsDcWrap">'
+      + '<div class="nsdc2-pic" id="nsDcPic"></div>'
+      + '<p id="nsDcLoadStatus" class="nsdc2-status"></p>'
+      + '<p><button type="button" class="nsdc2-retry" id="nsDcRetry" hidden>আবার চেষ্টা করুন</button></p>'
+      + '<p id="nsDcDocStatus" class="nsdc2-status"></p>'
+      + '<p id="nsDcErr" class="nsdc2-err"></p>'
+      + '<div class="nsdc2-price">মূল্য: ৫০ টাকা (প্রতি আবেদন) — সংরক্ষণ করলেই ব্যালেন্স থেকে ৫০ টাকা কাটবে।</div>'
+      + '<p class="nsdc2-hint">ছবি ছোট দেখালে দুই আঙুলে জুম করে ঘরগুলো পূরণ করুন।</p>'
+      + '</div>';
+    setFullPage(true);
     var retry = document.getElementById('nsDcRetry');
     if (retry) retry.addEventListener('click', function () {
-      picAttempts = 0;
-      setLoadMsg('ছবি আবার লোড হচ্ছে…', false);
-      loadPic();
+      attempts[loaded] = 0;
+      setLoad('ছবি আবার লোড হচ্ছে…', false);
+      startLoad();
     });
-    loadPic();
+    startLoad();
   }
   function tick() {
     try {
-      var wrap = document.getElementById('nsDcWrap');
       if (!isDeathCert() || isLoginShowing()) {
-        if (wrap) wrap.remove();
-        if (!isDeathCert()) { picState = 'idle'; picAttempts = 0; }
+        if (document.getElementById('nsDcWrap')) cleanup();
+        else setFullPage(false);
         return;
       }
       var ob = document.getElementById('nsOrderBtn');
-      if (wrap && ob) ob.remove();
+      if (document.getElementById('nsDcWrap') && ob) ob.remove();
       build();
-      if (wrap && picState === 'idle') loadPic();
+      if (document.getElementById('nsDcWrap') && !loading && loaded < STRIPS.length) startLoad();
     } catch (e) {}
   }
   tick();
