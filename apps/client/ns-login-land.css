@@ -146,3 +146,9 @@
   .ns-ll-ben{min-width:45%;padding:12px}
   .ns-ll-foot-in{grid-template-columns:1fr}
 }
+
+/* v2: example hotline pill (display only) + WhatsApp icon */
+.ns-ll-phone{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #dbeafe;border-radius:999px;padding:8px 14px;font-weight:700;color:#1e40af;white-space:nowrap}
+.ns-ll-phone small{font-size:12px;font-weight:600;color:#64748b}
+.ns-ll-soc.wa{background:#25d366;color:#fff;text-decoration:none}
+.ns-ll-soc-row{display:inline-flex;gap:8px;align-items:center}

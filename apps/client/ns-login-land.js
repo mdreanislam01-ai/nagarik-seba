@@ -119,7 +119,8 @@
       '<a href="#/support">সহায়তা</a>' +
       '<button type="button" data-ns-ll-scroll="ns-ll-contact">যোগাযোগ</button>' +
       '<a class="ns-ll-support" href="#/support">🎧 সাপোর্ট</a>' +
-      '<span class="ns-ll-soc-row"><span class="ns-ll-soc" aria-hidden="true">f</span><span class="ns-ll-soc yt" aria-hidden="true">▶</span></span>' +
+      '<span class="ns-ll-phone">📞 ১৬৩৭৫ <small>হটলাইন</small></span>' +
+      '<span class="ns-ll-soc-row"><span class="ns-ll-soc" aria-hidden="true">f</span><span class="ns-ll-soc yt" aria-hidden="true">▶</span><a class="ns-ll-soc wa" href="https://wa.me/8801318325072" target="_blank" rel="noopener" aria-label="WhatsApp সাপোর্ট">💬</a></span>' +
       '</nav>' +
       '<button type="button" class="ns-ll-burger" aria-label="মেনু খুলুন/বন্ধ করুন" aria-expanded="false">☰</button>' +
       '</div></header>' +
@@ -147,7 +148,7 @@
       '<footer class="ns-ll-foot" id="ns-ll-contact"><div class="ns-ll-foot-in">' +
       '<div class="ns-ll-foot-brand"><b>' + IC.shield.replace('currentColor', '#fff') + ' নাগরিক সেবা</b>' +
       '<p>নাগরিকদের জন্য সহজ অনলাইন সেবা অর্ডারের পোর্টাল। লগইন করে ড্যাশবোর্ড থেকে সেবা নিন।</p>' +
-      '<span class="ns-ll-soc" aria-hidden="true">f</span> <span class="ns-ll-soc yt" aria-hidden="true">▶</span></div>' +
+      '<span class="ns-ll-soc" aria-hidden="true">f</span> <span class="ns-ll-soc yt" aria-hidden="true">▶</span> <a class="ns-ll-soc wa" href="https://wa.me/8801318325072" target="_blank" rel="noopener" aria-label="WhatsApp সাপোর্ট">💬</a></div>' +
       '<div><h3>দ্রুত লিংক</h3><ul>' +
       '<li><button type="button" data-ns-ll-scroll="ns-ll-top">হোম</button></li>' +
       '<li><button type="button" data-ns-ll-scroll="ns-ll-about">আমাদের সম্পর্কে</button></li>' +
@@ -159,6 +160,8 @@
       }).join('') + '</ul></div>' +
       '<div><h3>যোগাযোগ করুন</h3><ul>' +
       '<li><span>🌐 nagarikseba.com</span></li>' +
+      '<li><span>📞 ১৬৩৭৫ (হটলাইন)</span></li>' +
+      '<li><span>✉ info@nagarikseba.com</span></li>' +
       '<li><a href="#/support">🎧 সাপোর্ট সেন্টার</a></li>' +
       '</ul></div>' +
       '</div>' +
@@ -198,6 +201,8 @@
 
     var cardSlot = wrap.querySelector('.ns-ll-card-slot');
     if (cardSlot) cardSlot.replaceWith(card);
+    var loginEmail = card.querySelector('#authEmail');
+    if (loginEmail) loginEmail.setAttribute('placeholder', 'example@gmail.com');
 
     if (page.querySelectorAll('*').length === 0) { page.remove(); }
     else { page.style.display = 'none'; } /* only the hidden panel remains in the shell */
