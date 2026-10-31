@@ -304,7 +304,14 @@
     } catch (e) {}
   }
   tick();
-  window.addEventListener('hashchange', function () { setTimeout(tick, 100); });
+  window.addEventListener('hashchange', function () {
+    /* Flash fix 2026-10-31 (SPA nav): hide the old cards SYNCHRONOUSLY in this
+       same dispatch. app.js's listener (registered first) only STARTS its async
+       render here, so no paint from it can happen before this class is on.
+       The 100ms tick then builds the reference design. */
+    try { if (isNewBdris()) document.documentElement.classList.add('ns-nb-hide-old'); } catch (e) {}
+    setTimeout(tick, 100);
+  });
   /* No MutationObserver by design: a 1-second read-only check that
      only writes when something changed cannot storm, unlike an
      observer that fires on every write it just made. */
