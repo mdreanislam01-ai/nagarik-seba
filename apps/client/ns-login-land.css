@@ -161,3 +161,6 @@
 /* v4: real WhatsApp logo image (user-supplied) */
 .ns-ll-wa{display:inline-flex;align-items:center}
 .ns-ll-socimg.wa{width:32px;height:32px;border-radius:8px}
+
+/* v5: header phone pill is now a tel: link — keep pill look over nav link rules */
+.ns-ll-nav a.ns-ll-phone{padding:8px 14px;color:#1e40af;text-decoration:none}
