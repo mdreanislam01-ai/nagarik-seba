@@ -277,3 +277,28 @@ button, .sidebar a, .qa-tile, .opt{ touch-action:manipulation; }
   .grid{ grid-template-columns:1fr 1fr !important; }
 }
 
+
+/* ns-unify v25 (2026-10-31) — brn form styling, UNCONDITIONAL.
+   WHY: styles.css styles the whole brn form ONLY under
+   body.ns-inner-page, and app.js adds that class LAST in the render
+   chain, after #main has already painted and after the slow sequential
+   API chain. On a slow connection the form therefore paints first with
+   giant raw SVG icons (and unstyled grid/inputs), and stays that way if
+   the chain errors before the class is added. These rules carry the
+   SAME values as styles.css lines 667-679, without the body-class gate,
+   so the form looks right from the very first paint. When the class
+   arrives, the original rules win (same values, higher specificity), so
+   there is no visual change in the normal case. */
+.main .brn-sub{color:#64748b;margin:-6px 0 12px}
+.main .brn-dash{display:block;width:100%;border:1.5px dashed #93c5fd;background:#f0f9ff;border-radius:10px;padding:18px 12px;color:#0E7C7B;font-weight:700;font-size:15px;cursor:pointer;text-align:center}
+.main .brn-dash-ico{display:block;margin-bottom:6px;text-align:center}
+.main .brn-dash-ico svg{width:44px;height:44px}
+.main .brn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.main .brn-field{min-width:0}
+.main .brn-field label{display:flex;align-items:center;gap:8px;margin:0 0 5px}
+.main .brn-ico{width:20px;height:20px;min-width:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.main .brn-ico svg{width:20px;height:20px}
+.main .brn-field input,.main .brn-field select,.main .brn-field textarea{width:100%}
+.main .brn-field textarea{min-height:64px;resize:vertical}
+.main .brn-full{grid-column:1/-1}
+@media(max-width:380px){.main .brn-grid{gap:8px}.main .brn-field label{font-size:13px}}
