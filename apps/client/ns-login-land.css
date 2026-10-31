@@ -152,3 +152,8 @@
 .ns-ll-phone small{font-size:12px;font-weight:600;color:#64748b}
 .ns-ll-soc.wa{background:#25d366;color:#fff;text-decoration:none}
 .ns-ll-soc-row{display:inline-flex;gap:8px;align-items:center}
+
+/* v3: real FB/YT logo images (user-supplied, black padding trimmed, logo untouched) */
+.ns-ll-socimg{display:inline-block;vertical-align:middle}
+.ns-ll-socimg.fb{width:32px;height:32px;border-radius:8px}
+.ns-ll-socimg.yt{height:30px;width:auto;border-radius:6px}
