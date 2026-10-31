@@ -1,6 +1,6 @@
-/* ns-deathcert-form.css v1 — মৃত্যু সনদ আবেদন নেটিভ ফরম (সাইটের টিল) */
+/* ns-deathcert-form.css v2 — মৃত্যু সনদ আবেদন নেটিভ ফরম (সাইটের টিল) */
 .nsdcf-wrap{max-width:720px;margin:0 auto;padding:0 0 24px}
-.nsdcf-head{background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border-radius:14px;padding:18px 16px;margin:0 0 14px}
+.nsdcf-head{background-image:url(data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2290%22 height=%2290%22%3E%3Ccircle cx=%2270%22 cy=%2220%22 r=%2222%22 fill=%22%23ffffff%22 fill-opacity=%220.07%22/%3E%3Ccircle cx=%2215%22 cy=%2275%22 r=%2214%22 fill=%22%23ffffff%22 fill-opacity=%220.06%22/%3E%3Ccircle cx=%2245%22 cy=%2245%22 r=%226%22 fill=%22%23ffffff%22 fill-opacity=%220.05%22/%3E%3C/svg%3E),linear-gradient(135deg,#0f766e,#115e59);color:#fff;border-radius:14px;padding:18px 16px;margin:0 0 14px}
 .nsdcf-head h2{margin:0 0 4px;font-size:22px}
 .nsdcf-head p{margin:0;opacity:.9;font-size:14px}
 .nsdcf-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px}
@@ -17,11 +17,22 @@
 .nsdcf-upload input{display:none}
 .nsdcf-checkrow{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:#334155;margin:0 0 12px;cursor:pointer}
 .nsdcf-checkrow input{margin-top:3px;accent-color:#0f766e}
-.nsdcf-note{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 12px}
+.nsdcf-note{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 12px;display:flex;gap:8px;align-items:flex-start}
 .nsdcf-err{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 12px}
 .nsdcf-draft{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 12px}
 .nsdcf-draft button{border:0;background:none;color:#b91c1c;font-weight:700;cursor:pointer;padding:0 4px}
-.nsdcf-save{width:100%;border:0;border-radius:10px;padding:13px;background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.nsdcf-save{width:100%;border:0;border-radius:10px;padding:13px;background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 16px rgba(15,118,110,.35)}
 .nsdcf-save:disabled{opacity:.6}
-.nsdcf-back{display:block;text-align:center;margin:12px 0 0;color:#0f766e;text-decoration:none;font-size:15px}
-.nsdcf-price{background:#e6f4f2;border:1px solid #0f766e;border-radius:10px;color:#0f172a;font-size:15px;font-weight:700;text-align:center;padding:12px 10px;margin:14px 0 0}
+.nsdcf-back{display:flex;gap:6px;align-items:center;justify-content:center;margin:12px 0 0;color:#0f766e;text-decoration:none;font-size:15px}
+.nsdcf-price{background:#e6f4f2;border:1px solid #0f766e;border-radius:10px;color:#0f172a;font-size:15px;font-weight:700;text-align:center;padding:12px 10px;margin:14px 0 0;display:flex;gap:8px;align-items:center;justify-content:center}
+
+.nsdcf-headrow{display:flex;gap:12px;align-items:center}
+.nsdcf-logo{height:44px;width:auto;border-radius:8px;background:#fff;padding:4px;flex:none}
+.nsdcf-logobadge{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.nsdcf-ico{display:inline-flex;vertical-align:-3px;margin-right:6px;color:#0f766e}
+.nsdcf-ico svg,.nsdcf-ic{width:17px;height:17px;display:block}
+.nsdcf-ic-lg{width:24px;height:24px;display:block}
+.nsdcf-ic-btn{width:18px;height:18px;display:block}
+.nsdcf-ic-up{width:30px;height:30px;display:block}
+.nsdcf-upico{display:block;color:#0f766e;margin:0 auto 6px}
+.nsdcf-note .nsdcf-ico{color:#059669;flex:none;margin-top:1px}
