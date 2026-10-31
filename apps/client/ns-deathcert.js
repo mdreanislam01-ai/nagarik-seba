@@ -1,12 +1,11 @@
-/* ns-deathcert.js v5 — মৃত্যু সনদ আবেদন: সম্পূর্ণ পেজ = ব্যবহারকারীর ছবি + নিচে ৫০ টাকার বার।
-   v4 থেকে বদল: (১) ছবি ৮টি ছোট টুকরোয় (প্রতিটি ~৫৫-৯০KB), প্রথম টুকরো স্লো
-   নেটেও ~১০ সেকেন্ডে আসে। (২) এই স্ক্রিপ্ট এখন index.html-এর সবার প্রথমে,
-   তাই বড় app.js (৫৬৭KB) ডাউনলোড শেষ হওয়ার আগেই ডিজাইন লোড শুরু হয় —
-   আগে ডিজাইন-স্ক্রিপ্ট ১৭ নম্বরে ছিল, app.js + ১৪টি স্ক্রিপ্টের পেছনে আটকে
-   থাকত, তাই জেনেরিক পেজ মিনিটের পর মিনিট দেখা যেত। (৩) ফরম তৈরি হলে নিচে
-   স্পষ্ট নির্দেশনা থাকে (সাদা ঘরে চাপ দিয়ে লিখুন) — যাতে ছবি আর ফরমের
-   পার্থক্য বোঝা যায়, ছবির ভেতরে কিছু বদলানো হয়নি। জেনেরিক পেজের
-   ইতিহাস/বাটন/নোটিশ কিছুই থাকে না। সংরক্ষণ = আসল অর্ডার, ৫০ টাকা। */
+/* ns-deathcert.js v6 — মৃত্যু সনদ আবেদন: সম্পূর্ণ পেজ = ব্যবহারকারীর ছবি + নিচে ৫০ টাকার বার।
+   v5 থেকে বদল: সাজানোর কোড এখন স্ক্রিপ্টের ভেতরেই ইনলাইন — CSS ফাইল
+   স্লো/ভাঙা নেটে না এলেও ইনপুটগুলো ছবির ঠিক ঘরের ওপরে বসবে (আগে CSS না
+   এলে ইনপুট ছবির নিচে নেমে যেত + টপবার লুকাত না — ব্যবহারকারীর স্ক্রিনশটে
+   সেটাই দেখা গেছে)। টপবার/সাইডবার এখন JS দিয়েও সরাসরি লুকানো হয়।
+   চেক ৫০০ms থেকে ১৫০ms + pageshow/visibility-তে টিক — অ্যাপে ফিরে আসলে
+   জেনেরিক ঝলক প্রায় থাকবে না। ছবি ৮ টুকরো, ফরম-নির্দেশনা, ৫০ টাকা অর্ডার
+   আগের মতোই। */
 (function () {
   'use strict';
   var STRIPS = ['ns-deathcert-s1.txt?v=1', 'ns-deathcert-s2.txt?v=1',
@@ -25,22 +24,22 @@
   function escAttr(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   }
-  function st(l, t, w, h) {
-    return 'style="left:' + l + '%;top:' + t + '%;width:' + w + '%;height:' + h + '%;"';
+  function st(l, t, w, h, extra) {
+    return 'style="position:absolute;left:' + l + '%;top:' + t + '%;width:' + w + '%;height:' + h + '%;' + (extra || '') + '"';
   }
   function inp(id, type, l, t, w, h, ph) {
-    return '<input class="nsdc2-inp" id="' + id + '" type="' + type + '" placeholder="' + escAttr(ph || '') + '" ' + st(l, t, w, h) + '>';
+    return '<input class="nsdc2-inp" id="' + id + '" type="' + type + '" placeholder="' + escAttr(ph || '') + '" ' + st(l, t, w, h, 'background:#fff;border:0;padding:0 6px;margin:0;color:#0f172a;font-size:14px;box-sizing:border-box;') + '>';
   }
   function sel(id, l, t, w, h, opts) {
     var o = '<option value=""></option>' + opts.map(function (x) {
       return '<option value="' + escAttr(x) + '">' + escAttr(x) + '</option>';
     }).join('');
-    return '<select class="nsdc2-inp nsdc2-sel" id="' + id + '" ' + st(l, t, w, h) + '>' + o + '</select>';
+    return '<select class="nsdc2-inp nsdc2-sel" id="' + id + '" ' + st(l, t, w, h, 'background:#fff;border:0;padding:0 6px;margin:0;color:#0f172a;font-size:14px;box-sizing:border-box;appearance:none;-webkit-appearance:none;') + '>' + o + '</select>';
   }
   // ছবির সাদা ঘরগুলোর ওপরে ওভারলে (v2/v3-এর মাপ হুবহু)।
   function overlaysHTML() {
     var h = '';
-    h += '<input class="nsdc2-file" id="nsDcDoc" type="file" accept="image/*,application/pdf" ' + st(24, 19.8, 50, 7.7) + '>';
+    h += '<input class="nsdc2-file" id="nsDcDoc" type="file" accept="image/*,application/pdf" ' + st(24, 19.8, 50, 7.7, 'opacity:0;cursor:pointer;') + '>';
     h += inp('nsDcBrn', 'text', 6.5, 30.95, 41.5, 1.7, '');
     h += sel('nsDcGender', 55.0, 30.95, 38.5, 1.7, ['পুরুষ', 'মহিলা', 'অন্যান্য']);
     h += inp('nsDcDob', 'date', 6.5, 35.95, 37.5, 1.7, '');
@@ -60,12 +59,12 @@
     h += inp('nsDcAddr2Bn', 'text', 6.5, 70.95, 41.5, 1.7, 'মৃত্যুপূর্ব বাসস্থান/বর্তমান ঠিকানা');
     h += inp('nsDcAddr2En', 'text', 55.0, 70.95, 42.0, 1.7, 'মৃত্যুপূর্ব বাসস্থান/বর্তমান ঠিকানা');
     h += inp('nsDcPermBn', 'text', 6.5, 75.95, 41.5, 1.7, 'স্থায়ী ঠিকানা লিখুন');
-    h += '<input class="nsdc2-check" id="nsDcPermSame" type="checkbox" ' + st(51.0, 76.2, 2.5, 1.4) + '>';
+    h += '<input class="nsdc2-check" id="nsDcPermSame" type="checkbox" ' + st(51.0, 76.2, 2.5, 1.4, 'margin:0;accent-color:#0f766e;cursor:pointer;') + '>';
     h += inp('nsDcApplicant', 'text', 6.5, 81.15, 90.5, 1.7, '(যমন: পুত্র, কন্যা, স্বামী/স্ত্রী ইত্যাদি)');
     h += inp('nsDcMobile', 'tel', 6.5, 86.15, 41.5, 1.7, 'আবেদনকারীর মোবাইল নম্বর');
     h += inp('nsDcApplicantNid', 'text', 55.0, 86.15, 42.0, 1.7, 'আবেদনকারীর জাতীয় পরিচয়পত্র (NID) / জন্ম নিবন্ধন নম্বর');
-    h += '<button type="button" class="nsdc2-btn" id="nsDcSave" aria-label="সংরক্ষণ করুন" ' + st(2.2, 92.0, 95.1, 2.3) + '></button>';
-    h += '<a class="nsdc2-btn" href="#/dashboard" aria-label="পেছনে যান" ' + st(43.0, 95.6, 14.0, 1.4) + '></a>';
+    h += '<button type="button" class="nsdc2-btn" id="nsDcSave" aria-label="সংরক্ষণ করুন" ' + st(2.2, 92.0, 95.1, 2.3, 'background:transparent;border:0;padding:0;cursor:pointer;') + '></button>';
+    h += '<a class="nsdc2-btn" href="#/dashboard" aria-label="পেছনে যান" ' + st(43.0, 95.6, 14.0, 1.4, 'background:transparent;border:0;padding:0;cursor:pointer;') + '></a>';
     return h;
   }
 
@@ -221,7 +220,7 @@
       if (g !== curGen) return;
       var pic = document.getElementById('nsDcPic');
       if (!pic) { loading = false; return; }
-      pic.insertAdjacentHTML('beforeend', '<img class="nsdc2-strip" src="data:image/jpeg;base64,' + b64.trim() + '" alt="">');
+      pic.insertAdjacentHTML('beforeend', '<img class="nsdc2-strip" style="display:block;width:100%;aspect-ratio:1529/256;" src="data:image/jpeg;base64,' + b64.trim() + '" alt="">');
       loaded = i + 1;
       loadStrip(i + 1, g);
     }).catch(function () {
@@ -248,6 +247,12 @@
       if (on) document.body.classList.add('nsdc2-full');
       else document.body.classList.remove('nsdc2-full');
     } catch (e) {}
+    try {
+      var tb = document.querySelector('.topbar');
+      if (tb) tb.style.display = on ? 'none' : '';
+      var sb = document.getElementById('sidebar');
+      if (sb) sb.style.display = on ? 'none' : '';
+    } catch (e) {}
   }
   function cleanup() {
     var wrap = document.getElementById('nsDcWrap');
@@ -259,12 +264,12 @@
     var main = document.getElementById('main');
     if (!main || document.getElementById('nsDcWrap')) return;
     main.innerHTML = '<div class="nsdc2-wrap" id="nsDcWrap">'
-      + '<div class="nsdc2-pic" id="nsDcPic"></div>'
+      + '<div class="nsdc2-pic" id="nsDcPic" style="position:relative;"></div>'
       + '<p id="nsDcLoadStatus" class="nsdc2-status"></p>'
       + '<p><button type="button" class="nsdc2-retry" id="nsDcRetry" hidden>আবার চেষ্টা করুন</button></p>'
       + '<p id="nsDcDocStatus" class="nsdc2-status"></p>'
       + '<p id="nsDcErr" class="nsdc2-err"></p>'
-      + '<div class="nsdc2-price">মূল্য: ৫০ টাকা (প্রতি আবেদন) — সংরক্ষণ করলেই ব্যালেন্স থেকে ৫০ টাকা কাটবে।</div>'
+      + '<div class="nsdc2-price" style="background:#e6f4f2;border:1px solid #0f766e;border-radius:10px;color:#0f172a;font-size:15px;font-weight:700;text-align:center;padding:12px 10px;margin:10px 0 0;">মূল্য: ৫০ টাকা (প্রতি আবেদন) — সংরক্ষণ করলেই ব্যালেন্স থেকে ৫০ টাকা কাটবে।</div>'
       + '<p class="nsdc2-hint">ছবি ছোট দেখালে দুই আঙুলে জুম করে ঘরগুলো পূরণ করুন।</p>'
       + '</div>';
     loaded = 0; attempts = [0, 0, 0, 0, 0, 0, 0, 0]; loading = false; curGen = ++gen;
@@ -292,5 +297,7 @@
   }
   tick();
   window.addEventListener('hashchange', function () { setTimeout(tick, 100); });
-  setInterval(tick, 500);
+  window.addEventListener('pageshow', function () { setTimeout(tick, 50); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(tick, 50); });
+  setInterval(tick, 150);
 })();
