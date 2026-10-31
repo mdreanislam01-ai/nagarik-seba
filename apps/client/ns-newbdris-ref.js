@@ -279,9 +279,19 @@
   function allBuilt() {
     return document.getElementById('nsNbPageTitle') && document.getElementById('nsTypeCard') && document.getElementById('nsRefFormCard') && document.getElementById('nsOrderHistory');
   }
+  /* FIX 2026-10-31: login painted without a hash change (session expired,
+     or an order link opened while logged out) leaves the hash at
+     #/order/newbdris, so the hash-only guard kept building order content
+     into the login page. The auth card #nsSlideCard (moved into .ns-ll
+     by the landing) exists ONLY on auth pages, never on the real order
+     page — so its presence, or the landing wrapper, means "login is
+     showing": clean up and do NOT build, whatever the hash says. */
+  function isLoginShowing() {
+    return !!document.getElementById('nsSlideCard') || !!document.querySelector('.ns-ll');
+  }
   function tick() {
     try {
-      if (!isNewBdris()) {
+      if (!isNewBdris() || isLoginShowing()) {
         setTicker(false);
         document.documentElement.classList.remove('ns-nb-hide-old');
         ['nsNbPageTitle', 'nsTypeCard', 'nsRefFormCard', 'nsOrderHistory'].forEach(function (id) {
