@@ -157,3 +157,7 @@
 .ns-ll-socimg{display:inline-block;vertical-align:middle}
 .ns-ll-socimg.fb{width:32px;height:32px;border-radius:8px}
 .ns-ll-socimg.yt{height:30px;width:auto;border-radius:6px}
+
+/* v4: real WhatsApp logo image (user-supplied) */
+.ns-ll-wa{display:inline-flex;align-items:center}
+.ns-ll-socimg.wa{width:32px;height:32px;border-radius:8px}
