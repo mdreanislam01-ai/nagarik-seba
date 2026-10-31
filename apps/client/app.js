@@ -221,6 +221,7 @@ const ORDERS=[
  {id:'nidpsset',name:'এনআইডি ইউজার পাসওয়ার্ড সেট',label:'এনআইডি ইউজার পাসওয়ার্ড সেট সার্ভিস চালু ✅',cost:50,fields:['Data* (নাম / এনআইডি / জন্ম তারিখ)','এনআইডি নম্বর* (১০ / ১৩ / ১৭ সংখ্যা)','জন্ম তারিখ*']},
  {id:'namethikananid',name:'নাম-ঠিকানা দিয়ে এনআইডি',label:'নাম-ঠিকানা দিয়ে এনআইডি ও সাইন কপি চালু ✅',cost:350,options:[['SIGN COPY',350],['NID',350]],fields:['ফর্ম পূরণ করুন* (নিজ নাম, জন্ম তারিখ, পিতা-মাতার নাম, ছবি, বিভাগ, জেলা, আসন, থানা, ইউনিয়ন, ওয়ার্ড নং, গ্রাম / ভোটার এলাকা)']},
  {id:'newbdris',name:'নতুন জন্ম নিবন্ধন আবেদন',label:'ঢাকা সিটি নতুন জন্ম নিবন্ধন চালু, সময় ২৪–৪৮ ঘণ্টা ✅',cost:null,options:[['নরমাল',800],['পসিবল',800],['মিনিস্ট্রি',1000],['CTG নরমাল',2000]],fields:['ফরম পূরণ করুন*']},
+ {id:'deathcert',name:'মৃত্যু সনদ আবেদন',label:'মৃত্যু সনদ আবেদন',cost:null,fields:[]},
  {id:'passport',name:'পাসপোর্ট SB কপি',label:'পাসপোর্ট SB কপি',cost:null,options:[['MRP Passport SB Copy',450],['E Passport SB Copy',600]],fields:['নাম*','Passport / NID / যেকোনো একটি তথ্য*']},
  {id:'calllist',name:'কললিস্ট অর্ডার',label:'কল লিস্ট অর্ডার চালু ✅',cost:null,options:[['৩ মাস কল লিস্ট',1200],['৬ মাস কল লিস্ট',1500]],fields:['Number*']},
  {id:'i2an',name:'IMEI টু অ্যাক্টিভ নম্বর অর্ডার',label:'IMEI To Active Number ও All Number অর্ডার চালু ✅',cost:600,options:[['IMEI To Active Number',600],['IMEI To All Number',600]],fields:['Data* (IMEI 1, IMEI 2, ফোন হারানোর তারিখ)']},
@@ -1842,7 +1843,7 @@ const NS_CAT_ORD = (id) => { const o = ORDERS.find(x => x.id === id); return o ?
 const NS_CAT_FREE = (id) => { const f = FREES.find(x => x.id === id); return f ? ['free/' + id, f.name, true] : null; };
 const NS_CATS = [
   { id: 'nid', head: '🪪 জাতীয় পরিচয়পত্র', items: ['nid', 'snid', 'ncf'].map(NS_CAT_SVC).concat(['nidcard', 'smartcardpdf', 'smartnidcard', 'sign', 'servercopy'].map(NS_CAT_ORD)).concat(['sc', 'ssc'].map(NS_CAT_SVC)).concat(['nidpsset', 'namethikananid', 'nid2allnumber'].map(NS_CAT_ORD)) },
-  { id: 'brn', head: '👶 জন্ম নিবন্ধন', items: ['brn', 'brni'].map(NS_CAT_SVC).concat(['newbdris'].map(NS_CAT_ORD)).concat(['dobfinder'].map(NS_CAT_FREE)) },
+  { id: 'brn', head: '👶 জন্ম নিবন্ধন', items: ['brn', 'brni'].map(NS_CAT_SVC).concat(['newbdris', 'deathcert'].map(NS_CAT_ORD)).concat(['dobfinder'].map(NS_CAT_FREE)) },
   { id: 'tin', head: '🧾 টিন ও ভাতা', items: ['tin'].map(NS_CAT_SVC).concat(['tincertificate'].map(NS_CAT_ORD)).concat(['tininfo'].map(NS_CAT_FREE)).concat(['vuk'].map(NS_CAT_SVC)) },
   { id: 'mobile', head: '🛂 পাসপোর্ট ও মোবাইল তথ্য', items: ['passport', 'location', 'number2imei', 'i2an', 'calllist', 'biomatic', 'info', 'pinset'].map(NS_CAT_ORD) },
   { id: 'free', head: '✍️ বিনামূল্যে টুলস', items: ['signature'].map(NS_CAT_FREE) },
