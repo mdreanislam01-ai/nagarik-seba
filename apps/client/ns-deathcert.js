@@ -1,18 +1,20 @@
-/* ns-deathcert.js v4 — মৃত্যু সনদ আবেদন: সম্পূর্ণ পেজ = ব্যবহারকারীর ছবি + নিচে ৫০ টাকার বার।
-   v3 থেকে বদল: (১) ছবি আর একটা ৫৫০KB ফাইলে নয় — ৪টি টুকরো (strip), প্রতিটি
-   ~১১০-১৫০KB। টুকরো উপর থেকে নিচে একটার পর একটা আসে, তাই স্লো নেটেও কয়েক
-   সেকেন্ডের মধ্যে ছবির উপরের অংশ দেখা যায়, আর কোনো টুকরো আটকালে শুধু
-   সেটাই আবার আনা হয়। (২) এই পেজে সাইটের টপবার/সাইডবার লুকিয়ে যায়, তাই
-   পেজে পুরনো জেনেরিক কার্ড/ইতিহাস/বাটন কিছুই থাকে না — শুধু ছবি + নিচে
-   মূল্যের বার। (৩) সংরক্ষণ বাটন = আসল অর্ডার, প্রতিটা আবেদন ৫০ টাকা।
-   বাইনারি JPG সরাসরি আপলোড করা যায় না (টুল শুধু টেক্সট ফাইল নেয়), তাই
-   ছবির টুকরোগুলো টেক্সট (.txt) হিসেবে আপলোড করা — দেখতে হুবহু একই। */
+/* ns-deathcert.js v5 — মৃত্যু সনদ আবেদন: সম্পূর্ণ পেজ = ব্যবহারকারীর ছবি + নিচে ৫০ টাকার বার।
+   v4 থেকে বদল: (১) ছবি ৮টি ছোট টুকরোয় (প্রতিটি ~৫৫-৯০KB), প্রথম টুকরো স্লো
+   নেটেও ~১০ সেকেন্ডে আসে। (২) এই স্ক্রিপ্ট এখন index.html-এর সবার প্রথমে,
+   তাই বড় app.js (৫৬৭KB) ডাউনলোড শেষ হওয়ার আগেই ডিজাইন লোড শুরু হয় —
+   আগে ডিজাইন-স্ক্রিপ্ট ১৭ নম্বরে ছিল, app.js + ১৪টি স্ক্রিপ্টের পেছনে আটকে
+   থাকত, তাই জেনেরিক পেজ মিনিটের পর মিনিট দেখা যেত। (৩) ফরম তৈরি হলে নিচে
+   স্পষ্ট নির্দেশনা থাকে (সাদা ঘরে চাপ দিয়ে লিখুন) — যাতে ছবি আর ফরমের
+   পার্থক্য বোঝা যায়, ছবির ভেতরে কিছু বদলানো হয়নি। জেনেরিক পেজের
+   ইতিহাস/বাটন/নোটিশ কিছুই থাকে না। সংরক্ষণ = আসল অর্ডার, ৫০ টাকা। */
 (function () {
   'use strict';
-  var STRIPS = ['ns-deathcert-pic-1.txt?v=1', 'ns-deathcert-pic-2.txt?v=1',
-    'ns-deathcert-pic-3.txt?v=1', 'ns-deathcert-pic-4.txt?v=1'];
+  var STRIPS = ['ns-deathcert-s1.txt?v=1', 'ns-deathcert-s2.txt?v=1',
+    'ns-deathcert-s3.txt?v=1', 'ns-deathcert-s4.txt?v=1',
+    'ns-deathcert-s5.txt?v=1', 'ns-deathcert-s6.txt?v=1',
+    'ns-deathcert-s7.txt?v=1', 'ns-deathcert-s8.txt?v=1'];
   var DRAFT_KEY = 'ns_deathcert_draft_v1';
-  var loaded = 0, attempts = [0, 0, 0, 0], loading = false;
+  var loaded = 0, attempts = [0, 0, 0, 0, 0, 0, 0, 0], loading = false, gen = 0, curGen = 0;
 
   function isDeathCert() {
     return (location.hash || '') === '#/order/deathcert';
@@ -201,30 +203,33 @@
     var pic = document.getElementById('nsDcPic');
     if (!pic || document.getElementById('nsDcSave')) return;
     pic.insertAdjacentHTML('beforeend', overlaysHTML());
-    setLoad('', false);
+    setLoad('ফরম তৈরি — ছবির সাদা ঘরগুলোতে চাপ দিয়ে তথ্য লিখুন, তারপর নিচের সংরক্ষণ বাটনে চাপ দিন।', false);
     wireOverlays();
     prefill();
   }
-  function loadStrip(i) {
+  function loadStrip(i, g) {
+    if (g !== curGen) return;
     if (!document.getElementById('nsDcWrap')) { loading = false; return; }
     if (i >= STRIPS.length) { loading = false; showOverlays(); return; }
     loading = true;
     attempts[i]++;
-    setLoad('ছবি লোড হচ্ছে… (' + (i + 1) + '/' + STRIPS.length + ' অংশ)', false);
+    setLoad('নতুন ডিজাইন লোড হচ্ছে… (' + (i + 1) + '/' + STRIPS.length + ' অংশ) — স্লো নেটে একটু সময় লাগবে, পেজটি খোলা রাখুন।', false);
     fetch(STRIPS[i]).then(function (r) {
       if (!r.ok) throw new Error('http ' + r.status);
       return r.text();
     }).then(function (b64) {
+      if (g !== curGen) return;
       var pic = document.getElementById('nsDcPic');
       if (!pic) { loading = false; return; }
       pic.insertAdjacentHTML('beforeend', '<img class="nsdc2-strip" src="data:image/jpeg;base64,' + b64.trim() + '" alt="">');
       loaded = i + 1;
-      loadStrip(i + 1);
+      loadStrip(i + 1, g);
     }).catch(function () {
+      if (g !== curGen) return;
       if (!document.getElementById('nsDcWrap')) { loading = false; return; }
       if (attempts[i] < 3) {
         setLoad('নেট দুর্বল — ছবির ' + (i + 1) + ' নম্বর অংশ আবার আনা হচ্ছে…', false);
-        setTimeout(function () { loadStrip(i); }, attempts[i] === 1 ? 2000 : 4000);
+        setTimeout(function () { loadStrip(i, g); }, attempts[i] === 1 ? 2000 : 4000);
       } else {
         loading = false;
         setLoad('ছবির ' + (i + 1) + ' নম্বর অংশ লোড হয়নি — নেট চেক করে আবার চেষ্টা করুন।', true);
@@ -236,7 +241,7 @@
     var pic = document.getElementById('nsDcPic');
     if (!pic) return;
     if (loaded >= STRIPS.length) { showOverlays(); return; }
-    loadStrip(loaded);
+    loadStrip(loaded, curGen);
   }
   function setFullPage(on) {
     try {
@@ -262,6 +267,7 @@
       + '<div class="nsdc2-price">মূল্য: ৫০ টাকা (প্রতি আবেদন) — সংরক্ষণ করলেই ব্যালেন্স থেকে ৫০ টাকা কাটবে।</div>'
       + '<p class="nsdc2-hint">ছবি ছোট দেখালে দুই আঙুলে জুম করে ঘরগুলো পূরণ করুন।</p>'
       + '</div>';
+    loaded = 0; attempts = [0, 0, 0, 0, 0, 0, 0, 0]; loading = false; curGen = ++gen;
     setFullPage(true);
     var retry = document.getElementById('nsDcRetry');
     if (retry) retry.addEventListener('click', function () {
