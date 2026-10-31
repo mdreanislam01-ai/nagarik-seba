@@ -32,6 +32,12 @@
 
 (function () {
   'use strict';
+  /* Safety-fix 2026-10-31: announce that this script loaded, and clear
+     the 9s safety class if it already fired — the safety must only reveal
+     the old design when this script truly failed to load, never while it
+     is alive and waiting for slow API data. */
+  try { window._nsLlLoaded = true; if (document.body) document.body.classList.remove('ns-ll-show-old'); } catch (e) {}
+
 
   /* Hero photo: the user's own supplied image (1000007082_25_9xbc.png),
      embedded byte-identical as a data URI (binary push is not supported),

@@ -8,7 +8,7 @@
    ships. Silent on any fetch failure (offline/slow). */
 (function () {
   'use strict';
-  var CURRENT = '20261031-03';
+  var CURRENT = '20261031-04';
   var shownFor = null, lastCheck = 0;
   function showBanner() {
     if (shownFor === CURRENT || document.querySelector('.ns-fresh-bar')) return;
