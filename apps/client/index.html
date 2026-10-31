@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 
 <title>নাগরিক সেবা — ক্লায়েন্ট প্যানেল</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=1">
 <link rel="stylesheet" href="ns-unify.css?v=24">
 <link rel="stylesheet" href="ns-newbdris-ref.css?v=5">
 <link rel="stylesheet" href="ns-gate.css?v=3">
@@ -64,21 +64,23 @@
   <main class="main" id="main"></main>
 </div>
 <div class="modal-back" id="modalBack" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><p><button class="btn" onclick="closeModal()">ঠিক আছে</button></p></div></div>
-<script src="app.js"></script>
+<!-- ASSET RULE (do not break): every .js/.css in this file must carry ?v=N.
+     Bump N whenever that file changes, or browsers will serve the old file for up to 24h
+     (see the ?v= Cache-Control rule in vercel.json). Never load a design file without a version. -->
+<script src="app.js?v=1"></script>
 <script src="ns-timeout.js?v=1"></script>
 <script src="ns-track.js?v=1"></script>
-<script src="brn-dob-words.js"></script>
-<script src="brn-pdf-download.js"></script>
-<script src="ns-text-fix.js"></script>
-<script src="ns-fixes2.js"></script>
+<script src="brn-dob-words.js?v=1"></script>
+<script src="brn-pdf-download.js?v=1"></script>
+<script src="ns-text-fix.js?v=1"></script>
+<script src="ns-fixes2.js?v=1"></script>
 <script src="ns-bdris-clean.js?v=5"></script>
-<script src="ns-brn-icons.js"></script>
-<script src="ns-qr.js"></script>
+<script src="ns-brn-icons.js?v=1"></script>
+<script src="ns-qr.js?v=1"></script>
 <script src="ns-fast.js?v=2"></script>
 <script src="ns-wa-profile.js?v=4"></script>
-<script src="ns-search.js"></script>
+<script src="ns-search.js?v=1"></script>
 <script src="ns-notify.js?v=2"></script>
-<script src="ns-newbdris-design.js?v=14"></script>
 <script src="ns-newbdris-ref.js?v=7"></script>
 <script src="ns-login-land.js?v=7"></script>
 </body>
