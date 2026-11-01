@@ -52,7 +52,11 @@
   window.nsDelView = function (did) {
     var d = (window._nsDel.items || []).filter(function (x) { return x.id === did; })[0];
     if (!d || !d.file_data) return;
-    window.open(URL.createObjectURL(b64Blob(d.file_data, d.mime_type)), '_blank');
+    var w = window.open(URL.createObjectURL(b64Blob(d.file_data, d.mime_type)), '_blank');
+    if (!w) {
+      window.nsDelDown(did);
+      if (typeof showModal === 'function') showModal('ডেলিভারি', '<p>ফাইলটি নতুন ট্যাবে খুলল না, তাই ডাউনলোড করা হচ্ছে। Downloads ফোল্ডার থেকে ফাইলটি খুলুন।</p>');
+    }
   };
   window.nsDelDown = function (did) {
     var d = (window._nsDel.items || []).filter(function (x) { return x.id === did; })[0];
