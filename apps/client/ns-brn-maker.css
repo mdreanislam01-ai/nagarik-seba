@@ -1,7 +1,10 @@
-/* Nagarik Seba client — জন্মনিবন্ধন ক্রিয়েট (brn) maker-style page (v1).
+/* Nagarik Seba client — জন্মনিবন্ধন ক্রিয়েট (brn) maker-style page (v2).
    Only the maker page layout: header, records table, section headings,
-   form header/close, status pills, view modal rows. The form fields
-   themselves keep the site's existing .brn-grid/.brn-field styles. */
+   form modal, form header/close, status pills, view modal rows. The form
+   fields themselves keep the site's existing .brn-grid/.brn-field styles.
+   Modal stacking: this overlay is z-index 900 — above the topbar (20),
+   sidebar (40) and result dialogs (50), but below the autoload popup
+   (99990), so the search panel always opens on top of this modal. */
 .ns-brn-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
 .ns-brn-head h2{margin:0 0 4px;font-size:20px;color:#0f172a}
 .ns-brn-head p{margin:0}
@@ -22,6 +25,8 @@
 .ns-st-Refunded{background:#fee2e2;color:#991b1b}
 .ns-brn-view{border:1px solid #0f766e;background:transparent;color:#0f766e;border-radius:8px;padding:4px 12px;font-size:13px;font-weight:700;cursor:pointer}
 .ns-brn-view:hover{background:#f0fdfa}
+.ns-brn-formwrap{position:fixed;inset:0;background:rgba(2,6,23,.55);z-index:900;overflow-y:auto;padding:24px 12px;display:none}
+#nsBrnMakerForm.ns-brn-maker-form{max-width:780px;margin:0 auto}
 .ns-brn-form-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
 .ns-brn-form-head h3{margin:0;font-size:18px;color:#0f172a}
 .ns-brn-x{border:none;background:#fee2e2;color:#dc2626;width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;flex:none}
@@ -36,4 +41,5 @@
   .ns-brn-head{flex-direction:column}
   .ns-brn-create{width:100%;white-space:normal}
   .ns-brn-table{font-size:13px}
+  .ns-brn-formwrap{padding:16px 10px}
 }

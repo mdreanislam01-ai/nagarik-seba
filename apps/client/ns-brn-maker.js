@@ -1,31 +1,17 @@
-/* Nagarik Seba client — জন্মনিবন্ধন ক্রিয়েট (brn) maker-style page (v1, 2026-11-02).
-   WHAT IT DOES: on the brn service page (#/service/brn) ONLY, it replaces
-   the old plain form card with a maker-style page, the way the reference
-   maker looks and behaves:
-   - Header card: "জন্মনিবন্ধন মেকার" + subtext + "+ নতুন জন্মনিবন্ধন তৈরি (৳৫)" button.
-   - "জন্ম নিবন্ধন তালিকা" card: the customer's own brn orders (Name, BRN,
-     Date of Birth, Cost, Status, Created, Actions) with the reference's
-     empty state when there are none. দেখুন shows the order's entered fields.
-   - "নতুন নিবন্ধন তৈরীর ফরম": shown when the create button is clicked,
-     hidden again with ×. The form is the ORIGINAL brn form, moved whole:
-     the same 25 fields in the same order, so DOB-in-words, autoload,
-     document auto-fill, icons and the PDF summary keep working exactly.
-     Only section headings are added between the field groups
-     (REGISTER OFFICE / REGISTRATION / DATE OF BIRTH / IDENTITY /
-     FATHER / MOTHER / BIRTH & LOCATION) and the dashed box now reads
-     "ডেটা অনুসন্ধান করতে এখানে ক্লিক করুন" and opens the existing
-     autoload panel (BRN + DOB + captcha, typed info only).
-   WHAT IT DOES NOT DO (standing boundary, confirmed by the user):
-   - No seal/signature manager or upload, no QR-code generation, no
-     certificate badge, no certificate output.
-   - No government lookup: the search panel only places what was typed;
-     the only ৳5 charge is the existing order charge on submit.
-   - No app.js edit, no API change, no route/price change. The আবেদন
-     (newbdris) page is untouched: this script only runs on #/service/brn.
-   SAFETY: the original card is only hidden (display:none), never deleted,
-   so if this script fails the old page still works. The order button
-   passes the form card explicitly to nsOrderSubmit, so the payload
-   always reads the moved grid's 25 inputs in order. */
+/* Nagarik Seba client — জন্মনিবন্ধন ক্রিয়েট (brn) maker-style page (v2, 2026-11-02).
+   v2 change: the create form now opens as a MODAL (overlay), the way the
+   reference maker's form opens — instead of an inline section. Opened by
+   the "+ নতুন জন্মনিবন্ধন তৈরি (৳৫)" button; closed by ×, backdrop click
+   or ESC. The autoload popup (z-index 99990) still opens ABOVE this modal
+   (this modal is z-index 900). The order button hides this modal first,
+   so the order result dialog (z-index 50) is never hidden behind it; on
+   a failed order the form keeps its typed values and can be reopened.
+   Everything else is v1: header card, records table from the customer's
+   own brn orders, the ORIGINAL 25 brn fields moved whole in original
+   order under 7 section headings, dashed box opening the existing
+   autoload panel (typed info only). No seals, no QR generation, no
+   badge, no certificate output, no government lookup, no app.js edit,
+   no API change. The আবেদন (newbdris) page is untouched. */
 (function () {
   'use strict';
 
@@ -68,6 +54,17 @@
   }
   function hasToken() {
     try { return typeof nsToken === 'function' && !!nsToken(); } catch (e) { return false; }
+  }
+  function formWrap() { return document.getElementById('nsBrnFormWrap'); }
+  function openModal() {
+    var w = formWrap();
+    if (!w) return;
+    w.style.display = 'block';
+    try { w.scrollTop = 0; } catch (e) {}
+  }
+  function closeModal() {
+    var w = formWrap();
+    if (w) w.style.display = 'none';
   }
 
   function orderPayloadFields(order) {
@@ -222,16 +219,18 @@
     addSections(grid);
     orig.style.display = 'none';
 
-    var formWrap = document.getElementById('nsBrnFormWrap');
     var formCard = document.getElementById('nsBrnMakerForm');
-    document.getElementById('nsBrnCreateBtn').addEventListener('click', function () {
-      formWrap.style.display = 'block';
-      try { formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-    });
-    document.getElementById('nsBrnFormClose').addEventListener('click', function () {
-      formWrap.style.display = 'none';
+    var wrap = document.getElementById('nsBrnFormWrap');
+    document.getElementById('nsBrnCreateBtn').addEventListener('click', openModal);
+    document.getElementById('nsBrnFormClose').addEventListener('click', closeModal);
+    wrap.addEventListener('click', function (e) {
+      if (e.target === wrap) closeModal();
     });
     document.getElementById('nsBrnMakerOrderBtn').addEventListener('click', function () {
+      /* Hide this modal first so the order result dialog (z-index 50)
+         is never hidden behind it. On a failed order the form keeps its
+         typed values and can be reopened; on success render() rebuilds. */
+      closeModal();
       try {
         if (typeof nsOrderSubmit === 'function') nsOrderSubmit('service', 'brn', formCard);
       } catch (e) {}
@@ -243,6 +242,16 @@
     });
     renderTable();
   }
+
+  /* ESC closes this modal only — if the autoload popup is open it has
+     its own ESC handler and must stay on top, so skip then. Attached
+     once: build() recreates the modal element on every render. */
+  document.addEventListener('keydown', function (e) {
+    if (!e || e.key !== 'Escape') return;
+    if (document.querySelector('.ns-aload-back')) return;
+    var w = formWrap();
+    if (w && w.style.display === 'block') closeModal();
+  });
 
   build();
   setInterval(build, 300);
