@@ -32,7 +32,16 @@
      phone number, and its form-textarea template. The site itself
      remains a non-government site (see its existing disclaimer).
      Type artwork is an original teal gradient + NS badge, and
-     the brn fields stay exactly as they are. */
+     the brn fields stay exactly as they are.
+   v10 (2026-11-02): the textarea form card is replaced by a structured,
+   sectioned native order form (maker-style grouping, labels above
+   inputs, 1-col phones / 2-col desktop) built from the same template
+   fields, in the same order; the submit contract is unchanged
+   (POST /orders {service_id:'newbdris', option_name, payload:{details}}).
+   DELIBERATELY NOT included: seal/signature upload, QR code, certificate
+   badge, any certificate output, and any BRN+DOB government lookup —
+   this is an order form only. The site's own teal style and the user's
+   own type-card logos are kept; no other site's icons/images are copied. */
 (function () {
   'use strict';
   var PAGE_HEADLINE = 'অর্ডার করার আগে অবশ্যই ইনবক্সে কথা বলে অর্ডার করুন ধন্যবাদ 🥰। ২০০৭/২০০৮ এ মেয়েদের কাজ বন্ধ ❌';
@@ -109,66 +118,98 @@
     if (nx) nx.disabled = histPage >= pages;
   }
 
-  var FORM_TEMPLATE = [
-    "আবেদনকারীর ব্যক্তিগত বিবরণ / Personal Information",
-    "",
-    "🔹 পুরো নাম (বাংলা):",
-    "🔹 Full Name (English - Block Letters):",
-    "🔹 First Name (English):",
-    "🔹 Last Name (English):",
-    "🔹 জন্ম তারিখ (DD/MM/YYYY):",
-    "🔹 লিঙ্গ (পুরুষ / নারী / অন্যান্য):",
-    "🔹 পিতা-মাতার কততম সন্তান:",
-    "🔹 রক্তের গ্রুপ:",
-    "🔹 সচল মোবাইল নম্বর:",
-    "🔹 ইমেইল এড্রেস (ঐচ্ছিক):",
-    "",
-    "🔹 পিতার নাম (বাংলা):",
-    "🔹 Father's Name (English):",
-    "🔹 পিতার জন্ম নিবন্ধন নম্বর (১৭ ডিজিট):",
-    "🔹 পিতার NID নম্বর:",
-    "🔹 পিতার জন্ম তারিখ (DD/MM/YYYY):",
-    "🔹 পিতার জাতীয়তা: ",
-    "",
-    "🔹 মাতার নাম (বাংলা):",
-    "🔹 Mother's Name (English):",
-    "🔹 মাতার জন্ম নিবন্ধন নম্বর (১৭ ডিজিট):",
-    "🔹 মাতার NID নম্বর:",
-    "🔹 মাতার জন্ম তারিখ (DD/MM/YYYY):",
-    "🔹 মাতার জাতীয়তা: ",
-    "",
-    "🔹 বিভাগ (বাংলা):",
-    "🔹 জেলা (বাংলা):",
-    "🔹 উপজেলা/সিটি কর্পোরেশন (বাংলা):",
-    "🔹 ইউনিয়ন/পৌরসভা/ওয়ার্ড (বাংলা):",
-    "🔹 ডাকঘর ও পোস্ট কোড (বাংলা):",
-    "🔹 গ্রাম/মহল্লা (বাংলা):",
-    "🔹 বাসা/রোড/হোল্ডিং নং (বাংলা):",
-    "",
-    "🔹 Division (English):",
-    "🔹 District (English):",
-    "🔹 Upazila/City Corp (English):",
-    "🔹 Union/Municipality/Ward (English):",
-    "🔹 Post Office & Code (English):",
-    "🔹 Village/Area (English):",
-    "🔹 House/Road/Holding No (English):",
-    "",
-    "🔹 স্থায়ী ঠিকানা (বাংলা):",
-    "🔹 Permanent Address (English):",
-    "",
-    "🔹 বর্তমান ঠিকানা (বাংলা):",
-    "🔹 Present Address (English):",
-    "",
-    "আবেদনপত্রের সাথে যেসব কাগজপত্র লাগবে",
-    "",
-    "🔹 ইপিআই টিকা কার্ড / হাসপাতালের ছাড়পত্র / ডাক্তারের প্রত্যয়নপত্র ",
-    "🔹 পিতা ও মাতার ১৭ ডিজিটের অনলাইন জন্ম নিবন্ধন সনদ (ফটোকপি)",
-    "🔹 পিতা ও মাতার জাতীয় পরিচয়পত্র (NID) (ফটোকপি)",
-    "🔹 হোল্ডিং ট্যাক্সের রশিদ / বিদ্যুৎ বিলের কপি / খাজনার দাখিলা",
-    "",
-    "🔹 তথ্য প্রদানকারীর স্বাক্ষর :",
-    "🔹 তারিখ (DD/MM/YYYY) :"
-  ].join('\n');
+  /* v10 field model: the same 58-line template fields, in the same order,
+     as a structured form. Labels below are the template's own labels
+     (trailing spaces trimmed); assembly re-adds the "🔹 label: value"
+     shape, so the admin still receives the same readable details text. */
+  var NB_FIELDS = [
+    { sec: 'আবেদনকারীর ব্যক্তিগত বিবরণ / Personal Information', fields: [
+      { id: 'nb_name_bn', label: 'পুরো নাম (বাংলা)', req: true },
+      { id: 'nb_name_en', label: 'Full Name (English - Block Letters)', req: true },
+      { id: 'nb_first_en', label: 'First Name (English)' },
+      { id: 'nb_last_en', label: 'Last Name (English)' },
+      { id: 'nb_dob', label: 'জন্ম তারিখ', type: 'date' },
+      { id: 'nb_gender', label: 'লিঙ্গ', type: 'select', opts: ['পুরুষ', 'নারী', 'অন্যান্য'] },
+      { id: 'nb_child_no', label: 'পিতা-মাতার কততম সন্তান' },
+      { id: 'nb_blood', label: 'রক্তের গ্রুপ' },
+      { id: 'nb_mobile', label: 'সচল মোবাইল নম্বর', type: 'tel' },
+      { id: 'nb_email', label: 'ইমেইল এড্রেস (ঐচ্ছিক)', type: 'email' }
+    ]},
+    { sec: 'পিতার বিবরণ', fields: [
+      { id: 'nb_fa_name_bn', label: 'পিতার নাম (বাংলা)' },
+      { id: 'nb_fa_name_en', label: "Father's Name (English)" },
+      { id: 'nb_fa_brn', label: 'পিতার জন্ম নিবন্ধন নম্বর (১৭ ডিজিট)', inputmode: 'numeric' },
+      { id: 'nb_fa_nid', label: 'পিতার NID নম্বর', inputmode: 'numeric' },
+      { id: 'nb_fa_dob', label: 'পিতার জন্ম তারিখ', type: 'date' },
+      { id: 'nb_fa_nat', label: 'পিতার জাতীয়তা' }
+    ]},
+    { sec: 'মাতার বিবরণ', fields: [
+      { id: 'nb_mo_name_bn', label: 'মাতার নাম (বাংলা)' },
+      { id: 'nb_mo_name_en', label: "Mother's Name (English)" },
+      { id: 'nb_mo_brn', label: 'মাতার জন্ম নিবন্ধন নম্বর (১৭ ডিজিট)', inputmode: 'numeric' },
+      { id: 'nb_mo_nid', label: 'মাতার NID নম্বর', inputmode: 'numeric' },
+      { id: 'nb_mo_dob', label: 'মাতার জন্ম তারিখ', type: 'date' },
+      { id: 'nb_mo_nat', label: 'মাতার জাতীয়তা' }
+    ]},
+    { sec: 'ঠিকানা (বাংলা)', fields: [
+      { id: 'nb_ad_div_bn', label: 'বিভাগ (বাংলা)' },
+      { id: 'nb_ad_dis_bn', label: 'জেলা (বাংলা)' },
+      { id: 'nb_ad_up_bn', label: 'উপজেলা/সিটি কর্পোরেশন (বাংলা)' },
+      { id: 'nb_ad_un_bn', label: 'ইউনিয়ন/পৌরসভা/ওয়ার্ড (বাংলা)' },
+      { id: 'nb_ad_po_bn', label: 'ডাকঘর ও পোস্ট কোড (বাংলা)' },
+      { id: 'nb_ad_vil_bn', label: 'গ্রাম/মহল্লা (বাংলা)' },
+      { id: 'nb_ad_house_bn', label: 'বাসা/রোড/হোল্ডিং নং (বাংলা)' }
+    ]},
+    { sec: 'Address (English)', fields: [
+      { id: 'nb_ad_div_en', label: 'Division (English)' },
+      { id: 'nb_ad_dis_en', label: 'District (English)' },
+      { id: 'nb_ad_up_en', label: 'Upazila/City Corp (English)' },
+      { id: 'nb_ad_un_en', label: 'Union/Municipality/Ward (English)' },
+      { id: 'nb_ad_po_en', label: 'Post Office & Code (English)' },
+      { id: 'nb_ad_vil_en', label: 'Village/Area (English)' },
+      { id: 'nb_ad_house_en', label: 'House/Road/Holding No (English)' }
+    ]},
+    { sec: 'স্থায়ী ও বর্তমান ঠিকানা', fields: [
+      { id: 'nb_perm_bn', label: 'স্থায়ী ঠিকানা (বাংলা)', type: 'textarea' },
+      { id: 'nb_perm_en', label: 'Permanent Address (English)', type: 'textarea' },
+      { id: 'nb_pres_bn', label: 'বর্তমান ঠিকানা (বাংলা)', type: 'textarea' },
+      { id: 'nb_pres_en', label: 'Present Address (English)', type: 'textarea' }
+    ]}
+  ];
+  /* Static checklist from the template (information only, not input). */
+  var NB_DOCS = [
+    'ইপিআই টিকা কার্ড / হাসপাতালের ছাড়পত্র / ডাক্তারের প্রত্যয়নপত্র',
+    'পিতা ও মাতার ১৭ ডিজিটের অনলাইন জন্ম নিবন্ধন সনদ (ফটোকপি)',
+    'পিতা ও মাতার জাতীয় পরিচয়পত্র (NID) (ফটোকপি)',
+    'হোল্ডিং ট্যাক্সের রশিদ / বিদ্যুৎ বিলের কপি / খাজনার দাখিলা'
+  ];
+  function fmtNbDate(v) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v || '')) return v || '';
+    var p = v.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function buildNbDetails() {
+    var lines = [];
+    NB_FIELDS.forEach(function (g) {
+      var gl = [];
+      g.fields.forEach(function (f) {
+        var el = document.getElementById(f.id);
+        var v = el ? el.value.trim() : '';
+        if (!v) return;
+        if (f.type === 'date') v = fmtNbDate(v);
+        gl.push('🔹 ' + f.label + ': ' + v);
+      });
+      if (gl.length) { lines.push(g.sec); lines.push(''); lines = lines.concat(gl); lines.push(''); }
+    });
+    var extra = document.getElementById('nb_extra');
+    var ex = extra ? extra.value.trim() : '';
+    if (ex) { lines.push('🔹 অতিরিক্ত তথ্য:'); lines.push(ex); lines.push(''); }
+    lines.push('আবেদনপত্রের সাথে যেসব কাগজপত্র লাগবে');
+    lines.push('');
+    NB_DOCS.forEach(function (d) { lines.push('🔹 ' + d); });
+    return lines.join('\n');
+  }
+
   function totalText(name, price) { return '⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + name + ' (' + price + ' টাকা) কাটা হবে।'; }
   function submitRefOrder(btn) {
     try {
@@ -176,12 +217,13 @@
         if (typeof showModal === 'function') showModal('লগইন প্রয়োজন', 'অর্ডার করতে প্রথমে লগইন করুন।');
         location.hash = '#/login'; return;
       }
-      var ta = document.getElementById('nsRefFormText');
-      var text = ta ? ta.value.trim() : '';
-      if (!text || text === FORM_TEMPLATE) {
-        if (typeof showModal === 'function') showModal('ফরম পূরণ করুন', 'ফরমের ঘরগুলোতে আপনার তথ্য লিখে তারপর Order Now চাপুন।');
+      var nameBn = document.getElementById('nb_name_bn');
+      var nameEn = document.getElementById('nb_name_en');
+      if ((!nameBn || !nameBn.value.trim()) && (!nameEn || !nameEn.value.trim())) {
+        if (typeof showModal === 'function') showModal('ফরম পূরণ করুন', 'আবেদনকারীর নাম (বাংলা বা ইংরেজি) লিখে তারপর Order Now চাপুন।');
         return;
       }
+      var text = buildNbDetails();
       var sel = document.querySelector('#opts .opt.sel');
       var name = sel ? sel.getAttribute('data-name') : 'নরমাল';
       var price = sel ? sel.getAttribute('data-price') : '800';
@@ -252,11 +294,24 @@
     if (!document.getElementById('nsRefFormCard')) {
       var fc = document.createElement('div');
       fc.id = 'nsRefFormCard'; fc.className = 'card';
-      fc.innerHTML = '<div class="ns-ref-form-label">ফরম পূরণ করুন: <span>*</span></div><textarea id="nsRefFormText" class="ns-ref-form-text" rows="24" style="min-height:600px"></textarea><p id="nsRefTotal" class="ns-type-total">⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে নরমাল (800 টাকা) কাটা হবে।</p><button type="button" id="nsRefOrderBtn" class="ns-ref-order-btn">Order Now</button><p class="ns-ref-note">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>';
+      var fieldHtml = function (f) {
+        var inp;
+        if (f.type === 'select') {
+          inp = '<select id="' + f.id + '"><option value="">নির্বাচন করুন</option>' + f.opts.map(function (o) { return '<option>' + o + '</option>'; }).join('') + '</select>';
+        } else if (f.type === 'textarea') {
+          inp = '<textarea id="' + f.id + '" rows="2"></textarea>';
+        } else {
+          inp = '<input id="' + f.id + '" type="' + (f.type || 'text') + '"' + (f.inputmode ? ' inputmode="' + f.inputmode + '"' : '') + '>';
+        }
+        return '<div class="ns-nb-field' + (f.type === 'textarea' ? ' ns-nb-wide' : '') + '"><label for="' + f.id + '">' + f.label + (f.req ? ' <span>*</span>' : '') + '</label>' + inp + '</div>';
+      };
+      var secs = NB_FIELDS.map(function (g, gi) {
+        return '<div class="ns-nb-sec"><h3>' + g.sec + '</h3>' + (gi === 0 ? '<p class="ns-nb-hint">আবেদনকারীর নাম বাংলা বা ইংরেজি যেকোনো একটি আবশ্যক।</p>' : '') + '<div class="ns-nb-grid">' + g.fields.map(fieldHtml).join('') + '</div></div>';
+      }).join('');
+      var docs = '<div class="ns-nb-docs"><h4>আবেদনপত্রের সাথে যেসব কাগজপত্র লাগবে</h4><ul>' + NB_DOCS.map(function (d) { return '<li>' + d + '</li>'; }).join('') + '</ul></div>';
+      fc.innerHTML = '<div class="ns-ref-form-label">ফরম পূরণ করুন: <span>*</span></div>' + secs + '<div class="ns-nb-sec"><h3>অতিরিক্ত তথ্য (ঐচ্ছিক)</h3><div class="ns-nb-grid"><div class="ns-nb-field ns-nb-wide"><label for="nb_extra">আর কিছু জানাতে চাইলে লিখুন</label><textarea id="nb_extra" rows="3"></textarea></div></div></div>' + docs + '<p id="nsRefTotal" class="ns-type-total">⭐ এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে নরমাল (800 টাকা) কাটা হবে।</p><button type="button" id="nsRefOrderBtn" class="ns-ref-order-btn">Order Now</button><p class="ns-ref-note">এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না</p>';
       var hs0 = document.getElementById('nsOrderHistory');
       if (hs0) main.insertBefore(fc, hs0); else main.appendChild(fc);
-      var ta = document.getElementById('nsRefFormText');
-      if (ta) ta.value = FORM_TEMPLATE;
       var ob = document.getElementById('nsRefOrderBtn');
       if (ob) ob.addEventListener('click', function () { submitRefOrder(ob); });
     }
