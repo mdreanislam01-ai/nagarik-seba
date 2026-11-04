@@ -168,51 +168,69 @@
                 isValid = true; 
             }
 
-            // Step 2: Fetch PDF Content and Print
+            // Step 2: Generate PDF using Hidden Iframe Strategy
             const pdfUrl = `${SERVER_BASE}/pdf.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
             
-            addLog('Fetching PDF content securely...', 'info');
+            addLog('Generating PDF via secure channel...', 'info');
             
-            try {
-                const response = await fetch(pdfUrl);
-                if (!response.ok) throw new Error('Failed to fetch PDF content');
-                
-                const htmlContent = await response.text();
-                
-                // Create a Blob URL to handle the content safely without cross-origin issues
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                
-                // Open in a new window for printing, but this is standard behavior
-                // If you strictly want NO new tab, you can't really "print" without a print dialog which usually opens a preview or uses the current context.
-                // However, we can use a hidden iframe to trigger print on the CURRENT page's context if the server allows it, 
-                // but since server blocks cross-origin, we'll use a temporary blob URL in a new window which is cleaner.
-                
-                const printWindow = window.open(url, '_blank');
-                
-                if (!printWindow) {
-                    addLog('❌ Popup blocked! Please allow popups for this site.', 'error');
-                    URL.revokeObjectURL(url);
-                    return;
-                }
+            // Create a hidden iframe
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = 'none';
+            document.body.appendChild(iframe);
 
-                printWindow.onload = () => {
-                    setTimeout(() => {
-                        printWindow.focus();
-                        printWindow.print();
+            iframe.onload = () => {
+                try {
+                    // Try to access the iframe's document object
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    if (iframeDoc && iframeDoc.body) {
+                        addLog('PDF content loaded successfully in memory.', 'success');
                         
-                        // Auto-close after print dialog
-                        setTimeout(() => {
-                            printWindow.close();
-                            addLog('✅ Done. You can close the preview window.', 'success');
+                        // Clone the content to avoid any cross-origin read issues during print
+                        const htmlContent = iframeDoc.documentElement.outerHTML;
+                        const blob = new Blob([htmlContent], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        const printWindow = window.open(url, '_blank');
+                        
+                        if (!printWindow) {
+                            addLog('❌ Popup blocked! Please allow popups.', 'error');
                             URL.revokeObjectURL(url);
-                        }, 2000);
-                    }, 500);
-                };
+                            return;
+                        }
 
-            } catch (fetchErr) {
-                addLog(`❌ Failed to load PDF: ${fetchErr.message}`, 'error');
-            }
+                        printWindow.onload = () => {
+                            setTimeout(() => {
+                                printWindow.focus();
+                                printWindow.print();
+                                
+                                setTimeout(() => {
+                                    printWindow.close();
+                                    addLog('✅ Done.', 'success');
+                                    URL.revokeObjectURL(url);
+                                }, 2000);
+                            }, 500);
+                        };
+                    } else {
+                        throw new Error("Could not read iframe content");
+                    }
+                } catch (readErr) {
+                    // Fallback: Just open the link directly if reading fails
+                    addLog('⚠️ Direct fallback initiated due to read restriction.', 'info');
+                    window.open(pdfUrl, '_blank');
+                } finally {
+                    // Clean up iframe
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                    }, 1000);
+                }
+            };
+
+            // Set source to trigger load
+            iframe.src = pdfUrl;
 
         } catch (error) {
             console.error("Error:", error);
