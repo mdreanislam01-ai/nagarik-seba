@@ -1,39 +1,140 @@
-<script>
-    function fetchData() {
-        const nid = document.getElementById('nid').value;
-        const dob = document.getElementById('dob').value;
-        const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Copy Create - Smart Seba</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0056b3; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #333; }
+        input { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: #0056b3; outline: none; box-shadow: 0 0 5px rgba(0,86,179,0.3); }
         
-        if(!nid || !dob) {
-            alert("Please enter both NID and DOB");
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        .btn-fetch { background-color: #007bff; color: white; }
+        .btn-fetch:hover { background-color: #0056b3; }
+        .btn-print { background-color: #28a745; color: white; display: none; } /* Hidden initially */
+        .btn-print:hover { background-color: #218838; }
+        
+        #status { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; text-align: center; font-size: 14px; }
+        .loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        iframe { width: 100%; height: 0; border: none; margin-top: 20px; transition: height 0.3s; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 Server Copy Create</h2>
+    
+    <label for="nid">NID Number:</label>
+    <input type="text" id="nid" placeholder="Enter your NID (e.g., 1234567890)">
+
+    <label for="dob">Date of Birth:</label>
+    <input type="date" id="dob">
+
+    <div class="btn-group">
+        <button class="btn-fetch" onclick="getServerData()">📥 Get Data</button>
+        <button class="btn-print" id="printBtn" onclick="printDocument()">🖨️ Print / PDF</button>
+    </div>
+
+    <div id="status"></div>
+    
+    <!-- Result Area -->
+    <iframe id="resultFrame"></iframe>
+</div>
+
+<script>
+    // তোমার API Key এবং Base URL
+    const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+    const baseUrl = 'https://servercopy.work';
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('status');
+        el.className = type;
+        el.style.display = 'block';
+        el.innerText = msg;
+        if(type === 'success') setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    async function getServerData() {
+        const nid = document.getElementById('nid').value.trim();
+        const dob = document.getElementById('dob').value;
+
+        if (!nid || !dob) {
+            alert("Please enter both NID and Date of Birth.");
             return;
         }
 
-        // API URL
-        const url = `https://servercopy.work/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+        const statusEl = document.getElementById('status');
+        statusEl.className = 'loading';
+        statusEl.style.display = 'block';
+        statusEl.innerText = 'Fetching data from server...';
         
-        console.log("Fetching from:", url);
+        // Disable buttons during load
+        document.querySelectorAll('button').forEach(b => b.disabled = true);
 
-        fetch(url)
-            .then(response => {
-                console.log("Response Status:", response.status);
-                return response.text(); // Use .text() because sv.php returns text/HTML
-            })
-            .then(data => {
-                console.log("Received Data:", data); // এটি কনসোল লগে দেখাবে
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                
-                // যদি ডাটা খালি থাকে তবে এরর দেখাও
-                if (!data || data.trim() === "") {
-                    resultDiv.innerHTML = "<strong>Error:</strong> No data received from server.";
-                } else {
-                    resultDiv.innerHTML = "<strong>Data Received:</strong><br>" + data.replace(/\n/g, '<br>');
-                }
-            })
-            .catch(error => {
-                console.error('Fetch Error:', error);
-                alert('Failed to connect to server. Check your internet or CORS.');
-            });
+        try {
+            // Step 1: Fetch Data using sv.php
+            const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Server Error: ${response.status}`);
+            }
+
+            const data = await response.text(); // Get raw HTML/Text
+            
+            // Check if data is empty or just an error page
+            if (!data || data.length < 50) {
+                throw new Error("No data received or Invalid Credentials.");
+            }
+
+            // Step 2: Show data in Iframe
+            const iframe = document.getElementById('resultFrame');
+            iframe.srcdoc = data; // Inject HTML directly into iframe
+            
+            // Adjust iframe height based on content
+            iframe.onload = function() {
+                iframe.height = iframe.contentWindow.document.body.scrollHeight + "px";
+            };
+
+            // Show Print Button
+            document.getElementById('printBtn').style.display = 'block';
+            showStatus("✅ Data Loaded Successfully!", "success");
+
+        } catch (error) {
+            console.error(error);
+            showStatus("❌ Failed: " + error.message, "error");
+            document.getElementById('resultFrame').srcdoc = "";
+            document.getElementById('printBtn').style.display = 'none';
+        } finally {
+            // Re-enable buttons
+            document.querySelectorAll('button').forEach(b => b.disabled = false);
+        }
+    }
+
+    function printDocument() {
+        const iframe = document.getElementById('resultFrame');
+        const printContent = iframe.contentWindow.document.documentElement.outerHTML;
+        
+        const win = window.open('', '', 'height=700,width=900');
+        win.document.write('<html><head><title>Print Document</title>');
+        win.document.write('</head><body style="font-family: Arial;">');
+        win.document.write(printContent);
+        win.document.write('</body></html>');
+        win.document.close();
+        win.focus();
+        win.print();
+        win.close();
     }
 </script>
+
+</body>
+</html>
