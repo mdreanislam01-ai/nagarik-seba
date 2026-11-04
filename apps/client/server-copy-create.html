@@ -3,200 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - Verified</title>
+    <title>Server Copy Create</title>
     <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 {
-            color: #1e3a8a;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: 600;
-            color: #333;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 25px;
-            background-color: #0070f3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #005bb5;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        #status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            display: none;
-            text-align: left;
-            font-size: 14px;
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .log-item {
-            margin-bottom: 5px;
-            padding-bottom: 5px;
-            border-bottom: 1px dashed #ddd;
-        }
-        .success { color: #065f46; font-weight: bold; }
-        .error { color: #991b1b; font-weight: bold; }
-        .info { color: #1e40af; }
-        
-        .back-btn {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #0070f3;
-            text-decoration: none;
-            font-size: 14px;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; margin-top: 20px; cursor: pointer; font-size: 16px; border-radius: 4px; }
+        button:hover { background-color: #218838; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>📄 Server Copy Create</h2>
+<div class="container">
+    <h2>Server Copy Create</h2>
     
-    <form id="createForm">
-        <label for="nid">NID Number:</label>
-        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+    <label for="nid">NID Number:</label>
+    <input type="text" id="nid" placeholder="Enter NID Number">
 
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" required>
+    <label for="dob">Date of Birth:</label>
+    <input type="date" id="dob">
 
-        <button type="submit" id="btnSubmit">Verify & Generate PDF</button>
-    </form>
+    <button onclick="fetchData()">Get Data</button>
 
-    <!-- Status Log Area -->
-    <div id="status"></div>
-    
-    <a href="index.html" class="back-btn">← Back to Main Menu</a>
+    <div id="result" class="result"></div>
 </div>
 
 <script>
-    function addLog(message, type = 'info') {
-        const statusDiv = document.getElementById('status');
-        statusDiv.style.display = 'block';
-        const logItem = document.createElement('div');
-        logItem.className = `log-item ${type}`;
-        logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        statusDiv.appendChild(logItem);
-        statusDiv.scrollTop = statusDiv.scrollHeight;
-    }
-
-    document.getElementById('createForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const nid = document.getElementById('nid').value.trim();
+    function fetchData() {
+        const nid = document.getElementById('nid').value;
         const dob = document.getElementById('dob').value;
-        const btn = document.getElementById('btnSubmit');
-        
-        btn.disabled = true;
-        btn.textContent = "Verifying...";
-        document.getElementById('status').innerHTML = ''; 
-        
-        // Configuration
-        const baseUrl = 'https://servercopy.work';
         const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
-        const verifyUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-        const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-
-        try {
-            addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
-            
-            // Step 1: Verify Data Existence
-            addLog(`সার্ভারে ডাটা চেক করা হচ্ছে...`, 'info');
-            
-            let hasData = false;
-            try {
-                const response = await fetch(verifyUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log("Verification Response:", data);
-                
-                // Check if server returned success and actual data
-                if (data && (data.success || data.data || Object.keys(data).length > 0)) {
-                    hasData = true;
-                    addLog('✅ সার্ভারে ডাটা পাওয়া গেছে!', 'success');
-                } else {
-                    addLog('❌ সার্ভারে কোনো ডাটা পাওয়া যায়নি। PDF জেনারেট হবে না।', 'error');
-                    return; // Stop execution here if no data
-                }
-            } catch (err) {
-                // If fetch fails completely (network error), we stop
-                addLog(`❌ নেটওয়ার্ক বা সার্ভার এরর: ${err.message}`, 'error');
-                return; 
-            }
-
-            // Step 2: Generate PDF only if data exists
-            if (hasData) {
-                addLog('PDF জেনারেট করা হচ্ছে...', 'info');
-                btn.textContent = "Generating PDF...";
-                
-                // Open PDF in a new tab/window
-                window.open(pdfUrl, '_blank');
-                
-                addLog('✅ PDF সফলভাবে তৈরি হয়েছে! নতুন ট্যাবে দেখুন।', 'success');
-                btn.textContent = "Generate & Download PDF";
-            }
-
-        } catch (error) {
-            console.error("Error:", error);
-            addLog(`❌ ত্রুটি: ${error.message}`, 'error');
-        } finally {
-            btn.disabled = false;
-            if(btn.textContent === "Generating PDF...") {
-                 btn.textContent = "Generate & Download PDF";
-            }
+        
+        if(!nid || !dob) {
+            alert("Please enter both NID and DOB");
+            return;
         }
-    });
+
+        // API URL construction based on your previous links
+        const url = `https://servercopy.work/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<strong>Data Received:</strong><br>${data.replace(/\n/g, '<br>')}`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to fetch data. Check console.');
+            });
+    }
 </script>
 
 </body>
