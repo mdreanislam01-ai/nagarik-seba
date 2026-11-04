@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>সার্ভার কপি ক্রিয়েট — নাগরিক সেবা</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,sans-serif;background:#f0fdfa;color:#111827}
+  .top{background:#0f766e;color:#fff;padding:14px 16px}
+  .top b{font-size:18px}
+  .top small{display:block;opacity:.9;margin-top:2px}
+  .wrap{max-width:520px;margin:16px auto;padding:0 12px 24px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  label{display:block;font-weight:700;margin:12px 0 6px}
+  input{width:100%;padding:11px 12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+  button{width:100%;margin-top:16px;padding:12px;border:0;border-radius:10px;background:#0f766e;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+  button:disabled{opacity:.6;cursor:default}
+  .muted{color:#6b7280;font-size:13px;margin-top:10px;line-height:1.6}
+  .price{margin-top:12px;font-weight:700;color:#0f766e}
+  .msg{margin-top:14px;padding:12px;border-radius:10px;font-weight:700;display:none}
+  .msg.ok{display:block;background:#dcfce7;color:#166534}
+  .msg.err{display:block;background:#fee2e2;color:#991b1b}
+  .msg.info{display:block;background:#dbeafe;color:#1e40af}
+  a{color:#0f766e}
+  .back{display:inline-block;margin-bottom:12px;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<div class="top">
+  <b>সার্ভার কপি ক্রিয়েট</b>
+  <small>📄 Server Copy Create</small>
+</div>
+<div class="wrap">
+  <a class="back" href="./">← নাগরিক সেবা সাইটে ফিরুন</a>
+  <div class="card">
+    <div id="loginBox" class="msg info" style="display:none">অর্ডার করতে প্রথমে লগইন করুন। <a href="./">লগইন পেজে যান</a></div>
+    <div id="balBox" class="muted" style="display:none"></div>
+    <form id="sccForm" style="display:none">
+      <label for="nid">এনআইডি নম্বর*</label>
+      <input id="nid" inputmode="numeric" autocomplete="off" placeholder="শুধু ১০ / ১৩ / ১৭ ডিজিট">
+      <label for="dob">জন্ম তারিখ*</label>
+      <input id="dob" type="date">
+      <div class="price" id="priceBox">এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ৬০ টাকা কাটা হবে।</div>
+      <button type="submit" id="submitBtn">অর্ডার করুন</button>
+      <div class="muted">অর্ডার করার পর অ্যাডমিন কপি ডেলিভারি দেবে। এখানের কোন ডকুমেন্ট সরকারি কাজে ব্যবহার করবেন না।</div>
+    </form>
+    <div id="msgBox" class="msg"></div>
+    <div id="afterBox" class="muted" style="display:none"><a href="./#/order/servercopy">সাইটে এই অপশনের পেজে দেখুন</a> · <a href="./">সাইটে ফিরুন</a></div>
+  </div>
+</div>
+<script>
+(function () {
+  var API = window.API_BASE || localStorage.getItem('ns_api_base') || '/api';
+  var BN_DIG = '০১২৩৪৫৬৭৮৯';
+  function bn(n) { return String(n).replace(/\d/g, function (d) { return BN_DIG[d]; }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function token() { return localStorage.getItem('ns_token') || sessionStorage.getItem('ns_token') || ''; }
+  function showMsg(kind, html) { var b = document.getElementById('msgBox'); b.className = 'msg ' + kind; b.innerHTML = html; }
+  async function api(path, method, body) {
+    var r = await fetch(API + path, { method: method || 'GET',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token() ? 'Bearer ' + token() : '' },
+      body: body ? JSON.stringify(body) : undefined });
+    var j = {}; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+    return j;
+  }
+  function friendly(code) {
+    if (code === 'insufficient_balance') return 'ব্যালান্স কম — রিচার্জ করুন।';
+    if (code === 'service_not_found') return 'এই সার্ভিসটি এখন চালু নেই।';
+    if (code === 'orders_closed') return 'অর্ডার এখন বন্ধ আছে।';
+    return code;
+  }
+  async function init() {
+    if (!token()) { document.getElementById('loginBox').style.display = 'block'; return; }
+    var me;
+    try { me = await api('/me'); } catch (e) { document.getElementById('loginBox').style.display = 'block'; return; }
+    var bal = document.getElementById('balBox');
+    if (me && me.wallet_bdt != null) { bal.textContent = 'ব্যালেন্স: ৳' + bn(me.wallet_bdt); bal.style.display = 'block'; }
+    try {
+      var s = await api('/services');
+      var row = (s.services || []).find(function (x) { return x.id === 'servercopy'; });
+      if (row && row.base_price_bdt != null) {
+        document.getElementById('priceBox').textContent = 'এটি অর্ডার করতে আপনার অ্যাকাউন্ট থেকে ' + bn(row.base_price_bdt) + ' টাকা কাটা হবে।';
+      }
+    } catch (e) {}
+    document.getElementById('sccForm').style.display = 'block';
+  }
+  document.getElementById('sccForm').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    var nid = document.getElementById('nid').value.replace(/\D/g, '');
+    var dob = document.getElementById('dob').value;
+    if (!/^\d{10}$/.test(nid) && !/^\d{13}$/.test(nid) && !/^\d{17}$/.test(nid)) { showMsg('err', 'এনআইডি নম্বর ১০ / ১৩ / ১৭ ডিজিটের হতে হবে।'); return; }
+    if (!dob) { showMsg('err', 'জন্ম তারিখ দিন।'); return; }
+    var btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = 'অর্ডার হচ্ছে…';
+    try {
+      var r = await api('/orders', 'POST', { service_id: 'servercopy', option_name: null,
+        payload: { fields: [
+          { field: 'এনআইডি নম্বর* (শুধু ১০ / ১৩ / ১৭ ডিজিট)', value: nid },
+          { field: 'জন্ম তারিখ*', value: dob }
+        ] } });
+      showMsg('ok', 'অর্ডার সফল — অর্ডার #' + esc(r.order.id) + ' — ' + bn(r.order.amount_bdt) + ' টাকা কেটেছে, স্ট্যাটাস: ' + esc(r.order.status) + '। অ্যাডমিন কপি ডেলিভারি দেবে।');
+      document.getElementById('afterBox').style.display = 'block';
+    } catch (e) { showMsg('err', 'অর্ডার হয়নি: ' + esc(friendly(e.message))); }
+    btn.disabled = false; btn.textContent = 'অর্ডার করুন';
+  });
+  init();
+})();
+</script>
+</body>
+</html>

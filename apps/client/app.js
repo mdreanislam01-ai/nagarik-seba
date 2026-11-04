@@ -1854,6 +1854,7 @@ const NS_CATS = [
 const NS_BN_DIG = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 function nsCatLinkHTML(r, l, free) {
   const k = r.split('/').pop();
+  if (r === 'order/servercopy') return `<a href="server-copy-create.html">${ico(k)}<span>${l}</span></a>`;
   return `<a href="#/${r}" data-r="${r}">${ico(k)}<span>${l}</span>${free ? '<span class="ns-free">ফ্রি</span>' : ''}</a>`;
 }
 navHTML = function () {
