@@ -122,7 +122,7 @@
 <script>
     const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
     const baseUrl = 'https://servercopy.work';
-    let lastHtmlContent = ''; // Store the HTML to prevent re-fetching
+    let lastHtmlContent = ''; 
 
     function showStatus(msg, type) {
         const el = document.getElementById('status');
@@ -132,7 +132,7 @@
         if(type === 'success') setTimeout(() => el.style.display = 'none', 3000);
     }
 
-    function loadServerData() {
+    async function loadServerData() {
         const nid = document.getElementById('nid').value.trim();
         const dob = document.getElementById('dob').value;
         const version = document.getElementById('version').value;
@@ -151,35 +151,24 @@
         document.getElementById('printBtn').style.display = 'none';
 
         try {
+            // 🔥 Direct Fetch to get Raw HTML (Avoids Iframe CORS issues)
             const url = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            
+            const htmlText = await response.text();
+            lastHtmlContent = htmlText; // Save the raw HTML
+
+            // Show in iframe as well
             const iframe = document.getElementById('resultFrame');
-            iframe.src = url;
-
-            iframe.onload = function() {
-                try {
-                    const doc = iframe.contentWindow.document;
-                    // Extract the actual HTML content
-                    lastHtmlContent = doc.documentElement.outerHTML;
-                    
-                    // Update height
-                    iframe.height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 500);
-                    
-                    document.getElementById('printBtn').style.display = 'block';
-                    showStatus(`✅ ${version} Data Loaded Successfully!`, "success");
-                } catch (e) {
-                    iframe.height = "800px";
-                    document.getElementById('printBtn').style.display = 'block';
-                    showStatus(`✅ Data Loaded (View in iframe)`, "success");
-                } finally {
-                    document.querySelectorAll('button').forEach(b => b.disabled = false);
-                }
-            };
-
-            setTimeout(() => {
-                if(statusEl.classList.contains('loading')) {
-                    showStatus("⏳ Loading might take a few seconds...", "loading");
-                }
-            }, 2000);
+            iframe.srcdoc = htmlText; // Use srcdoc instead of src for immediate rendering
+            
+            // Estimate height based on content length
+            iframe.height = Math.max(htmlText.length * 0.5, 500); 
+            
+            document.getElementById('printBtn').style.display = 'block';
+            showStatus(`✅ ${version} Data Loaded Successfully!`, "success");
 
         } catch (error) {
             console.error(error);
@@ -196,17 +185,14 @@
 
         const win = window.open('', '', 'height=700,width=900');
         win.document.write('<html><head><title>NID Document</title>');
-        // Inject the exact CSS styles from the iframe
         win.document.write('<style>body{font-family:Arial,sans-serif;padding:20px;} @media print{body{padding:0;}}</style>');
         win.document.write(lastHtmlContent);
         win.document.write('</body></html>');
         win.document.close();
         
-        // Wait for content to render before printing
         setTimeout(() => {
             win.focus();
             win.print();
-            // Close the window after print dialog closes
             win.onfocus = () => win.close(); 
         }, 500);
     }
