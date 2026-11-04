@@ -66,15 +66,13 @@
         }
         #status {
             margin-top: 20px;
-            padding: 15px;
+            padding: 10px;
             border-radius: 6px;
             display: none;
             text-align: center;
-            font-size: 14px;
         }
         .success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .loading { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
         .back-btn {
             display: block;
             text-align: center;
@@ -92,12 +90,12 @@
     
     <form id="createForm">
         <label for="nid">NID Number:</label>
-        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required>
 
         <label for="dob">Date of Birth:</label>
         <input type="date" id="dob" required>
 
-        <button type="submit" id="btnSubmit">Check & Download</button>
+        <button type="submit" id="btnSubmit">Create Server Copy</button>
     </form>
 
     <div id="status"></div>
@@ -117,54 +115,45 @@
         // UI Reset
         btn.disabled = true;
         btn.textContent = "Processing...";
-        statusDiv.style.display = 'block';
-        statusDiv.className = 'loading';
-        statusDiv.innerHTML = '⏳ ডাটা চেক করা হচ্ছে...';
+        statusDiv.style.display = 'none';
+        statusDiv.className = '';
 
         try {
             // তোমার API Configuration
             const baseUrl = 'https://servercopy.work';
             const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
             
-            // Step 1: Check Data using sv.php
+            // sv.php এ কল করে ডাটা ভেরিফাই করা
             const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            statusDiv.innerHTML = '⏳ সার্ভারে সংযোগ স্থাপন করা হচ্ছে...';
             const response = await fetch(apiUrl);
             
             if (!response.ok) {
-                throw new Error(`HTTP Error: ${response.status}`);
+                throw new Error('সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।');
             }
 
             const data = await response.json();
 
-            // Check if data is valid (Adjust this condition based on actual API response structure)
-            // Usually APIs return an object with 'data' or 'status' field
+            // সাধারণত sv.php সাকসেসফুল হলে ডাটা ফেরত দেয়। 
+            // যদি API নির্দিষ্ট কোনো স্ট্যাটাস ফেরত দেয় (যেমন status: 'success'), তবে সেটা চেক করো।
             
-            if (data && (data.data || data.success)) { 
-                statusDiv.innerHTML = '✅ ডাটা পাওয়া গেছে! PDF তৈরি করা হচ্ছে...';
-                
-                // Step 2: Generate PDF
-                const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-                
-                // Open PDF in a new tab or trigger download
-                window.open(pdfUrl, '_blank');
-                
-                statusDiv.innerHTML = '✅ সফল! আপনার PDF ডাউনলোড শুরু হয়েছে।';
-                statusDiv.classList.remove('loading');
+            if (data && (data.status === 'success' || data.data)) { 
+                statusDiv.innerHTML = `<strong>সফল!</strong> আপনার ডাটা পাওয়া গেছে।`;
                 statusDiv.classList.add('success');
-
+                
+                // এখানে তুমি চাইলে ইউজারকে PDF পেজে রিডাইরেক্ট করতে পারো:
+                // window.location.href = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+                
             } else {
-                throw new Error(data.message || 'NID বা DOB ভুল হয়েছে। ডাটা পাওয়া যায়নি।');
+                throw new Error(data.message || 'NID ভেরিফিকেশনে ব্যর্থ হয়েছে।');
             }
 
         } catch (error) {
-            console.error("Error:", error);
             statusDiv.innerHTML = `<strong>ত্রুটি:</strong> ${error.message}`;
-            statusDiv.className = 'error';
+            statusDiv.classList.add('error');
         } finally {
             btn.disabled = false;
-            btn.textContent = "Check & Download";
+            btn.textContent = "Create Server Copy";
         }
     });
 </script>
