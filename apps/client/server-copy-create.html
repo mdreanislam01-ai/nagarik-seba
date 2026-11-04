@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - Fixed</title>
+    <title>Server Copy Create - Verified</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -107,7 +107,7 @@
         <label for="dob">Date of Birth:</label>
         <input type="date" id="dob" required>
 
-        <button type="submit" id="btnSubmit">Generate & Download PDF</button>
+        <button type="submit" id="btnSubmit">Verify & Generate PDF</button>
     </form>
 
     <!-- Status Log Area -->
@@ -135,57 +135,66 @@
         const btn = document.getElementById('btnSubmit');
         
         btn.disabled = true;
-        btn.textContent = "Generating...";
+        btn.textContent = "Verifying...";
         document.getElementById('status').innerHTML = ''; 
         
+        // Configuration
+        const baseUrl = 'https://servercopy.work';
+        const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+        const verifyUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+        const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+
         try {
             addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
             
-            // Configuration
-            const baseUrl = 'https://servercopy.work';
-            const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+            // Step 1: Verify Data Existence
+            addLog(`সার্ভারে ডাটা চেক করা হচ্ছে...`, 'info');
             
-            // Step 1: Fetch Data using the API
-            const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-            
-            addLog(`Fetching data from server...`, 'info');
-            
-            let responseData = null;
+            let hasData = false;
             try {
-                const response = await fetch(apiUrl);
-                if (response.ok) {
-                    responseData = await response.json();
-                    console.log("API Response:", responseData);
-                    
-                    if (responseData.success || responseData.data) {
-                        addLog('✅ ডাটা সফলভাবে পাওয়া গেছে!', 'success');
-                    } else {
-                        addLog('⚠️ ডাটা পেতে কিছু সমস্যা হয়েছে, তবুও PDF তৈরি করা হচ্ছে...', 'error');
-                    }
-                } else {
+                const response = await fetch(verifyUrl);
+                
+                if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
                 }
+                
+                const data = await response.json();
+                console.log("Verification Response:", data);
+                
+                // Check if server returned success and actual data
+                if (data && (data.success || data.data || Object.keys(data).length > 0)) {
+                    hasData = true;
+                    addLog('✅ সার্ভারে ডাটা পাওয়া গেছে!', 'success');
+                } else {
+                    addLog('❌ সার্ভারে কোনো ডাটা পাওয়া যায়নি। PDF জেনারেট হবে না।', 'error');
+                    return; // Stop execution here if no data
+                }
             } catch (err) {
-                addLog(`ℹ️ ডাটা ফেচ ব্যর্থ হয়েছে (${err.message}), PDF টেমপ্লেট লোড করা হবে।`, 'info');
+                // If fetch fails completely (network error), we stop
+                addLog(`❌ নেটওয়ার্ক বা সার্ভার এরর: ${err.message}`, 'error');
+                return; 
             }
 
-            // Step 2: Generate PDF with correct headers and data
-            // We use the /pdf.php endpoint but ensure it's called correctly
-            const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-            
-            addLog(`Opening PDF generator...`, 'info');
-            
-            // Open in a new tab to allow PDF rendering engine to work without CORS issues
-            window.open(pdfUrl, '_blank');
-            
-            addLog('✅ PDF নতুন ট্যাবে খোলা হয়েছে! ডাউনলোড করুন।', 'success');
+            // Step 2: Generate PDF only if data exists
+            if (hasData) {
+                addLog('PDF জেনারেট করা হচ্ছে...', 'info');
+                btn.textContent = "Generating PDF...";
+                
+                // Open PDF in a new tab/window
+                window.open(pdfUrl, '_blank');
+                
+                addLog('✅ PDF সফলভাবে তৈরি হয়েছে! নতুন ট্যাবে দেখুন।', 'success');
+                btn.textContent = "Generate & Download PDF";
+            }
 
         } catch (error) {
             console.error("Error:", error);
             addLog(`❌ ত্রুটি: ${error.message}`, 'error');
         } finally {
             btn.disabled = false;
-            btn.textContent = "Generate & Download PDF";
+            if(btn.textContent === "Generating PDF...") {
+                 btn.textContent = "Generate & Download PDF";
+            }
         }
     });
 </script>
