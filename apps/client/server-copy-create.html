@@ -1,196 +1,46 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - Debug Mode</title>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 {
-            color: #1e3a8a;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: 600;
-            color: #333;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 25px;
-            background-color: #0070f3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #005bb5;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        #status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            display: none;
-            text-align: left; /* Changed to left for better log reading */
-            font-size: 14px;
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .log-item {
-            margin-bottom: 5px;
-            padding-bottom: 5px;
-            border-bottom: 1px dashed #ddd;
-        }
-        .success { color: #065f46; font-weight: bold; }
-        .error { color: #991b1b; font-weight: bold; }
-        .info { color: #1e40af; }
-        
-        .back-btn {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #0070f3;
-            text-decoration: none;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
+// apps/client/api/server-copy.js
+export default async function handler(req, res) {
+  // শুধুমাত্র GET মেথড অনুমতি দাও
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
+  }
 
-<div class="card">
-    <h2>📄 Server Copy Create</h2>
-    
-    <form id="createForm">
-        <label for="nid">NID Number:</label>
-        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+  const { nid, dob } = req.query;
+  const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+  
+  // লক্ষ্য করো: এখানে সরাসরি servercopy.work এর URL ব্যবহার করা হচ্ছে
+  const targetUrl = `https://servercopy.work/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
 
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" required>
+  try {
+    // Vercel Functions এর ডিফল্ট টাইমআউট ৬ সেকেন্ড, তাই এক্সটেন্ড করা হচ্ছে
+    const response = await fetch(targetUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'NagarikSeba-Vercel-Bot'
+      },
+      // টাইমআউট বাড়ানো হয়েছে (ms)
+      signal: AbortSignal.timeout(30000) 
+    });
 
-        <button type="submit" id="btnSubmit">Check & Download</button>
-    </form>
-
-    <!-- Status Log Area -->
-    <div id="status"></div>
-    
-    <a href="index.html" class="back-btn">← Back to Main Menu</a>
-</div>
-
-<script>
-    // Helper function to update UI logs
-    function addLog(message, type = 'info') {
-        const statusDiv = document.getElementById('status');
-        statusDiv.style.display = 'block';
-        const logItem = document.createElement('div');
-        logItem.className = `log-item ${type}`;
-        logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        statusDiv.appendChild(logItem);
-        statusDiv.scrollTop = statusDiv.scrollHeight; // Auto scroll to bottom
+    if (!response.ok) {
+      throw new Error(`Server Error: ${response.status}`);
     }
 
-    document.getElementById('createForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const nid = document.getElementById('nid').value.trim();
-        const dob = document.getElementById('dob').value;
-        const btn = document.getElementById('btnSubmit');
-        
-        // Reset UI
-        btn.disabled = true;
-        btn.textContent = "Processing...";
-        document.getElementById('status').innerHTML = ''; // Clear previous logs
-        
-        try {
-            addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
-            
-            // তোমার API Configuration
-            const baseUrl = 'https://servercopy.work';
-            const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
-            
-            // Step 1: Check Data using sv.php
-            const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-            
-            addLog(`API URL: ${apiUrl}`, 'info');
-            addLog('সার্ভারে সংযোগ স্থাপন করা হচ্ছে...', 'info');
-            
-            const response = await fetch(apiUrl);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-            }
+    const data = await response.json();
+    
+    // CORS হেডার যোগ করা যাতে ব্রাউজার ডাটা পড়তে পারে
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    res.status(200).json(data);
 
-            const data = await response.json();
-            addLog('সার্ভার থেকে ডাটা পাওয়া গেছে।', 'success');
-            console.log("API Response:", data); // For debugging in browser console
-            
-            // Check if data is valid
-            // Adjust this condition based on actual API response structure
-            if (data && (data.data || data.success)) { 
-                addLog('ডাটা ভ্যালিড! PDF জেনারেট করা হচ্ছে...', 'success');
-                
-                // Step 2: Generate PDF
-                const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-                
-                addLog(`PDF URL: ${pdfUrl}`, 'info');
-                
-                // Open PDF in a new tab or trigger download
-                window.open(pdfUrl, '_blank');
-                
-                addLog('✅ সফল! আপনার PDF নতুন ট্যাবে খোলা হয়েছে।', 'success');
-
-            } else {
-                throw new Error(data.message || 'NID বা DOB ভুল হয়েছে। ডাটা পাওয়া যায়নি।');
-            }
-
-        } catch (error) {
-            console.error("Error:", error);
-            addLog(`❌ ত্রুটি: ${error.message}`, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = "Check & Download";
-        }
+  } catch (error) {
+    console.error("API Fetch Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "সার্ভার সংযোগ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+      error: error.message 
     });
-</script>
-
-</body>
-</html>
+  }
+}
