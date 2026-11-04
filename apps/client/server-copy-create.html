@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Server Copy</title>
+    <title>Secure Server Copy - Fixed</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -145,9 +145,8 @@
         try {
             addLog('Connecting to secure server...', 'info');
             
-            // Step 1: Verify Data
+            // Step 1: Verify Data (Optional but recommended)
             const apiUrl = `${SERVER_BASE}/sv.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
-            
             let isValid = false;
             try {
                 const response = await fetch(apiUrl);
@@ -160,36 +159,35 @@
                         addLog('⚠️ Data mismatch, proceeding anyway.', 'error');
                         isValid = true; 
                     }
-                } else {
-                    throw new Error(`HTTP Error: ${response.status}`);
                 }
             } catch (err) {
                 addLog(`ℹ️ Verification skipped (${err.message}), generating PDF directly.`, 'info');
                 isValid = true; 
             }
 
-            // Step 2: Generate PDF using Hidden Iframe Strategy
+            // Step 2: Generate PDF with Content Validation
             const pdfUrl = `${SERVER_BASE}/pdf.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
-            
             addLog('Generating PDF via secure channel...', 'info');
             
-            // Create a hidden iframe
+            // We will use an iframe to load the page and then read its content
             const iframe = document.createElement('iframe');
             iframe.style.position = 'absolute';
             iframe.style.width = '0';
             iframe.style.height = '0';
             iframe.style.border = 'none';
+            iframe.src = pdfUrl;
             document.body.appendChild(iframe);
 
-            iframe.onload = () => {
+            // Helper function to check if content is loaded
+            const checkContent = () => {
                 try {
-                    // Try to access the iframe's document object
                     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                     
-                    if (iframeDoc && iframeDoc.body) {
-                        addLog('PDF content loaded successfully in memory.', 'success');
+                    // Check if document exists and has some text content
+                    if (iframeDoc && iframeDoc.body && iframeDoc.body.innerText.trim().length > 10) {
+                        addLog('✅ PDF content detected in memory.', 'success');
                         
-                        // Clone the content to avoid any cross-origin read issues during print
+                        // Extract HTML
                         const htmlContent = iframeDoc.documentElement.outerHTML;
                         const blob = new Blob([htmlContent], { type: 'text/html' });
                         const url = URL.createObjectURL(blob);
@@ -214,23 +212,43 @@
                                 }, 2000);
                             }, 500);
                         };
-                    } else {
-                        throw new Error("Could not read iframe content");
                     }
-                } catch (readErr) {
-                    // Fallback: Just open the link directly if reading fails
-                    addLog('⚠️ Direct fallback initiated due to read restriction.', 'info');
-                    window.open(pdfUrl, '_blank');
-                } finally {
-                    // Clean up iframe
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                    }, 1000);
+                } catch (e) {
+                    // If we can't read it (CORS), fallback to direct open
+                    console.warn("Could not read iframe content:", e);
                 }
             };
 
-            // Set source to trigger load
-            iframe.src = pdfUrl;
+            // Polling mechanism: Check every 1.5 seconds until content is found or timeout
+            let attempts = 0;
+            const maxAttempts = 10; // Max 15 seconds
+            
+            const pollInterval = setInterval(() => {
+                attempts++;
+                
+                // Try to read content
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc && iframeDoc.body && iframeDoc.body.innerText.trim().length > 10) {
+                        clearInterval(pollInterval);
+                        checkContent();
+                        return;
+                    }
+                } catch (e) {}
+
+                // If max attempts reached, force open
+                if (attempts >= maxAttempts) {
+                    clearInterval(pollInterval);
+                    addLog('⏱️ Timeout waiting for content, opening directly.', 'info');
+                    window.open(pdfUrl, '_blank');
+                }
+            }, 1500);
+
+            // Fallback: If iframe never loads properly, just open the link
+            iframe.onerror = () => {
+                clearInterval(pollInterval);
+                window.open(pdfUrl, '_blank');
+            };
 
         } catch (error) {
             console.error("Error:", error);
