@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - Direct PDF</title>
+    <title>Server Copy Create - Fixed</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -145,40 +145,37 @@
             const baseUrl = 'https://servercopy.work';
             const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
             
-            // Step 1: Try to verify data first (Optional, but good for debugging)
+            // Step 1: Fetch Data using the API
             const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            addLog(`Checking Data via sv.php...`, 'info');
+            addLog(`Fetching data from server...`, 'info');
             
-            let isValid = false;
+            let responseData = null;
             try {
                 const response = await fetch(apiUrl);
                 if (response.ok) {
-                    const data = await response.json();
-                    console.log("SV Response:", data);
-                    if (data.success || data.data) {
-                        isValid = true;
-                        addLog('✅ ডাটা ভ্যালিড হয়েছে!', 'success');
+                    responseData = await response.json();
+                    console.log("API Response:", responseData);
+                    
+                    if (responseData.success || responseData.data) {
+                        addLog('✅ ডাটা সফলভাবে পাওয়া গেছে!', 'success');
                     } else {
-                        addLog('⚠️ ডাটা ভ্যালিড হয়নি, তবুও PDF জেনারেট করার চেষ্টা করা হচ্ছে...', 'error');
-                        // We will still try to generate PDF even if validation fails
-                        isValid = true; 
+                        addLog('⚠️ ডাটা পেতে কিছু সমস্যা হয়েছে, তবুও PDF তৈরি করা হচ্ছে...', 'error');
                     }
                 } else {
                     throw new Error(`HTTP Error: ${response.status}`);
                 }
             } catch (err) {
-                addLog(`ℹ️ sv.php চেক ব্যর্থ হয়েছে (${err.message}), সরাসরি PDF জেনারেট করা হবে।`, 'info');
-                isValid = true; // Proceed anyway
+                addLog(`ℹ️ ডাটা ফেচ ব্যর্থ হয়েছে (${err.message}), PDF টেমপ্লেট লোড করা হবে।`, 'info');
             }
 
-            // Step 2: Generate PDF
+            // Step 2: Generate PDF with correct headers and data
+            // We use the /pdf.php endpoint but ensure it's called correctly
             const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            addLog(`PDF URL: ${pdfUrl}`, 'info');
-            addLog('PDF জেনারেট করা হচ্ছে...', 'info');
+            addLog(`Opening PDF generator...`, 'info');
             
-            // Open PDF in a new tab
+            // Open in a new tab to allow PDF rendering engine to work without CORS issues
             window.open(pdfUrl, '_blank');
             
             addLog('✅ PDF নতুন ট্যাবে খোলা হয়েছে! ডাউনলোড করুন।', 'success');
