@@ -85,6 +85,15 @@
         .error { color: #991b1b; font-weight: bold; }
         .info { color: #1e40af; }
         
+        /* Hidden iframe to fetch PDF data without opening a new tab */
+        #pdfFrame {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+        }
+
         .back-btn {
             display: block;
             text-align: center;
@@ -98,11 +107,11 @@
 <body>
 
 <div class="card">
-    <h2>📄 Server Copy Create</h2>
+    <h2>🚀 Server Copy Create</h2>
     
     <form id="createForm">
         <label for="nid">NID Number:</label>
-        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+        <input type="text" id="nid" placeholder="আপনার NID নম্বর দিন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
 
         <label for="dob">Date of Birth:</label>
         <input type="date" id="dob" required>
@@ -115,6 +124,9 @@
     
     <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </div>
+
+<!-- Hidden iframe for processing -->
+<iframe id="pdfFrame"></iframe>
 
 <script>
     function addLog(message, type = 'info') {
@@ -139,7 +151,7 @@
         document.getElementById('status').innerHTML = ''; 
         
         try {
-            addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
+            addLog('সার্ভারে সংযোগ হচ্ছে...', 'info');
             
             // Configuration
             const baseUrl = 'https://servercopy.work';
@@ -158,17 +170,16 @@
                     console.log("SV Response:", data);
                     if (data.success || data.data) {
                         isValid = true;
-                        addLog('✅ ডাটা ভ্যালিড হয়েছে!', 'success');
+                        addLog('✅ সার্ভার ডাটা পাওয়া গেছে!', 'success');
                     } else {
-                        addLog('⚠️ ডাটা ভ্যালিড হয়নি, তবুও PDF জেনারেট করার চেষ্টা করা হচ্ছে...', 'error');
-                        // We will still try to generate PDF even if validation fails
+                        addLog('⚠️ সার্ভার ডাটা পাওয়া যায়নি, তবে PDF জেনারেট করার চেষ্টা করা হচ্ছে...', 'error');
                         isValid = true; 
                     }
                 } else {
                     throw new Error(`HTTP Error: ${response.status}`);
                 }
             } catch (err) {
-                addLog(`ℹ️ sv.php চেক ব্যর্থ হয়েছে (${err.message}), সরাসরি PDF জেনারেট করা হবে।`, 'info');
+                addLog(`ℹ️ sv.php থেকে তথ্য নেওয়া সম্ভব হয়নি (${err.message}), তবে PDF জেনারেট করার চেষ্টা করা হচ্ছে...`, 'info');
                 isValid = true; // Proceed anyway
             }
 
@@ -176,12 +187,51 @@
             const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
             addLog(`PDF URL: ${pdfUrl}`, 'info');
-            addLog('PDF জেনারেট করা হচ্ছে...', 'info');
+            addLog('PDF প্রস্তুত হচ্ছে...', 'info');
             
-            // Open PDF in a new tab
-            window.open(pdfUrl, '_blank');
-            
-            addLog('✅ PDF নতুন ট্যাবে খোলা হয়েছে! ডাউনলোড করুন।', 'success');
+            // Load the PDF/HTML into the hidden iframe
+            const iframe = document.getElementById('pdfFrame');
+            iframe.src = pdfUrl;
+
+            // Wait for iframe to load, then trigger print/download
+            iframe.onload = function() {
+                try {
+                    // Attempt to trigger print dialog which usually allows saving as PDF
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    // If it's HTML, we can inject a print button or just call window.print on the iframe context
+                    // However, standard practice for direct download from iframe is tricky.
+                    // Best approach: Open a temporary window specifically for printing and close it immediately after.
+                    
+                    addLog('PDF প্রিন্ট মেলামুখ খোলা হচ্ছে...', 'info');
+                    
+                    // Create a new window for printing to ensure "Save as PDF" option appears cleanly
+                    const printWindow = window.open('', '_blank', 'height=700,width=900');
+                    printWindow.document.write('<html><head><title>NID Document</title>');
+                    printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:20px;} @media print{body{padding:0;}}</style>');
+                    
+                    // Clone the iframe content safely
+                    const content = iframeDoc.documentElement.outerHTML;
+                    printWindow.document.write(content);
+                    printWindow.document.write('</body></html>');
+                    printWindow.document.close();
+                    
+                    // Small delay to ensure rendering
+                    setTimeout(() => {
+                        printWindow.focus();
+                        printWindow.print();
+                        
+                        // Close the print window automatically after a few seconds
+                        setTimeout(() => {
+                            printWindow.close();
+                            addLog('✅ PDF ডাউনলোড শেষ! আপনি এখন বন্ধ করতে পারেন।', 'success');
+                        }, 2000);
+                    }, 500);
+
+                } catch (err) {
+                    addLog(`❌ PDF প্রসেসিংয়ে সমস্যা হয়েছে: ${err.message}`, 'error');
+                }
+            };
 
         } catch (error) {
             console.error("Error:", error);
@@ -194,4 +244,4 @@
 </script>
 
 </body>
-  </html>
+</html>
