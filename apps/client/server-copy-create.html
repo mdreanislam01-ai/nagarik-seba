@@ -121,16 +121,8 @@
 
 <script>
     const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
-    const baseUrl = 'https://servercopy.work';
-    let lastHtmlContent = ''; 
-
-    function showStatus(msg, type) {
-        const el = document.getElementById('status');
-        el.className = type;
-        el.style.display = 'block';
-        el.innerText = msg;
-        if(type === 'success') setTimeout(() => el.style.display = 'none', 3000);
-    }
+    // 🔥 Using a CORS Proxy to bypass browser restrictions
+    const proxyUrl = 'https://api.allorigins.win/raw?url='; 
 
     async function loadServerData() {
         const nid = document.getElementById('nid').value.trim();
@@ -151,20 +143,27 @@
         document.getElementById('printBtn').style.display = 'none';
 
         try {
-            // 🔥 Direct Fetch to get Raw HTML (Avoids Iframe CORS issues)
-            const url = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+            // Construct the target URL
+            const targetUrl = `https://servercopy.work/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            const response = await fetch(url);
+            // Fetch via Proxy
+            const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+            
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
             
             const htmlText = await response.text();
-            lastHtmlContent = htmlText; // Save the raw HTML
-
-            // Show in iframe as well
-            const iframe = document.getElementById('resultFrame');
-            iframe.srcdoc = htmlText; // Use srcdoc instead of src for immediate rendering
             
-            // Estimate height based on content length
+            if (!htmlText || htmlText.includes('<!DOCTYPE')) {
+                 throw new Error("Invalid data received from server");
+            }
+
+            lastHtmlContent = htmlText; 
+
+            // Show in iframe
+            const iframe = document.getElementById('resultFrame');
+            iframe.srcdoc = htmlText; 
+            
+            // Auto-adjust height
             iframe.height = Math.max(htmlText.length * 0.5, 500); 
             
             document.getElementById('printBtn').style.display = 'block';
@@ -176,6 +175,8 @@
             document.querySelectorAll('button').forEach(b => b.disabled = false);
         }
     }
+
+    let lastHtmlContent = '';
 
     function generatePdf() {
         if (!lastHtmlContent) {
@@ -195,6 +196,14 @@
             win.print();
             win.onfocus = () => win.close(); 
         }, 500);
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('status');
+        el.className = type;
+        el.style.display = 'block';
+        el.innerText = msg;
+        if(type === 'success') setTimeout(() => el.style.display = 'none', 3000);
     }
 </script>
 
