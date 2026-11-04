@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - Debug Mode</title>
+    <title>Server Copy Create - Direct PDF</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -69,7 +69,7 @@
             padding: 15px;
             border-radius: 6px;
             display: none;
-            text-align: left; /* Changed to left for better log reading */
+            text-align: left;
             font-size: 14px;
             background-color: #f9fafb;
             border: 1px solid #e5e7eb;
@@ -107,7 +107,7 @@
         <label for="dob">Date of Birth:</label>
         <input type="date" id="dob" required>
 
-        <button type="submit" id="btnSubmit">Check & Download</button>
+        <button type="submit" id="btnSubmit">Generate & Download PDF</button>
     </form>
 
     <!-- Status Log Area -->
@@ -117,7 +117,6 @@
 </div>
 
 <script>
-    // Helper function to update UI logs
     function addLog(message, type = 'info') {
         const statusDiv = document.getElementById('status');
         statusDiv.style.display = 'block';
@@ -125,7 +124,7 @@
         logItem.className = `log-item ${type}`;
         logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
         statusDiv.appendChild(logItem);
-        statusDiv.scrollTop = statusDiv.scrollHeight; // Auto scroll to bottom
+        statusDiv.scrollTop = statusDiv.scrollHeight;
     }
 
     document.getElementById('createForm').addEventListener('submit', async function(e) {
@@ -135,59 +134,61 @@
         const dob = document.getElementById('dob').value;
         const btn = document.getElementById('btnSubmit');
         
-        // Reset UI
         btn.disabled = true;
-        btn.textContent = "Processing...";
-        document.getElementById('status').innerHTML = ''; // Clear previous logs
+        btn.textContent = "Generating...";
+        document.getElementById('status').innerHTML = ''; 
         
         try {
             addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
             
-            // তোমার API Configuration
+            // Configuration
             const baseUrl = 'https://servercopy.work';
             const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
             
-            // Step 1: Check Data using sv.php
+            // Step 1: Try to verify data first (Optional, but good for debugging)
             const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            addLog(`API URL: ${apiUrl}`, 'info');
-            addLog('সার্ভারে সংযোগ স্থাপন করা হচ্ছে...', 'info');
+            addLog(`Checking Data via sv.php...`, 'info');
             
-            const response = await fetch(apiUrl);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+            let isValid = false;
+            try {
+                const response = await fetch(apiUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("SV Response:", data);
+                    if (data.success || data.data) {
+                        isValid = true;
+                        addLog('✅ ডাটা ভ্যালিড হয়েছে!', 'success');
+                    } else {
+                        addLog('⚠️ ডাটা ভ্যালিড হয়নি, তবুও PDF জেনারেট করার চেষ্টা করা হচ্ছে...', 'error');
+                        // We will still try to generate PDF even if validation fails
+                        isValid = true; 
+                    }
+                } else {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+            } catch (err) {
+                addLog(`ℹ️ sv.php চেক ব্যর্থ হয়েছে (${err.message}), সরাসরি PDF জেনারেট করা হবে।`, 'info');
+                isValid = true; // Proceed anyway
             }
 
-            const data = await response.json();
-            addLog('সার্ভার থেকে ডাটা পাওয়া গেছে।', 'success');
-            console.log("API Response:", data); // For debugging in browser console
+            // Step 2: Generate PDF
+            const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            // Check if data is valid
-            // Adjust this condition based on actual API response structure
-            if (data && (data.data || data.success)) { 
-                addLog('ডাটা ভ্যালিড! PDF জেনারেট করা হচ্ছে...', 'success');
-                
-                // Step 2: Generate PDF
-                const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-                
-                addLog(`PDF URL: ${pdfUrl}`, 'info');
-                
-                // Open PDF in a new tab or trigger download
-                window.open(pdfUrl, '_blank');
-                
-                addLog('✅ সফল! আপনার PDF নতুন ট্যাবে খোলা হয়েছে।', 'success');
-
-            } else {
-                throw new Error(data.message || 'NID বা DOB ভুল হয়েছে। ডাটা পাওয়া যায়নি।');
-            }
+            addLog(`PDF URL: ${pdfUrl}`, 'info');
+            addLog('PDF জেনারেট করা হচ্ছে...', 'info');
+            
+            // Open PDF in a new tab
+            window.open(pdfUrl, '_blank');
+            
+            addLog('✅ PDF নতুন ট্যাবে খোলা হয়েছে! ডাউনলোড করুন।', 'success');
 
         } catch (error) {
             console.error("Error:", error);
             addLog(`❌ ত্রুটি: ${error.message}`, 'error');
         } finally {
             btn.disabled = false;
-            btn.textContent = "Check & Download";
+            btn.textContent = "Generate & Download PDF";
         }
     });
 </script>
