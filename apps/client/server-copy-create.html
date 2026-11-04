@@ -3,54 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - Smart Seba</title>
+    <title>Server Copy Create - Advanced</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #0056b3; margin-bottom: 20px; }
         label { display: block; margin-top: 15px; font-weight: 600; color: #333; }
         input { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #0056b3; outline: none; box-shadow: 0 0 5px rgba(0,86,179,0.3); }
-        
         .btn-group { display: flex; gap: 10px; margin-top: 25px; }
         button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
         .btn-fetch { background-color: #007bff; color: white; }
         .btn-fetch:hover { background-color: #0056b3; }
-        .btn-print { background-color: #28a745; color: white; display: none; } /* Hidden initially */
+        .btn-print { background-color: #28a745; color: white; display: none; }
         .btn-print:hover { background-color: #218838; }
-        
         #status { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; text-align: center; font-size: 14px; }
         .loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
         iframe { width: 100%; height: 0; border: none; margin-top: 20px; transition: height 0.3s; border-radius: 6px; border: 1px solid #ddd; }
+        .debug-info { font-size: 12px; color: #666; margin-top: 10px; word-break: break-all; background: #eee; padding: 5px; border-radius: 4px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🚀 Server Copy Create</h2>
+    <h2>🚀 Server Copy Create (B1/B2 Logic)</h2>
     
     <label for="nid">NID Number:</label>
-    <input type="text" id="nid" placeholder="Enter your NID (e.g., 1234567890)">
+    <input type="text" id="nid" placeholder="Enter your NID">
 
     <label for="dob">Date of Birth:</label>
     <input type="date" id="dob">
 
     <div class="btn-group">
-        <button class="btn-fetch" onclick="getServerData()">📥 Get Data</button>
+        <button class="btn-fetch" onclick="getServerData()">📥 Get Data (B1/B2)</button>
         <button class="btn-print" id="printBtn" onclick="printDocument()">🖨️ Print / PDF</button>
     </div>
 
     <div id="status"></div>
+    <div id="debugInfo" class="debug-info"></div>
     
     <!-- Result Area -->
     <iframe id="resultFrame"></iframe>
 </div>
 
 <script>
-    // তোমার API Key এবং Base URL
     const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
     const baseUrl = 'https://servercopy.work';
 
@@ -72,50 +69,64 @@
         }
 
         const statusEl = document.getElementById('status');
+        const debugEl = document.getElementById('debugInfo');
         statusEl.className = 'loading';
         statusEl.style.display = 'block';
-        statusEl.innerText = 'Fetching data from server...';
+        statusEl.innerText = 'Connecting to B1/B2 API...';
         
-        // Disable buttons during load
         document.querySelectorAll('button').forEach(b => b.disabled = true);
 
         try {
-            // Step 1: Fetch Data using sv.php
+            // Try 1: Use sv.php as it's the main service page
             const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            const response = await fetch(apiUrl);
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+
+            const contentType = response.headers.get("content-type");
+            let data = "";
             
-            if (!response.ok) {
-                throw new Error(`Server Error: ${response.status}`);
+            if (contentType && contentType.includes("application/json")) {
+                const json = await response.json();
+                data = `<pre>${JSON.stringify(json, null, 2)}</pre>`;
+            } else {
+                data = await response.text();
             }
 
-            const data = await response.text(); // Get raw HTML/Text
+            console.log("Response Status:", response.status);
+            console.log("Content Type:", contentType);
             
-            // Check if data is empty or just an error page
-            if (!data || data.length < 50) {
-                throw new Error("No data received or Invalid Credentials.");
+            // Debug Info
+            debugEl.style.display = 'block';
+            debugEl.innerHTML = `<strong>Status:</strong> ${response.status}<br><strong>Type:</strong> ${contentType}<br><strong>Data Preview:</strong> ${data.substring(0, 200)}...`;
+
+            if (!data || data.length < 20) {
+                throw new Error("Empty response from server.");
             }
 
-            // Step 2: Show data in Iframe
+            // Display in Iframe
             const iframe = document.getElementById('resultFrame');
-            iframe.srcdoc = data; // Inject HTML directly into iframe
+            iframe.srcdoc = data;
             
-            // Adjust iframe height based on content
             iframe.onload = function() {
                 iframe.height = iframe.contentWindow.document.body.scrollHeight + "px";
             };
 
-            // Show Print Button
             document.getElementById('printBtn').style.display = 'block';
             showStatus("✅ Data Loaded Successfully!", "success");
 
         } catch (error) {
             console.error(error);
+            debugEl.innerHTML += `<br><strong>Error:</strong> ${error.message}`;
             showStatus("❌ Failed: " + error.message, "error");
             document.getElementById('resultFrame').srcdoc = "";
             document.getElementById('printBtn').style.display = 'none';
         } finally {
-            // Re-enable buttons
             document.querySelectorAll('button').forEach(b => b.disabled = false);
         }
     }
