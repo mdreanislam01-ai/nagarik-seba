@@ -3,259 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create - NID Service</title>
+    <title>Server Copy Create - নাগরিক সেবা</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f0f2f5; 
-            margin: 0; 
-            padding: 20px; 
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        .container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
         }
-        h2 { 
-            text-align: center; 
-            color: #0056b3; 
-            margin-bottom: 20px; 
+        h2 {
+            color: #1e3a8a;
+            text-align: center;
+            margin-bottom: 20px;
             font-size: 24px;
         }
-        label { 
-            display: block; 
-            margin-top: 15px; 
-            font-weight: 600; 
-            color: #333; 
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #333;
         }
-        input, select { 
-            width: 100%; 
-            padding: 12px; 
-            margin-top: 8px; 
-            border: 1px solid #ccc; 
-            border-radius: 6px; 
-            box-sizing: border-box; 
-            font-size: 16px; 
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
         }
-        .btn-group { 
-            display: flex; 
-            gap: 10px; 
-            margin-top: 25px; 
-        }
-        button { 
-            flex: 1; 
-            padding: 12px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold; 
-            transition: 0.3s; 
-        }
-        .btn-fetch { 
-            background-color: #007bff; 
-            color: white; 
-        }
-        .btn-fetch:hover { 
-            background-color: #0056b3; 
-        }
-        .btn-print { 
-            background-color: #28a745; 
-            color: white; 
-            display: none; 
-        }
-        .btn-print:hover { 
-            background-color: #218838; 
-        }
-        #status { 
-            margin-top: 15px; 
-            padding: 10px; 
-            border-radius: 5px; 
-            display: none; 
-            text-align: center; 
-            font-size: 14px; 
-        }
-        .loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        
-        /* Preview Area Styles */
-        #previewArea {
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 20px;
-            background: white;
-            display: none;
-        }
-        
-        /* Print Specific Styles */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printableArea, #printableArea * {
-                visibility: visible;
-            }
-            #printableArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-
-        /* Document Style */
-        .nid-doc {
-            border: 2px solid #333;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .nid-header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .nid-row {
-            display: flex;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed #eee;
-            padding-bottom: 5px;
-        }
-        .nid-label {
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 25px;
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
             font-weight: bold;
-            width: 40%;
-            color: #555;
+            cursor: pointer;
+            transition: background 0.3s;
         }
-        .nid-value {
-            width: 60%;
-            color: #000;
-            font-weight: 500;
+        button:hover {
+            background-color: #005bb5;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+            text-align: center;
+            font-size: 14px;
+        }
+        .success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .loading { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #0070f3;
+            text-decoration: none;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-<div class="container no-print">
-    <h2>🚀 Server Copy Create</h2>
+<div class="card">
+    <h2>📄 Server Copy Create</h2>
     
-    <label for="nid">NID Number:</label>
-    <input type="text" id="nid" placeholder="Enter your NID">
+    <form id="createForm">
+        <label for="nid">NID Number:</label>
+        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
 
-    <label for="dob">Date of Birth:</label>
-    <input type="date" id="dob">
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" required>
 
-    <div class="btn-group">
-        <button class="btn-fetch" onclick="loadServerData()">📥 Load Data</button>
-        <button class="btn-print" id="printBtn" onclick="generatePdf()">🖨️ Download PDF</button>
-    </div>
+        <button type="submit" id="btnSubmit">Check & Download</button>
+    </form>
 
     <div id="status"></div>
     
-    <!-- Live Preview -->
-    <div id="previewArea"></div>
+    <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </div>
 
-<!-- Hidden Printable Area -->
-<div id="printableArea"></div>
-
 <script>
-    const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
-    const proxyUrl = 'https://api.allorigins.win/raw?url='; 
-
-    async function loadServerData() {
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
         const nid = document.getElementById('nid').value.trim();
         const dob = document.getElementById('dob').value;
+        const btn = document.getElementById('btnSubmit');
+        const statusDiv = document.getElementById('status');
 
-        if (!nid || !dob) {
-            alert("Please enter both NID and Date of Birth.");
-            return;
-        }
-
-        const statusEl = document.getElementById('status');
-        statusEl.className = 'loading';
-        statusEl.style.display = 'block';
-        statusEl.innerText = "Fetching data from server...";
-        
-        document.querySelector('.btn-fetch').disabled = true;
-        document.getElementById('printBtn').style.display = 'none';
-        document.getElementById('previewArea').style.display = 'none';
+        // UI Reset
+        btn.disabled = true;
+        btn.textContent = "Processing...";
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'loading';
+        statusDiv.innerHTML = '⏳ ডাটা চেক করা হচ্ছে...';
 
         try {
-            // Use sv.php to get the JSON data
-            const targetUrl = `https://servercopy.work/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+            // তোমার API Configuration
+            const baseUrl = 'https://servercopy.work';
+            const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
             
-            const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+            // Step 1: Check Data using sv.php
+            const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            statusDiv.innerHTML = '⏳ সার্ভারে সংযোগ স্থাপন করা হচ্ছে...';
+            const response = await fetch(apiUrl);
             
-            const jsonData = await response.json();
-            
-            if (!jsonData.success) {
-                throw new Error(jsonData.message || "Failed to fetch data");
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
             }
 
-            renderDocument(jsonData.data);
-            showStatus("✅ Data Loaded Successfully!", "success");
-            document.getElementById('printBtn').style.display = 'block';
+            const data = await response.json();
+
+            // Check if data is valid (Adjust this condition based on actual API response structure)
+            // Usually APIs return an object with 'data' or 'status' field
+            
+            if (data && (data.data || data.success)) { 
+                statusDiv.innerHTML = '✅ ডাটা পাওয়া গেছে! PDF তৈরি করা হচ্ছে...';
+                
+                // Step 2: Generate PDF
+                const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+                
+                // Open PDF in a new tab or trigger download
+                window.open(pdfUrl, '_blank');
+                
+                statusDiv.innerHTML = '✅ সফল! আপনার PDF ডাউনলোড শুরু হয়েছে।';
+                statusDiv.classList.remove('loading');
+                statusDiv.classList.add('success');
+
+            } else {
+                throw new Error(data.message || 'NID বা DOB ভুল হয়েছে। ডাটা পাওয়া যায়নি।');
+            }
 
         } catch (error) {
-            console.error(error);
-            showStatus("❌ Failed: " + error.message, "error");
-            document.querySelector('.btn-fetch').disabled = false;
+            console.error("Error:", error);
+            statusDiv.innerHTML = `<strong>ত্রুটি:</strong> ${error.message}`;
+            statusDiv.className = 'error';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Check & Download";
         }
-    }
-
-    function renderDocument(data) {
-        // Helper to safely get value or empty string
-        const val = (key) => data[key] ? data[key] : '';
-        
-        const htmlContent = `
-            <div class="nid-doc">
-                <div class="nid-header">
-                    <h1>National ID Card (NID)</h1>
-                    <p>Generated via ServerCopy.work</p>
-                </div>
-                
-                <div class="nid-row"><div class="nid-label">NID Number:</div><div class="nid-value">${val('nid')}</div></div>
-                <div class="nid-row"><div class="nid-label">Father's Name:</div><div class="nid-value">${val('father_name')}</div></div>
-                <div class="nid-row"><div class="nid-label">Mother's Name:</div><div class="nid-value">${val('mother_name')}</div></div>
-                <div class="nid-row"><div class="nid-label">Date of Birth:</div><div class="nid-value">${val('dob')}</div></div>
-                <div class="nid-row"><div class="nid-label">Gender:</div><div class="nid-value">${val('gender')}</div></div>
-                <div class="nid-row"><div class="nid-label">District:</div><div class="nid-value">${val('district')}</div></div>
-                <div class="nid-row"><div class="nid-label">Upazila:</div><div class="nid-value">${val('upazila')}</div></div>
-                <div class="nid-row"><div class="nid-label">Address:</div><div class="nid-value">${val('address')}</div></div>
-                <div class="nid-row"><div class="nid-label">Blood Group:</div><div class="nid-value">${val('blood_group') || 'N/A'}</div></div>
-                <div class="nid-row"><div class="nid-label">Religion:</div><div class="nid-value">${val('religion')}</div></div>
-            </div>
-        `;
-
-        // Update Preview
-        document.getElementById('previewArea').innerHTML = htmlContent;
-        document.getElementById('previewArea').style.display = 'block';
-        
-        // Update Printable Area
-        document.getElementById('printableArea').innerHTML = htmlContent;
-    }
-
-    function generatePdf() {
-        window.print();
-    }
-
-    function showStatus(msg, type) {
-        const el = document.getElementById('status');
-        el.className = type;
-        el.style.display = 'block';
-        el.innerText = msg;
-        if(type === 'success') setTimeout(() => el.style.display = 'none', 3000);
-    }
+    });
 </script>
 
 </body>
