@@ -85,16 +85,6 @@
         .error { color: #991b1b; font-weight: bold; }
         .info { color: #1e40af; }
         
-        /* Hidden iframe for processing without new tab */
-        #pdfFrame {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
-            width: 1px;
-            height: 1px;
-            border: none;
-        }
-
         .back-btn {
             display: block;
             text-align: center;
@@ -126,15 +116,9 @@
     <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </div>
 
-<!-- Hidden iframe -->
-<iframe id="pdfFrame"></iframe>
-
 <script>
-    // 🔒 Encoded API Key to prevent casual viewing in source code
-    // '2a3b267ca79e6abc23fb675a0e381656' encoded
+    // 🔒 Encoded API Key
     const API_KEY = atob('MmEzYjI2N2NhNzllNmFiYzIzZmI2NzVhMGUzODE2NTY=');
-    
-    // 🔒 Server Base URL hidden from direct view if needed, though it's used in fetch
     const SERVER_BASE = 'https://servercopy.work'; 
 
     function addLog(message, type = 'info') {
@@ -161,7 +145,7 @@
         try {
             addLog('Connecting to secure server...', 'info');
             
-            // Step 1: Verify Data (Optional but safe)
+            // Step 1: Verify Data
             const apiUrl = `${SERVER_BASE}/sv.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
             
             let isValid = false;
@@ -184,37 +168,35 @@
                 isValid = true; 
             }
 
-            // Step 2: Generate PDF via Hidden Iframe
+            // Step 2: Fetch PDF Content and Print
             const pdfUrl = `${SERVER_BASE}/pdf.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
             
-            addLog('Preparing PDF document...', 'info');
+            addLog('Fetching PDF content securely...', 'info');
             
-            const iframe = document.getElementById('pdfFrame');
-            
-            // Clear previous src to force reload
-            iframe.src = "";
-            
-            iframe.onload = function() {
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    
-                    // Create a print-friendly window temporarily
-                    const printWindow = window.open('', '_blank', 'height=700,width=900');
-                    
-                    if (!printWindow) {
-                        addLog('❌ Popup blocked! Please allow popups for this site.', 'error');
-                        return;
-                    }
+            try {
+                const response = await fetch(pdfUrl);
+                if (!response.ok) throw new Error('Failed to fetch PDF content');
+                
+                const htmlContent = await response.text();
+                
+                // Create a Blob URL to handle the content safely without cross-origin issues
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                
+                // Open in a new window for printing, but this is standard behavior
+                // If you strictly want NO new tab, you can't really "print" without a print dialog which usually opens a preview or uses the current context.
+                // However, we can use a hidden iframe to trigger print on the CURRENT page's context if the server allows it, 
+                // but since server blocks cross-origin, we'll use a temporary blob URL in a new window which is cleaner.
+                
+                const printWindow = window.open(url, '_blank');
+                
+                if (!printWindow) {
+                    addLog('❌ Popup blocked! Please allow popups for this site.', 'error');
+                    URL.revokeObjectURL(url);
+                    return;
+                }
 
-                    printWindow.document.write('<html><head><title>NID Document</title>');
-                    printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:20px;} @media print{body{padding:0;}}</style>');
-                    
-                    // Inject the content from the hidden iframe
-                    printWindow.document.write(iframeDoc.documentElement.outerHTML);
-                    printWindow.document.write('</body></html>');
-                    printWindow.document.close();
-                    
-                    // Delay slightly to ensure rendering
+                printWindow.onload = () => {
                     setTimeout(() => {
                         printWindow.focus();
                         printWindow.print();
@@ -223,16 +205,14 @@
                         setTimeout(() => {
                             printWindow.close();
                             addLog('✅ Done. You can close the preview window.', 'success');
+                            URL.revokeObjectURL(url);
                         }, 2000);
                     }, 500);
+                };
 
-                } catch (err) {
-                    addLog(`❌ Error during print: ${err.message}`, 'error');
-                }
-            };
-
-            // Set the source to trigger the load
-            iframe.src = pdfUrl;
+            } catch (fetchErr) {
+                addLog(`❌ Failed to load PDF: ${fetchErr.message}`, 'error');
+            }
 
         } catch (error) {
             console.error("Error:", error);
