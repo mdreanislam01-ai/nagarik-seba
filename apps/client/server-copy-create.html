@@ -1,36 +1,3 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Copy Create</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; margin-top: 20px; cursor: pointer; font-size: 16px; border-radius: 4px; }
-        button:hover { background-color: #218838; }
-        .result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; display: none; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>Server Copy Create</h2>
-    
-    <label for="nid">NID Number:</label>
-    <input type="text" id="nid" placeholder="Enter NID Number">
-
-    <label for="dob">Date of Birth:</label>
-    <input type="date" id="dob">
-
-    <button onclick="fetchData()">Get Data</button>
-
-    <div id="result" class="result"></div>
-</div>
-
 <script>
     function fetchData() {
         const nid = document.getElementById('nid').value;
@@ -42,22 +9,31 @@
             return;
         }
 
-        // API URL construction based on your previous links
+        // API URL
         const url = `https://servercopy.work/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+        
+        console.log("Fetching from:", url);
 
         fetch(url)
-            .then(response => response.text())
+            .then(response => {
+                console.log("Response Status:", response.status);
+                return response.text(); // Use .text() because sv.php returns text/HTML
+            })
             .then(data => {
+                console.log("Received Data:", data); // এটি কনসোল লগে দেখাবে
                 const resultDiv = document.getElementById('result');
                 resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `<strong>Data Received:</strong><br>${data.replace(/\n/g, '<br>')}`;
+                
+                // যদি ডাটা খালি থাকে তবে এরর দেখাও
+                if (!data || data.trim() === "") {
+                    resultDiv.innerHTML = "<strong>Error:</strong> No data received from server.";
+                } else {
+                    resultDiv.innerHTML = "<strong>Data Received:</strong><br>" + data.replace(/\n/g, '<br>');
+                }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to fetch data. Check console.');
+                console.error('Fetch Error:', error);
+                alert('Failed to connect to server. Check your internet or CORS.');
             });
     }
 </script>
-
-</body>
-</html>
