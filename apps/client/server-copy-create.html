@@ -1,263 +1,228 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Server Copy - Fixed</title>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 {
-            color: #1e3a8a;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: 600;
-            color: #333;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 25px;
-            background-color: #0070f3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #005bb5;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        #status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            display: none;
-            text-align: left;
-            font-size: 14px;
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .log-item {
-            margin-bottom: 5px;
-            padding-bottom: 5px;
-            border-bottom: 1px dashed #ddd;
-        }
-        .success { color: #065f46; font-weight: bold; }
-        .error { color: #991b1b; font-weight: bold; }
-        .info { color: #1e40af; }
-        
-        .back-btn {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #0070f3;
-            text-decoration: none;
-            font-size: 14px;
-        }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Server Copy Create - Fixed</title>
+ <style>
+ body {
+ font-family: system-ui, -apple-system, sans-serif;
+ background-color: #f0f4f8;
+ margin: 0;
+ padding: 20px;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ min-height: 100vh;
+ }
+ .card {
+ background: white;
+ padding: 30px;
+ border-radius: 12px;
+ box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+ width: 100%;
+ max-width: 450px;
+ }
+ h2 {
+ color: #1e3a8a;
+ text-align: center;
+ margin-bottom: 20px;
+ font-size: 24px;
+ }
+ label {
+ display: block;
+ margin-top: 15px;
+ font-weight: 600;
+ color: #333;
+ }
+ input {
+ width: 100%;
+ padding: 12px;
+ margin-top: 8px;
+ border: 1px solid #ccc;
+ border-radius: 6px;
+ font-size: 16px;
+ box-sizing: border-box;
+ }
+ button {
+ width: 100%;
+ padding: 14px;
+ margin-top: 25px;
+ background-color: #0070f3;
+ color: white;
+ border: none;
+ border-radius: 6px;
+ font-size: 16px;
+ font-weight: bold;
+ cursor: pointer;
+ transition: background 0.3s;
+ }
+ button:hover {
+ background-color: #005bb5;
+ }
+ button:disabled {
+ background-color: #ccc;
+ cursor: not-allowed;
+ }
+ #status {
+ margin-top: 20px;
+ padding: 15px;
+ border-radius: 6px;
+ display: none;
+ text-align: left;
+ font-size: 14px;
+ background-color: #f9fafb;
+ border: 1px solid #e5e7eb;
+ max-height: 200px;
+ overflow-y: auto;
+ }
+ .log-item {
+ margin-bottom: 5px;
+ padding-bottom: 5px;
+ border-bottom: 1px dashed #ddd;
+ }
+ .success { color: #065f46; font-weight: bold; }
+ .error { color: #991b1b; font-weight: bold; }
+ .info { color: #1e40af; }
+ 
+ .back-btn {
+ display: block;
+ text-align: center;
+ margin-top: 15px;
+ color: #0070f3;
+ text-decoration: none;
+ font-size: 14px;
+ }
+ </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🚀 Secure Copy Create</h2>
-    
-    <form id="createForm">
-        <label for="nid">NID Number:</label>
-        <input type="text" id="nid" placeholder="আপনার NID নম্বর দিন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+ <h2>🚀 Server Copy Create</h2>
+ 
+ <form id="createForm">
+ <label for="nid">NID Number:</label>
+ <input type="text" id="nid" placeholder="আপনার NID নম্বর দিন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
 
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" required>
+ <label for="dob">Date of Birth:</label>
+ <input type="date" id="dob" required>
 
-        <button type="submit" id="btnSubmit">Generate & Download PDF</button>
-    </form>
+ <button type="submit" id="btnSubmit">Generate & Download PDF</button>
+ </form>
 
-    <!-- Status Log Area -->
-    <div id="status"></div>
-    
-    <a href="index.html" class="back-btn">← Back to Main Menu</a>
+ <!-- Status Log Area -->
+ <div id="status"></div>
+ 
+ <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </div>
 
 <script>
-    // 🔒 Encoded API Key
-    const API_KEY = atob('MmEzYjI2N2NhNzllNmFiYzIzZmI2NzVhMGUzODE2NTY=');
-    const SERVER_BASE = 'https://servercopy.work'; 
+ function addLog(message, type = 'info') {
+ const statusDiv = document.getElementById('status');
+ statusDiv.style.display = 'block';
+ const logItem = document.createElement('div');
+ logItem.className = `log-item ${type}`;
+ logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+ statusDiv.appendChild(logItem);
+ statusDiv.scrollTop = statusDiv.scrollHeight;
+ }
 
-    function addLog(message, type = 'info') {
-        const statusDiv = document.getElementById('status');
-        statusDiv.style.display = 'block';
-        const logItem = document.createElement('div');
-        logItem.className = `log-item ${type}`;
-        logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        statusDiv.appendChild(logItem);
-        statusDiv.scrollTop = statusDiv.scrollHeight;
-    }
+ document.getElementById('createForm').addEventListener('submit', async function(e) {
+ e.preventDefault();
+ 
+ const nid = document.getElementById('nid').value.trim();
+ const dob = document.getElementById('dob').value;
+ const btn = document.getElementById('btnSubmit');
+ 
+ btn.disabled = true;
+ btn.textContent = "Generating...";
+ document.getElementById('status').innerHTML = ''; 
+ 
+ try {
+ addLog('Connecting to server...', 'info');
+ 
+ // 🔒 API Key
+ const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+ const baseUrl = 'https://servercopy.work';
+ 
+ // Step 1: Try to verify data first
+ const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+ let isValid = false;
+ try {
+ const response = await fetch(apiUrl);
+ if (response.ok) {
+ const data = await response.json();
+ console.log("SV Response:", data);
+ if (data.success || data.data) {
+ isValid = true;
+ addLog('✅ Data verified successfully.', 'success');
+ } else {
+ addLog('⚠️ Data mismatch, generating PDF anyway.', 'error');
+ isValid = true; 
+ }
+ }
+ } catch (err) {
+ addLog(`ℹ️ Verification skipped (${err.message}), proceeding.`, 'info');
+ isValid = true; 
+ }
 
-    document.getElementById('createForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const nid = document.getElementById('nid').value.trim();
-        const dob = document.getElementById('dob').value;
-        const btn = document.getElementById('btnSubmit');
-        
-        btn.disabled = true;
-        btn.textContent = "Processing...";
-        document.getElementById('status').innerHTML = ''; 
-        
-        try {
-            addLog('Connecting to secure server...', 'info');
-            
-            // Step 1: Verify Data (Optional but recommended)
-            const apiUrl = `${SERVER_BASE}/sv.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
-            let isValid = false;
-            try {
-                const response = await fetch(apiUrl);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success || data.data) {
-                        isValid = true;
-                        addLog('✅ Data verified successfully.', 'success');
-                    } else {
-                        addLog('⚠️ Data mismatch, proceeding anyway.', 'error');
-                        isValid = true; 
-                    }
-                }
-            } catch (err) {
-                addLog(`ℹ️ Verification skipped (${err.message}), generating PDF directly.`, 'info');
-                isValid = true; 
-            }
+ // Step 2: Fetch PDF Content (The Fix)
+ const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+ addLog('Fetching PDF content...', 'info');
 
-            // Step 2: Generate PDF with Content Validation
-            const pdfUrl = `${SERVER_BASE}/pdf.php?key=${API_KEY}&nid=${nid}&dob=${dob}`;
-            addLog('Generating PDF via secure channel...', 'info');
-            
-            // We will use an iframe to load the page and then read its content
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'absolute';
-            iframe.style.width = '0';
-            iframe.style.height = '0';
-            iframe.style.border = 'none';
-            iframe.src = pdfUrl;
-            document.body.appendChild(iframe);
+ try {
+ // We fetch the HTML content directly
+ const response = await fetch(pdfUrl);
+ if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+ 
+ const htmlContent = await response.text();
+ 
+ // Check if content is empty or just loading script
+ if (!htmlContent || htmlContent.length < 50) {
+ throw new Error("Received empty or minimal content from server.");
+ }
 
-            // Helper function to check if content is loaded
-            const checkContent = () => {
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    
-                    // Check if document exists and has some text content
-                    if (iframeDoc && iframeDoc.body && iframeDoc.body.innerText.trim().length > 10) {
-                        addLog('✅ PDF content detected in memory.', 'success');
-                        
-                        // Extract HTML
-                        const htmlContent = iframeDoc.documentElement.outerHTML;
-                        const blob = new Blob([htmlContent], { type: 'text/html' });
-                        const url = URL.createObjectURL(blob);
-                        
-                        const printWindow = window.open(url, '_blank');
-                        
-                        if (!printWindow) {
-                            addLog('❌ Popup blocked! Please allow popups.', 'error');
-                            URL.revokeObjectURL(url);
-                            return;
-                        }
+ addLog('✅ Content received. Generating secure file...', 'success');
 
-                        printWindow.onload = () => {
-                            setTimeout(() => {
-                                printWindow.focus();
-                                printWindow.print();
-                                
-                                setTimeout(() => {
-                                    printWindow.close();
-                                    addLog('✅ Done.', 'success');
-                                    URL.revokeObjectURL(url);
-                                }, 2000);
-                            }, 500);
-                        };
-                    }
-                } catch (e) {
-                    // If we can't read it (CORS), fallback to direct open
-                    console.warn("Could not read iframe content:", e);
-                }
-            };
+ // Create a Blob and open it in a new window for printing
+ const blob = new Blob([htmlContent], { type: 'text/html' });
+ const url = URL.createObjectURL(blob);
+ 
+ // Open in a new tab/window
+ const printWindow = window.open(url, '_blank');
 
-            // Polling mechanism: Check every 1.5 seconds until content is found or timeout
-            let attempts = 0;
-            const maxAttempts = 10; // Max 15 seconds
-            
-            const pollInterval = setInterval(() => {
-                attempts++;
-                
-                // Try to read content
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (iframeDoc && iframeDoc.body && iframeDoc.body.innerText.trim().length > 10) {
-                        clearInterval(pollInterval);
-                        checkContent();
-                        return;
-                    }
-                } catch (e) {}
+ if (!printWindow) {
+ alert("Please allow popups to view the PDF!");
+ URL.revokeObjectURL(url);
+ return;
+ }
 
-                // If max attempts reached, force open
-                if (attempts >= maxAttempts) {
-                    clearInterval(pollInterval);
-                    addLog('⏱️ Timeout waiting for content, opening directly.', 'info');
-                    window.open(pdfUrl, '_blank');
-                }
-            }, 1500);
+ // Wait for the new window to load fully before printing
+ setTimeout(() => {
+ printWindow.focus();
+ printWindow.print();
+ 
+ // Close after 2 seconds to clean up
+ setTimeout(() => {
+ printWindow.close();
+ }, 2000);
+ }, 1000); // Give browser 1 second to render styles
 
-            // Fallback: If iframe never loads properly, just open the link
-            iframe.onerror = () => {
-                clearInterval(pollInterval);
-                window.open(pdfUrl, '_blank');
-            };
+ } catch (fetchErr) {
+ console.error("Fetch Error:", fetchErr);
+ addLog(`❌ Failed to get content: ${fetchErr.message}`, 'error');
+ // Fallback: Just open the link directly
+ window.open(pdfUrl, '_blank');
+ }
 
-        } catch (error) {
-            console.error("Error:", error);
-            addLog(`❌ Critical Error: ${error.message}`, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = "Generate & Download PDF";
-        }
-    });
+ } catch (error) {
+ console.error("Error:", error);
+ addLog(`❌ Critical Error: ${error.message}`, 'error');
+ } finally {
+ btn.disabled = false;
+ btn.textContent = "Generate & Download PDF";
+ }
+ });
 </script>
 
 </body>
