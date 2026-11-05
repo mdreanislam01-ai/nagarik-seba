@@ -1,4 +1,6 @@
-/* ns-shell.css v1 — Whole customer portal in the dhakaseba layout style (own teal brand). */
+/* ns-shell.css v2 — Whole customer portal in the dhakaseba layout style (own teal brand, own prices).
+   Adds the reference screenshots' option-page details: fee + balance pills, striped
+   form-card edge, info-card title, full-width order button. */
 body.ns-sh-on { background: #eef2f7; }
 body.ns-sh-on #main { background: transparent; }
 body.ns-sh-on .main { max-width: 1280px; padding: 20px 24px; }
@@ -55,6 +57,17 @@ body.ns-sh-on #main table { width: 100%; border-collapse: collapse; font-size: 1
 body.ns-sh-on #main th { background: #f8fafc; color: #475569; font-size: 12.5px; letter-spacing: .4px; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8eef2; }
 body.ns-sh-on #main td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
 body.ns-sh-on #main .notice { background: #f0fdfa; border: 1px solid #ccfbf1; color: #115e59; border-radius: 10px; padding: 12px 14px; }
+
+/* ---- Option pages (from the reference screenshots): pills, striped card, info title ---- */
+.ns-sh-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.ns-sh-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1px solid; }
+.ns-sh-pill-fee { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.ns-sh-pill-bal { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.ns-sh-striped { position: relative; overflow: hidden; padding-top: 26px; }
+.ns-sh-striped::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: repeating-linear-gradient(-45deg, #111111 0 12px, #ffffff 12px 24px); }
+.ns-sh-info-title { margin: 16px 0 8px; font-size: 16px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+.ns-sh-info-title::before { content: 'ⓘ'; color: #0f766e; }
+body.ns-sh-on #main #nsOrderBtn { width: 100%; }
 
 /* ---- Mobile bottom nav (logged-in only, mobile only) ---- */
 #nsBottomNav { display: none; }
