@@ -1,0 +1,33 @@
+/* ns-dash-grid.css v1 — Dashboard in the dhakaseba layout style (own teal brand). */
+#main.ns-dg-on { background: #eef2f7; }
+#main.ns-dg-on #service-cards, #main.ns-dg-on .need-head { display: none; }
+
+.ns-dg-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 4px 0 16px; }
+.ns-dg-title { margin: 0; font-size: 24px; line-height: 1.2; font-weight: 800; color: #0f172a; }
+.ns-dg-welcome { margin-top: 4px; font-size: 14px; color: #64748b; }
+.ns-dg-support { display: flex; gap: 8px; }
+.ns-dg-wa { display: inline-flex; align-items: center; gap: 8px; background: #16a34a; color: #fff; font-weight: 700; font-size: 15px; text-decoration: none; padding: 10px 18px; border-radius: 999px; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35); }
+
+.ns-dg-sec { margin: 0 0 12px; font-size: 20px; font-weight: 800; color: #0f172a; }
+.ns-dg-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 14px; }
+.ns-dg-card { display: flex; flex-direction: column; background: #fff; border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.07); }
+.ns-dg-band { display: flex; align-items: center; justify-content: center; padding: 18px 12px; }
+.ns-dg-tile { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.ns-dg-tile svg { width: 28px; height: 28px; display: block; }
+.ns-dg-body { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; }
+.ns-dg-name { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; }
+.ns-dg-desc { font-size: 13px; color: #64748b; line-height: 1.45; }
+.ns-dg-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.ns-dg-price { background: #fff; border: 1px solid #e2e8f0; color: #0f766e; font-weight: 800; font-size: 14px; border-radius: 999px; padding: 4px 10px; }
+.ns-dg-count { font-size: 12px; color: #64748b; }
+
+@media (min-width: 640px) {
+  .ns-dg-title { font-size: 30px; }
+  .ns-dg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .ns-dg-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1200px) {
+  .ns-dg-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
