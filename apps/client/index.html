@@ -18,6 +18,18 @@
 <link rel="stylesheet" href="ns-brn-maker.css?v=2">
 <link rel="stylesheet" href="ns-sc-list.css?v=1">
 <link rel="stylesheet" href="ns-shell.css?v=2">
+<style>
+/* Login portal: hide the OLD slide-card design until the NEW login design (ns-login-land.js) builds it.
+   app.js renders the old .ns-slide-page first; without this it flashes on every reload
+   (visible for a moment on slow phones) before ns-login-land.js replaces it with the new design.
+   The new design's script builds .ns-ll9, which hides/removes the old view.
+   Safety: if that script fails to load within 9s, body gets .ns-ll-show-old and the old view returns,
+   so the page is never left blank. */
+body.ns-login-portal{background:linear-gradient(135deg,#f7fbff,#edf5ff 48%,#f1fcf8)}
+body.ns-login-portal.ns-design-login-page{background:linear-gradient(135deg,#f7fbff,#edf5ff 48%,#f1fcf8)}
+body.ns-login-portal .ns-slide-page{display:none}
+body.ns-login-portal.ns-ll-show-old .ns-slide-page{display:block}
+</style>
 </head>
 <body>
 <div id="nsGate"><div id="nsGateCard">
