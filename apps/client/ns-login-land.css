@@ -1,180 +1,142 @@
-/* ns-login-land.css — Nagarik Seba client LOGIN LANDING (additive, v1).
-   SCOPE: every rule lives under .ns-ll, a wrapper this file's JS builds
-   ONLY inside #main on the login portal (body.ns-login-portal +
-   .ns-slide-page present). Nothing here targets dashboard, admin, order
-   or any other page, and nothing here changes app.js markup: the real
-   #nsSlideCard, both real forms and all input IDs are only MOVED and
-   restyled, never rebuilt or duplicated.
-   AUTH MECHANISM (unchanged, see styles.css): the card toggles class
-   .ns-slide-signup via nsSlideTo(); the rules below mirror the mobile
-   mechanism (inactive form display:none, active form display:flex) and
-   use !important ONLY where styles.css itself uses !important on the
-   same property (mobile card/form display rules). The original
-   .ns-slide-panel stays in the DOM (its buttons still call nsSlideTo)
-   but is hidden: the visible toggle buttons below the card call the
-   same nsSlideTo('signup'|'login') function.
-   NO external fonts, NO external images, NO screenshot reuse: the
-   illustration is a small inline SVG in the JS file. Total CSS+JS+SVG
-   stays well under 60KB. Bengali font stack only, system fallback. */
+/* ns-login-land.css — Nagarik Seba client LOGIN LANDING (v8, new design).
+   DESIGN SOURCE: the user-supplied file
+   "nagarik_seba_login_register_animated_2_8xc6.html" (2026-11-06) — the
+   minimal animated login/register portal. This file implements THAT
+   design + animation (ambient blobs, floating logo, gradient card with
+   top accent bar, sliding tab pill, panel enter/leave, field focus
+   lift, submit shine + ripple, under-links). The previous login
+   landing design (v7: memorial hero, header/nav, services, benefits,
+   footer, social row, ১৬৩৭৫ / info@nagarikseba.com examples) is
+   COMPLETELY REMOVED — none of its markup or rules remain.
+   AUTH (unchanged): the REAL #nsSlideCard and both REAL forms from
+   app.js are only MOVED into this design and restyled, never rebuilt
+   or duplicated. #nsSlideCard toggles .ns-slide-signup via the real
+   nsSlideTo(); the rules below mirror styles.css's mobile mechanism
+   (inactive form display:none, active form display:flex) and use
+   !important ONLY where styles.css itself uses !important on the same
+   property. The real .ns-slide-panel is hidden (this design's own tabs
+   call nsSlideTo). The real form headings (h2 + .ns-slide-sub) are
+   hidden — the design's own headings ("স্বাগতম!" / "নতুন অ্যাকাউন্ট")
+   are static and toggled by the JS. Real input IDs, inline onsubmit
+   handlers (nsDoLogin / nsSlideSignup), eye toggles and the real
+   #/forgot link are preserved untouched. The real submit buttons keep
+   their real labels ("লগইন" / "রেজিস্ট্রেশন") — nsDoLogin finds the
+   login button by its exact text, so the label must not change.
+   NO external fonts (Hind Siliguri is already loaded by styles.css),
+   NO external images, NO MutationObserver. The brand logo is the
+   real site logo (the new fingerprint+check image, moved from
+   .ns-slide-brand), NOT the file's SVG approximation.
+   SCOPE: every rule lives under .ns-ll9, built ONLY inside #main on
+   the login portal (body.ns-login-portal + .ns-slide-page present).
+   Nothing here targets the dashboard, admin, order or any other page.
+   The entry-notice gate (#nsGate) is untouched. */
 
-.ns-ll{font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(180deg,#dff1fd 0%,#eef8ff 42%,#ffffff 100%);color:#0f172a;min-height:100dvh;overflow-x:hidden}
-.ns-ll *{box-sizing:border-box}
-.ns-ll img,.ns-ll svg{max-width:100%}
-.ns-ll a{color:#1d4ed8}
-.ns-ll button{font-family:inherit}
+/* ---------- keyframes (ll9-prefixed so they cannot clash) ---------- */
+@keyframes ll9ambient{50%{transform:translate(25px,-18px) scale(1.12)}}
+@keyframes ll9logoFloat{50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes ll9brandIn{from{opacity:0;transform:translateY(-24px) scale(.96);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes ll9cardIn{from{opacity:0;transform:translateY(30px) scale(.96);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes ll9panelEnter{0%{opacity:0;transform:translateX(28px) translateY(8px) scale(.985);filter:blur(5px)}65%{opacity:1}100%{opacity:1;transform:none;filter:blur(0)}}
+@keyframes ll9panelLeave{to{opacity:0;transform:translateX(-18px) scale(.99);filter:blur(3px)}}
+@keyframes ll9ripple{to{transform:scale(4.5);opacity:0}}
 
-/* ---------- header ---------- */
-.ns-ll-head{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);box-shadow:0 2px 14px rgba(15,23,42,.08)}
-.ns-ll-head-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
-.ns-ll-brand{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:#0f172a}
-.ns-ll-head .ns-slide-brand{margin:0;text-align:left}
-.ns-ll-head .ns-slide-brand .ns-login-logo{display:flex;align-items:center}
-.ns-ll-head .ns-slide-brand .ns-logo-lockup{width:auto;height:52px}
-.ns-ll-brand-text{display:flex;flex-direction:column;line-height:1.1;white-space:nowrap}
-.ns-ll-brand-text b{font-size:21px;font-weight:800;color:#1e3a8a}
-.ns-ll-brand-text small{font-size:12px;color:#16a34a;font-weight:600}
-.ns-ll-nav{margin-left:auto;display:flex;align-items:center;gap:22px}
-.ns-ll-nav button{border:0;background:transparent;padding:8px 2px;font-size:15px;font-weight:600;color:#334155;cursor:pointer}
-.ns-ll-nav button:hover,.ns-ll-nav button:focus-visible{color:#1d4ed8;outline:none}
-.ns-ll-nav a{font-size:15px;font-weight:600;color:#334155;text-decoration:none;padding:8px 2px}
-.ns-ll-nav a:hover{color:#1d4ed8}
-.ns-ll-support{display:inline-flex;align-items:center;gap:6px;background:#e8f8f0;color:#15803d;border:1px solid #bbf7d0;border-radius:999px;padding:8px 14px;font-weight:700;text-decoration:none;white-space:nowrap}
-.ns-ll-soc{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#e0e7ff;color:#1d4ed8;font-weight:800;font-size:14px;flex:none}
-.ns-ll-soc.yt{background:#fee2e2;color:#dc2626}
-.ns-ll-burger{display:none;margin-left:auto;width:44px;height:44px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;font-size:22px;cursor:pointer}
+/* ---------- page wrapper (the file's body) ---------- */
+.ns-ll9{font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,-apple-system,"Segoe UI",sans-serif;color:#1d3155;background:linear-gradient(135deg,#f7fbff,#edf5ff 48%,#f1fcf8);min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:24px 15px;overflow-x:hidden;position:relative}
+.ns-ll9 *{box-sizing:border-box}
+.ns-ll9:before,.ns-ll9:after{content:"";position:fixed;border-radius:50%;pointer-events:none;filter:blur(2px);z-index:0}
+.ns-ll9:before{width:300px;height:300px;left:-125px;top:-115px;background:radial-gradient(circle,#bceaff99,transparent 70%);animation:ll9ambient 11s ease-in-out infinite}
+.ns-ll9:after{width:340px;height:340px;right:-145px;bottom:-150px;background:radial-gradient(circle,#b8f1dc99,transparent 70%);animation:ll9ambient 13s ease-in-out -4s infinite}
+.ns-ll9 a{color:#168c83;text-decoration:none;font-weight:600}
+.ns-ll9 a:hover{text-decoration:underline}
+.ns-ll9 button{font-family:inherit}
 
-/* ---------- hero ---------- */
-.ns-ll-hero{max-width:1180px;margin:0 auto;padding:30px 20px 10px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);grid-template-areas:"text auth" "services auth";gap:28px 36px;align-items:start}
-.ns-ll-hero-text{grid-area:text;min-width:0}
-.ns-ll-badge{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid #dbeafe;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:700;color:#166534;box-shadow:0 2px 8px rgba(15,23,42,.05)}
-.ns-ll-badge i{width:18px;height:18px;border-radius:50%;background:#16a34a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}
-.ns-ll-hero-text h1{margin:14px 0 2px;font-size:56px;line-height:1.1;font-weight:800;color:#1e3a8a}
-.ns-ll-tag{margin:0 0 12px;font-size:30px;line-height:1.25;font-weight:800;color:#16a34a}
-.ns-ll-intro{margin:0 0 16px;font-size:16px;line-height:1.7;color:#475569;max-width:56ch}
-.ns-ll-art{width:100%;height:auto;display:block;border-radius:18px}
-.ns-ll-auth{grid-area:auth;min-width:0}
-.ns-ll-card-logo{text-align:center;margin-bottom:14px}
-.ns-ll-card-logo .ns-logo-lockup{width:150px;height:auto}
-.ns-ll-note{margin:12px 4px 0;font-size:13px;line-height:1.6;color:#64748b;text-align:center}
+.ns-ll9-wrap{width:min(100%,420px);position:relative;z-index:1}
 
-/* login card: restyle the REAL #nsSlideCard (moved node, same IDs) */
-.ns-ll #nsSlideCard{display:block!important;width:100%!important;min-height:0!important;grid-template-columns:none!important;background:#fff;border-radius:20px;box-shadow:0 18px 50px rgba(15,23,42,.16);overflow:hidden}
-.ns-ll #nsSlideCard .ns-slide-panel{display:none}
-.ns-ll #nsSlideCard .ns-slide-form{display:none!important;float:none;width:100%;padding:32px 26px!important}
-.ns-ll #nsSlideCard:not(.ns-slide-signup) .ns-slide-form-login{display:flex!important;opacity:1!important;pointer-events:auto!important}
-.ns-ll #nsSlideCard.ns-slide-signup .ns-slide-form-signup{display:flex!important;opacity:1!important;pointer-events:auto!important}
-.ns-ll #nsSlideCard .ns-slide-form{flex-direction:column;justify-content:flex-start}
-.ns-ll #nsSlideCard .ns-slide-form h2{font-size:24px;color:#111827}
-.ns-ll #nsSlideCard .ns-slide-form .ns-slide-sub{color:#6b7280}
-.ns-ll #nsSlideCard .ns-slide-form input[type="text"],.ns-ll #nsSlideCard .ns-slide-form input[type="password"]{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
-.ns-ll #nsSlideCard .ns-slide-form input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.18);background:#fff}
-.ns-ll #nsSlideCard .ns-slide-btn{background:linear-gradient(90deg,#1e40af,#2563eb);border-radius:10px}
-.ns-ll-toggle{margin-top:14px}
-.ns-ll-toggle button{display:block;width:100%;min-height:50px;border:1.5px solid #2563eb;border-radius:10px;background:#fff;color:#1d4ed8;font-size:16px;font-weight:700;cursor:pointer}
-.ns-ll-toggle button:active{background:#eff6ff}
-.ns-ll-toggle .ns-ll-to-login{display:none}
-.ns-ll-auth #nsSlideCard.ns-slide-signup + .ns-ll-toggle .ns-ll-to-signup{display:none}
-.ns-ll-auth #nsSlideCard.ns-slide-signup + .ns-ll-toggle .ns-ll-to-login{display:block}
+/* ---------- brand ---------- */
+.ns-ll9-brand{text-align:center;margin-bottom:22px;animation:ll9brandIn .9s cubic-bezier(.16,1,.3,1) both}
+.ns-ll9-brand .ns-login-logo{display:flex;justify-content:center;margin:0 auto 11px}
+.ns-ll9-brand .ns-logo-lockup{width:76px;height:76px;border-radius:22px;display:block;box-shadow:0 12px 30px #1458c533;animation:ll9logoFloat 4.5s ease-in-out infinite}
+.ns-ll9-brand h1{font-size:30px;line-height:1.15;margin:0;color:#173b83;font-weight:800}
+.ns-ll9-brand p{font-size:14px;color:#17a66a;font-weight:700;margin:5px 0 0}
 
-/* ---------- services ---------- */
-.ns-ll-services{grid-area:services;min-width:0}
-.ns-ll-sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 0 14px}
-.ns-ll-sec-head h2{margin:0;font-size:22px;font-weight:800;color:#1e3a8a}
-.ns-ll-sec-head span{font-size:13px;color:#64748b;white-space:nowrap}
-.ns-ll-svc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.ns-ll-svc{display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px 8px 14px;text-align:center;text-decoration:none;color:#0f172a;box-shadow:0 2px 10px rgba(15,23,42,.05)}
-.ns-ll-svc:hover{border-color:#93c5fd;box-shadow:0 6px 18px rgba(37,99,235,.14)}
-.ns-ll-svc i{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center}
-.ns-ll-svc i svg{width:24px;height:24px}
-.ns-ll-svc b{font-size:14px;line-height:1.35;font-weight:700}
-.ns-ll-svc small{font-size:12px;color:#64748b;line-height:1.4}
-.ns-ll-all{display:inline-flex;align-items:center;gap:8px;margin-top:16px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#1e40af;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
-.ns-ll-all:active{background:#1e3a8a}
+/* ---------- card ---------- */
+.ns-ll9-card{position:relative;padding:25px 23px 22px;border:1px solid #ffffffd9;border-radius:26px;background:#ffffffdf;box-shadow:0 22px 65px #244c851c,0 3px 12px #244c8509;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;animation:ll9cardIn .85s .12s cubic-bezier(.16,1,.3,1) both}
+.ns-ll9-card:before{content:"";position:absolute;left:18%;right:18%;top:0;height:3px;border-radius:0 0 8px 8px;background:linear-gradient(90deg,transparent,#20b8c5,#245fe0,transparent)}
 
-/* ---------- benefits ---------- */
-.ns-ll-benefits{max-width:1180px;margin:22px auto 0;padding:0 20px}
-.ns-ll-benefits-in{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 2px 12px rgba(15,23,42,.05);display:flex;flex-wrap:wrap}
-.ns-ll-ben{flex:1 1 0;display:flex;align-items:center;gap:12px;min-width:180px;padding:16px 18px}
-.ns-ll-ben i{width:44px;height:44px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
-.ns-ll-ben i svg{width:22px;height:22px}
-.ns-ll-ben b{display:block;font-size:15px}
-.ns-ll-ben span{font-size:13px;color:#64748b}
+/* ---------- tabs ---------- */
+.ns-ll9-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;gap:5px;border-radius:15px;background:#edf2fb;margin-bottom:23px;isolation:isolate}
+.ns-ll9-tabs:before{content:"";position:absolute;z-index:-1;left:5px;top:5px;bottom:5px;width:calc(50% - 2.5px);border-radius:11px;background:linear-gradient(115deg,#1748b7,#3479f0 75%,#24aebc);box-shadow:0 6px 16px #245fe044;transition:transform .68s cubic-bezier(.2,1.25,.3,1)}
+.ns-ll9-tabs.reg:before{transform:translateX(calc(100% + 5px))}
+.ns-ll9-tab{border:0;background:transparent;border-radius:11px;padding:11px 5px;font-size:16px;font-weight:700;color:#75839b;cursor:pointer;transition:color .3s,transform .25s}
+.ns-ll9-tab.active{color:#fff}
+.ns-ll9-tab:active{transform:scale(.94)}
 
-/* ---------- footer ---------- */
-.ns-ll-foot{margin-top:26px;background:#0f172a;color:#cbd5e1}
-.ns-ll-foot-in{max-width:1180px;margin:0 auto;padding:34px 20px 18px;display:grid;grid-template-columns:1.3fr 1fr 1fr 1.1fr;gap:28px}
-.ns-ll-foot-brand b{display:flex;align-items:center;gap:9px;font-size:20px;color:#fff}
-.ns-ll-foot-brand b svg{width:30px;height:30px;flex:none}
-.ns-ll-foot-brand p{font-size:14px;line-height:1.7;color:#94a3b8;max-width:34ch}
-.ns-ll-foot h3{margin:0 0 12px;font-size:16px;color:#fff}
-.ns-ll-foot ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
-.ns-ll-foot li button,.ns-ll-foot li a{border:0;background:transparent;padding:0;font-size:14px;color:#cbd5e1;cursor:pointer;text-decoration:none;text-align:left}
-.ns-ll-foot li button:hover,.ns-ll-foot li a:hover{color:#fff}
-.ns-ll-foot li span{font-size:14px}
-.ns-ll-foot .ns-ll-soc{background:#1e293b;color:#fff}
-.ns-ll-disclaimer{max-width:1180px;margin:0 auto;padding:0 20px 16px}
-.ns-ll-disclaimer p{margin:0;border:1px solid #334155;border-left:4px solid #f59e0b;border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.7;color:#fde68a;background:#1e293b}
-.ns-ll-copy{border-top:1px solid #1e293b;padding:14px 20px;text-align:center;font-size:13px;color:#94a3b8}
+/* ---------- headings (static, toggled by JS) ---------- */
+.ns-ll9-heading{margin-bottom:19px}
+.ns-ll9-heading h2{font-size:22px;margin:0;color:#1c3157;font-weight:800}
+.ns-ll9-heading p{font-size:13px;color:#8491a7;margin:3px 0 0}
 
-/* ---------- responsive ---------- */
-@media (max-width:900px){
-  .ns-ll-head-in{padding:10px 14px}
-  .ns-ll-brand-text b{font-size:19px}
-  .ns-ll-burger{display:block}
-  .ns-ll-nav{display:none;position:absolute;left:0;right:0;top:100%;background:#fff;flex-direction:column;align-items:stretch;gap:0;padding:8px 14px 14px;box-shadow:0 14px 30px rgba(15,23,42,.14)}
-  .ns-ll-head.ns-ll-nav-open .ns-ll-nav{display:flex}
-  .ns-ll-nav button,.ns-ll-nav a{text-align:left;padding:12px 4px;border-bottom:1px solid #f1f5f9}
-  .ns-ll-nav .ns-ll-support{justify-content:center;margin-top:10px}
-  .ns-ll-nav .ns-ll-soc-row{display:flex;gap:10px;padding-top:12px}
-  .ns-ll-hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"text" "auth" "services";padding:22px 14px 10px;gap:24px}
-  .ns-ll-hero-text h1{font-size:40px}
-  .ns-ll-tag{font-size:24px}
-  .ns-ll-benefits{padding:0 14px}
-  .ns-ll-foot-in{grid-template-columns:1fr 1fr;padding:28px 14px 14px}
-  .ns-ll-disclaimer{padding:0 14px 14px}
+/* ---------- the REAL card + forms, restyled into this design ---------- */
+.ns-ll9 #nsSlideCard{display:block!important;position:static!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;min-height:0!important;width:100%!important;max-width:100%!important;grid-template-columns:1fr!important;overflow:visible!important}
+.ns-ll9 #nsSlideCard .ns-slide-panel{display:none!important}
+.ns-ll9 #nsSlideCard .ns-slide-form{padding:0!important;box-sizing:border-box;display:none;flex-direction:column;justify-content:flex-start;transition:opacity .45s ease}
+.ns-ll9 #nsSlideCard:not(.ns-slide-signup) .ns-slide-form-login,
+.ns-ll9 #nsSlideCard.ns-slide-signup .ns-slide-form-signup{display:flex!important;animation:ll9panelEnter .62s cubic-bezier(.16,1,.3,1) both}
+.ns-ll9 #nsSlideCard .ns-slide-form.ns-ll9-leaving{animation:ll9panelLeave .2s ease both!important}
+/* real form headings are replaced by this design's own headings above */
+.ns-ll9 #nsSlideCard .ns-slide-form h2,
+.ns-ll9 #nsSlideCard .ns-slide-form .ns-slide-sub{display:none!important}
+
+/* field labels (direct children of the real forms only) */
+.ns-ll9 .ns-slide-form>label{display:block;font-size:13px;font-weight:700;margin:0 0 6px 2px;color:#344665}
+.ns-ll9 .ns-slide-form>.ns-ll9-input-wrap,
+.ns-ll9 .ns-slide-form>.ns-slide-passwrap{margin:0 0 15px}
+.ns-ll9 .ns-slide-form>.ns-slide-row{margin:1px 1px 17px}
+
+/* inputs */
+.ns-ll9 .ns-slide-form input[type="text"],
+.ns-ll9 .ns-slide-form input[type="password"]{width:100%;height:51px;padding:0 45px 0 15px;border:1px solid #dce5f1;border-radius:13px;background:#fafdff;font-size:14px;font-family:inherit;color:#203557;outline:0;transition:border .25s,box-shadow .25s,background .25s,transform .25s}
+.ns-ll9 .ns-slide-form input[type="text"]::placeholder,
+.ns-ll9 .ns-slide-form input[type="password"]::placeholder{color:#a2adbd}
+.ns-ll9 .ns-slide-form input[type="text"]:focus,
+.ns-ll9 .ns-slide-form input[type="password"]:focus{background:#fff;border-color:#4387ee;box-shadow:0 0 0 4px #4387ee18,0 5px 15px #4387ee0d;transform:translateY(-2px)}
+
+/* input wrap (JS-added around the direct-child inputs) + real passwrap */
+.ns-ll9-input-wrap{position:relative}
+.ns-ll9 .ns-slide-passwrap{position:relative}
+.ns-ll9-field-icon{position:absolute;right:13px;top:50%;transform:translateY(-50%);border:0;background:none;color:#8292ad;font-size:17px;padding:4px;pointer-events:none}
+.ns-ll9 .ns-slide-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);border:0;background:none;color:#8292ad;font-size:17px;padding:4px;cursor:pointer}
+
+/* remember + forgot row (real) */
+.ns-ll9 .ns-slide-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:#6f7d93}
+.ns-ll9 .ns-slide-remember{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:400;color:#6f7d93}
+.ns-ll9 .ns-slide-remember input{accent-color:#245fe0;width:14px;height:14px}
+.ns-ll9 .ns-slide-row a{color:#168c83;font-size:12px}
+
+/* submit (real buttons, real labels) */
+.ns-ll9 .ns-slide-btn{height:51px;width:100%;border:0;border-radius:13px;background:linear-gradient(105deg,#194bbd,#286fe7 65%,#16a9b0);color:#fff;font-size:16px;font-weight:700;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 9px 20px #245fe033;transition:transform .25s,box-shadow .25s,filter .25s;margin:0}
+.ns-ll9 .ns-slide-btn:before{content:"";position:absolute;top:-80%;left:-45%;width:35%;height:260%;transform:rotate(25deg);background:linear-gradient(90deg,transparent,#ffffff55,transparent);transition:left .7s}
+.ns-ll9 .ns-slide-btn:hover{transform:translateY(-3px);box-shadow:0 14px 26px #245fe044;filter:saturate(1.12)}
+.ns-ll9 .ns-slide-btn:hover:before{left:120%}
+.ns-ll9 .ns-slide-btn:active{transform:scale(.98)}
+.ns-ll9 .ns-slide-btn:disabled{opacity:.75;cursor:default;transform:none}
+.ns-ll9-ripple{position:absolute;border-radius:50%;background:#ffffff70;transform:scale(0);animation:ll9ripple .7s ease-out;pointer-events:none}
+
+/* switch lines (JS-appended to the real forms) */
+.ns-ll9-under{text-align:center;font-size:13px;color:#7d899d;margin:16px 0 0}
+.ns-ll9-textbtn{border:0;background:none;color:#1c5acb;font-size:13px;font-weight:700;padding:2px 4px;cursor:pointer;position:relative}
+.ns-ll9-textbtn:after{content:"";position:absolute;bottom:0;left:4px;right:4px;height:1px;background:currentColor;transform:scaleX(0);transition:transform .25s}
+.ns-ll9-textbtn:hover:after{transform:scaleX(1)}
+
+/* notice (hidden; for messages if ever needed) */
+.ns-ll9-notice{display:none;margin-top:14px;padding:11px 12px;border:1px solid #d8ebff;border-radius:12px;background:#f0f8ff;color:#285b91;font-size:12px;text-align:center}
+
+@media(max-width:390px){
+  .ns-ll9{padding:18px 12px}
+  .ns-ll9-card{padding:21px 17px}
+  .ns-ll9-brand h1{font-size:28px}
+  .ns-ll9-brand .ns-logo-lockup{width:69px;height:69px}
 }
-@media (max-width:430px){
-  .ns-ll-head .ns-slide-brand .ns-logo-lockup{height:44px}
-  .ns-ll-brand-text small{display:none}
-  .ns-ll-hero-text h1{font-size:34px}
-  .ns-ll-tag{font-size:21px}
-  .ns-ll-intro{font-size:15px}
-  .ns-ll-svc{padding:12px 6px 10px}
-  .ns-ll-svc i{width:38px;height:38px;border-radius:10px}
-  .ns-ll-svc b{font-size:12.5px}
-  .ns-ll-svc small{font-size:11px}
-  .ns-ll-ben{min-width:45%;padding:12px}
-  .ns-ll-foot-in{grid-template-columns:1fr}
+@media(prefers-reduced-motion:reduce){
+  .ns-ll9 *,.ns-ll9 *:before,.ns-ll9 *:after{animation:none!important;transition:none!important}
 }
-
-/* v2: example hotline pill (display only) + WhatsApp icon */
-.ns-ll-phone{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #dbeafe;border-radius:999px;padding:8px 14px;font-weight:700;color:#1e40af;white-space:nowrap}
-.ns-ll-phone small{font-size:12px;font-weight:600;color:#64748b}
-.ns-ll-soc.wa{background:#25d366;color:#fff;text-decoration:none}
-.ns-ll-soc-row{display:inline-flex;gap:8px;align-items:center}
-
-/* v3: real FB/YT logo images (user-supplied, black padding trimmed, logo untouched) */
-.ns-ll-socimg{display:inline-block;vertical-align:middle}
-.ns-ll-socimg.fb{width:32px;height:32px;border-radius:8px}
-.ns-ll-socimg.yt{height:30px;width:auto;border-radius:6px}
-
-/* v4: real WhatsApp logo image (user-supplied) */
-.ns-ll-wa{display:inline-flex;align-items:center}
-.ns-ll-socimg.wa{width:32px;height:32px;border-radius:8px}
-
-/* v5: header phone pill is now a tel: link — keep pill look over nav link rules */
-.ns-ll-nav a.ns-ll-phone{padding:8px 14px;color:#1e40af;text-decoration:none}
-
-/* v6: social icons — one row, one size, never squashed (fixes crowded-header shrink) */
-.ns-ll-soc-row{display:inline-flex;align-items:center;gap:10px;line-height:0}
-.ns-ll-socimg{display:block;flex:none}
-.ns-ll-socimg.fb{width:36px;height:36px;border-radius:9px}
-.ns-ll-socimg.yt{height:36px;width:auto;border-radius:7px}
-.ns-ll-socimg.wa{width:36px;height:36px;border-radius:9px}
-.ns-ll-wa{display:inline-flex;align-items:center;flex:none}
-.ns-ll-foot .ns-ll-soc-row{display:flex;margin-top:14px}
-
-/* v7: never flash the OLD login card — hide it until the landing builds it in.
-   The moved real card sits outside .ns-slide-page, so it stays visible. */
-body.ns-login-portal #main .ns-slide-page{visibility:hidden}
-body.ns-login-portal.ns-ll-show-old #main .ns-slide-page{visibility:visible}
