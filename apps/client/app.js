@@ -604,10 +604,19 @@ function nsSlideTo(mode) {
   try { if (location.hash !== '#/' + mode) history.replaceState(null, '', '#/' + mode); } catch (e) {}
 }
 function nsSlideTogglePass() { var p = document.getElementById('suPass'); if (p) p.type = (p.type === 'password' ? 'text' : 'password'); }
+/* Admin approval (2026-11-06): a new registration stays pending until an
+   admin approves it. The user messages the admin on WhatsApp (the site's
+   support number, same as ns-wa-profile.js) via this wa.me link, with
+   their details pre-filled, so the admin can approve them in the portal. */
+function nsApprovalWaBtn(label) {
+  var msg = 'আসসালামু আলাইকুম, আমি নাগরিক সেবায় রেজিস্ট্রেশন করেছি। ' + label + '। দয়া করে আমার অ্যাকাউন্টটি অনুমোদন করুন।';
+  var url = 'https://wa.me/8801318325072?text=' + encodeURIComponent(msg);
+  return '<p style="margin:12px 0 0"><a href="' + url + '" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:#25d366;color:#fff;font-weight:700;padding:12px;border-radius:12px">WhatsApp-এ অ্যাডমিনকে জানান</a></p>';
+}
 async function nsSlideSignup() {
   var name = document.getElementById('suName').value.trim(), email = document.getElementById('suEmail').value.trim(),
     phone = document.getElementById('suPhone').value.trim(), password = document.getElementById('suPass').value;
-  try { await nsCall('/auth/signup', 'POST', { name: name, email: email, phone: phone, password: password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); location.hash = '#/login'; }
+  try { await nsCall('/auth/signup', 'POST', { name: name, email: email, phone: phone, password: password }); showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + name + ', ফোন: ' + phone)); location.hash = '#/login'; }
   catch (e) { showModal('সাইনআপ হয়নি', e.message === 'registration_closed' ? 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' : e.message); }
 }
 function nsLoginPortalHTML(mode) {
@@ -652,7 +661,7 @@ async function nsDoLogin() {
   const btn = [...document.querySelectorAll('.ns-slide-btn')].find(b => b.textContent.trim() === 'লগইন');
   if (btn) { btn.disabled = true; btn.textContent = 'লগইন হচ্ছে…'; }
   try { const r = await nsCall('/auth/login', 'POST', { identifier, password, remember_me }); nsSetToken(r.token, remember_me); await nsRefresh(); nsLoginOkPopup(function () { location.hash = '#/dashboard'; render(); }); }
-  catch (e) { if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = 'লগইন'; } showModal('লগইন হয়নি', e.message === 'invalid_credentials' ? 'ইমেইল/ফোন নম্বর বা পাসওয়ার্ড ভুল।' : e.message); }
+  catch (e) { if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = 'লগইন'; } if (e.message === 'account_pending') { showModal('লগইন হয়নি', 'আপনার অ্যাকাউন্টটি এখনো অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('ইমেইল/ফোন: ' + identifier)); } else if (e.message === 'account_deactivated') { showModal('লগইন হয়নি', 'এই অ্যাকাউন্টটি বর্তমানে নিষ্ক্রিয়। অ্যাডমিনের সাথে যোগাযোগ করুন।'); } else { showModal('লগইন হয়নি', e.message === 'invalid_credentials' ? 'ইমেইল/ফোন নম্বর বা পাসওয়ার্ড ভুল।' : e.message); } }
 }
 async function nsDoForgot() {
   const identifier = document.getElementById('authEmail').value.trim();
@@ -663,7 +672,7 @@ async function nsDoForgot() {
 async function nsDoSignup() {
   const name = document.getElementById('authName').value.trim(), email = document.getElementById('authEmail').value.trim(),
     phone = document.getElementById('authPhone').value.trim(), password = document.getElementById('authPass').value;
-  try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('সাইনআপ সফল', 'এখন লগইন করুন।'); location.hash = '#/login'; }
+  try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + name + ', ফোন: ' + phone)); location.hash = '#/login'; }
   catch (e) { showModal('সাইনআপ হয়নি', e.message === 'registration_closed' ? 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' : e.message); }
 }
 const _origRender = render;
