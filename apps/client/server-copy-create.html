@@ -3,10 +3,10 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Server Copy Create - Secure</title>
+ <title>Server Copy Create - Official</title>
  <style>
  body {
- font-family: system-ui, -apple-system, sans-serif;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
  background-color: #f0f4f8;
  margin: 0;
  padding: 20px;
@@ -103,7 +103,7 @@
  left: 0;
  width: 100%;
  height: 100%;
- background: rgba(255, 255, 255, 0.9);
+ background: rgba(255, 255, 255, 0.95);
  border-radius: 12px;
  z-index: 10;
  justify-content: center;
@@ -131,7 +131,7 @@
  <!-- Loading Spinner -->
  <div id="loadingOverlay">
  <div class="spinner"></div>
- <span>প্রসেসিং হচ্ছে...</span>
+ <span>Connecting to Server...</span>
  </div>
 
  <h2>🚀 Server Copy Create</h2>
@@ -143,7 +143,7 @@
  <label for="dob">Date of Birth:</label>
  <input type="date" id="dob" required>
 
- <button type="submit" id="btnSubmit">Generate & Download PDF</button>
+ <button type="submit" id="btnSubmit">Generate Official PDF</button>
  </form>
 
  <!-- Status Log Area -->
@@ -216,39 +216,73 @@
  return;
  }
 
- // Construct the HTML content dynamically
+ // Construct the HTML content dynamically with LOGO and DESIGN
  const formattedDate = new Date(dob).toLocaleDateString('en-GB'); // DD/MM/YYYY format
+ const todayDate = new Date().toLocaleDateString('en-GB');
+
  const finalContent = `
  <!DOCTYPE html>
  <html>
  <head>
  <title>NID Document - ${nid}</title>
  <style>
- body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
- .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
- .content { line-height: 1.6; }
- .field { margin-bottom: 10px; }
- .label { font-weight: bold; color: #333; }
- .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
- @media print { body { padding: 0; } .no-print { display: none; } }
+ body { 
+ font-family: Arial, sans-serif; 
+ padding: 40px; 
+ max-width: 800px; 
+ margin: 0 auto; 
+ color: #333;
+ background: #fff;
+ }
+ .header { 
+ text-align: center; 
+ border-bottom: 3px double #333; 
+ padding-bottom: 20px; 
+ margin-bottom: 30px; 
+ }
+ .logo-container {
+ margin-bottom: 15px;
+ }
+ .logo-img {
+ width: 80px;
+ height: auto;
+ }
+ .content { line-height: 1.8; font-size: 14px; }
+ .field { margin-bottom: 15px; display: flex; }
+ .label { font-weight: bold; color: #000; width: 150px; }
+ .value { flex-grow: 1; border-bottom: 1px dotted #ccc; padding-left: 10px; }
+ .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 10px; }
+ @media print { 
+ body { padding: 20px; } 
+ .no-print { display: none; } 
+ }
  </style>
  </head>
  <body>
  <div class="header">
- <h1>NID Information</h1>
- <p>Generated on: ${new Date().toLocaleDateString()}</p>
+ <div class="logo-container">
+ <!-- Bangladesh Government Logo -->
+ <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_Bangladesh.svg/1200px-Emblem_of_Bangladesh.svg.png" alt="Gov Logo" class="logo-img">
  </div>
+ <h1>National ID Information</h1>
+ <p>Government of the People's Republic of Bangladesh</p>
+ </div>
+
  <div class="content">
- <div class="field"><span class="label">NID Number:</span> ${nid}</div>
- <div class="field"><span class="label">Date of Birth:</span> ${formattedDate}</div>
- <hr>
- <h3>Server Data:</h3>
- <pre style="background: #f4f4f4; padding: 10px; border: 1px dashed #ccc;">
+ <div class="field"><span class="label">NID Number:</span><span class="value">${nid}</span></div>
+ <div class="field"><span class="label">Date of Birth:</span><span class="value">${formattedDate}</span></div>
+ <div class="field"><span class="label">Generated On:</span><span class="value">${todayDate}</span></div>
+ 
+ <hr style="margin: 20px 0;">
+ 
+ <h3>Server Raw Data:</h3>
+ <pre style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; font-size: 12px; overflow-x: auto;">
  ${JSON.stringify(apiData, null, 2)}
  </pre>
  </div>
+
  <div class="footer">
- This is a computer generated document.
+ This is a computer generated document verified via Server Copy API.
  </div>
  </body>
  </html>
@@ -267,7 +301,7 @@
  setTimeout(() => {
  overlay.style.display = 'none';
  btn.disabled = false;
- btn.textContent = "Generate & Download PDF";
+ btn.textContent = "Generate Official PDF";
  }, 1000);
 
  } catch (error) {
@@ -275,7 +309,7 @@
  addLog(`❌ Critical Error: ${error.message}`, 'error');
  overlay.style.display = 'none';
  btn.disabled = false;
- btn.textContent = "Generate & Download PDF";
+ btn.textContent = "Generate Official PDF";
  }
  });
 </script>
