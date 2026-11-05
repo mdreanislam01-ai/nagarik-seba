@@ -1,238 +1,197 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Server Copy Create - Secure</title>
- <style>
- body {
- font-family: system-ui, -apple-system, sans-serif;
- background-color: #f0f4f8;
- margin: 0;
- padding: 20px;
- display: flex;
- justify-content: center;
- align-items: center;
- min-height: 100vh;
- }
- .card {
- background: white;
- padding: 30px;
- border-radius: 12px;
- box-shadow: 0 4px 6px rgba(0,0,0,0.1);
- width: 100%;
- max-width: 450px;
- position: relative;
- }
- h2 {
- color: #1e3a8a;
- text-align: center;
- margin-bottom: 20px;
- font-size: 24px;
- }
- label {
- display: block;
- margin-top: 15px;
- font-weight: 600;
- color: #333;
- }
- input {
- width: 100%;
- padding: 12px;
- margin-top: 8px;
- border: 1px solid #ccc;
- border-radius: 6px;
- font-size: 16px;
- box-sizing: border-box;
- }
- button {
- width: 100%;
- padding: 14px;
- margin-top: 25px;
- background-color: #0070f3;
- color: white;
- border: none;
- border-radius: 6px;
- font-size: 16px;
- font-weight: bold;
- cursor: pointer;
- transition: background 0.3s;
- }
- button:hover {
- background-color: #005bb5;
- }
- button:disabled {
- background-color: #ccc;
- cursor: not-allowed;
- }
- #status {
- margin-top: 20px;
- padding: 15px;
- border-radius: 6px;
- display: none;
- text-align: left;
- font-size: 14px;
- background-color: #f9fafb;
- border: 1px solid #e5e7eb;
- max-height: 200px;
- overflow-y: auto;
- }
- .log-item {
- margin-bottom: 5px;
- padding-bottom: 5px;
- border-bottom: 1px dashed #ddd;
- }
- .success { color: #065f46; font-weight: bold; }
- .error { color: #991b1b; font-weight: bold; }
- .info { color: #1e40af; }
- 
- .back-btn {
- display: block;
- text-align: center;
- margin-top: 15px;
- color: #0070f3;
- text-decoration: none;
- font-size: 14px;
- }
-
- /* Loading Overlay */
- #loadingOverlay {
- display: none;
- position: absolute;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(255, 255, 255, 0.9);
- border-radius: 12px;
- z-index: 10;
- justify-content: center;
- align-items: center;
- flex-direction: column;
- }
- .spinner {
- border: 4px solid #f3f3f3;
- border-top: 4px solid #0070f3;
- border-radius: 50%;
- width: 30px;
- height: 30px;
- animation: spin 1s linear infinite;
- margin-bottom: 10px;
- }
- @keyframes spin {
- 0% { transform: rotate(0deg); }
- 100% { transform: rotate(360deg); }
- }
- </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Copy Create - Direct PDF</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            color: #1e3a8a;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 25px;
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+            text-align: left;
+            font-size: 14px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-item {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #ddd;
+        }
+        .success { color: #065f46; font-weight: bold; }
+        .error { color: #991b1b; font-weight: bold; }
+        .info { color: #1e40af; }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #065f46;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #0070f3;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
 <div class="card">
- <!-- Loading Spinner -->
- <div id="loadingOverlay">
- <div class="spinner"></div>
- <span>প্রসেসিং হচ্ছে...</span>
- </div>
+    <h2>📄 Server Copy Create</h2>
+    
+    <form id="createForm">
+        <label for="nid">NID Number:</label>
+        <!-- ১০, ১৩ অথবা ১৭ ডিজিটের NID সাপোর্ট করার জন্য রেজেক্স আপডেট করা হয়েছে -->
+        <input 
+            type="text" 
+            id="nid" 
+            placeholder="১০, ১৩ বা ১৭ ডিজিটের NID লিখুন" 
+            required 
+            pattern="^(\d{10}|\d{13}|\d{17})$" 
+            title="সঠিক ১০, ১৩ অথবা ১৭ ডিজিটের NID নম্বর দিন">
 
- <h2>🚀 Server Copy Create</h2>
- 
- <form id="createForm">
- <label for="nid">NID Number:</label>
- <input type="text" id="nid" placeholder="আপনার NID নম্বর দিন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" required>
 
- <label for="dob">Date of Birth:</label>
- <input type="date" id="dob" required>
+        <button type="submit" id="btnSubmit">Generate & Download PDF</button>
+    </form>
 
- <button type="submit" id="btnSubmit">Generate & Download PDF</button>
- </form>
-
- <!-- Status Log Area -->
- <div id="status"></div>
- 
- <a href="index.html" class="back-btn">← Back to Main Menu</a>
+    <!-- Status Log Area -->
+    <div id="status"></div>
+    
+    <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </div>
 
 <script>
- // 🔒 Hidden Configuration
- const CONFIG = {
- apiKey: '2a3b267ca79e6abc23fb675a0e381656',
- baseUrl: 'https://servercopy.work'
- };
+    function addLog(message, type = 'info', isHtml = false) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.style.display = 'block';
+        const logItem = document.createElement('div');
+        logItem.className = `log-item ${type}`;
+        
+        const timestamp = `[${new Date().toLocaleTimeString()}] `;
+        if (isHtml) {
+            logItem.innerHTML = timestamp + message;
+        } else {
+            logItem.textContent = timestamp + message;
+        }
+        
+        statusDiv.appendChild(logItem);
+        statusDiv.scrollTop = statusDiv.scrollHeight;
+    }
 
- function addLog(message, type = 'info') {
- const statusDiv = document.getElementById('status');
- statusDiv.style.display = 'block';
- const logItem = document.createElement('div');
- logItem.className = `log-item ${type}`;
- logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
- statusDiv.appendChild(logItem);
- statusDiv.scrollTop = statusDiv.scrollHeight;
- }
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const nid = document.getElementById('nid').value.trim();
+        const dob = document.getElementById('dob').value;
+        const btn = document.getElementById('btnSubmit');
+        
+        btn.disabled = true;
+        btn.textContent = "Processing...";
+        document.getElementById('status').innerHTML = ''; 
+        
+        try {
+            addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
+            
+            // API কনফিগারেশন (প্রোডাকশনে ব্যাকএন্ড API রাউট ব্যবহার করা সবচেয়ে নিরাপদ)
+            const baseUrl = 'https://servercopy.work';
+            const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+            
+            const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${encodeURIComponent(nid)}&dob=${encodeURIComponent(dob)}`;
+            
+            addLog('PDF প্রস্তুত করা হচ্ছে...', 'info');
 
- document.getElementById('createForm').addEventListener('submit', async function(e) {
- e.preventDefault();
- 
- const nid = document.getElementById('nid').value.trim();
- const dob = document.getElementById('dob').value;
- const btn = document.getElementById('btnSubmit');
- const overlay = document.getElementById('loadingOverlay');
- 
- btn.disabled = true;
- btn.textContent = "Processing...";
- document.getElementById('status').innerHTML = ''; 
- overlay.style.display = 'flex'; // Show loading
- 
- try {
- addLog('Connecting securely...', 'info');
- 
- // Step 1: Verify Data via API
- const apiUrl = `${CONFIG.baseUrl}/sv.php?key=${CONFIG.apiKey}&nid=${nid}&dob=${dob}`;
- let isValid = false;
- 
- try {
- const response = await fetch(apiUrl);
- if (response.ok) {
- const data = await response.json();
- if (data.success || data.data) {
- isValid = true;
- addLog('✅ Data verified successfully.', 'success');
- } else {
- addLog('⚠️ Data mismatch, generating PDF anyway.', 'error');
- isValid = true; 
- }
- }
- } catch (err) {
- addLog(`ℹ️ Verification skipped (${err.message}), proceeding.`, 'info');
- isValid = true; 
- }
+            // নতুন উইন্ডো খোলার চেষ্টা (Popup Block প্রতিরোধে সেফগার্ড)
+            const newTab = window.open(pdfUrl, '_blank');
+            
+            if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                // পপ-আপ ব্লক হলে ম্যানুয়াল ডাউনলোডের বোতাম দেখানো হবে
+                addLog('⚠️ ব্রাউজার পপ-আপ ব্লক করেছে। নিচের বাটনে ক্লিক করে ফাইলটি ওপেন করুন:', 'error');
+                addLog(`<a href="${pdfUrl}" target="_blank" class="download-link">📥 ওপেন / ডাউনলোড করুন</a>`, 'info', true);
+            } else {
+                addLog('✅ PDF নতুন ট্যাবে সফলভাবে চালু হয়েছে।', 'success');
+            }
 
- // Step 2: Generate PDF Link
- const pdfUrl = `${CONFIG.baseUrl}/pdf.php?key=${CONFIG.apiKey}&nid=${nid}&dob=${dob}`;
- 
- addLog('Opening secure PDF window...', 'info');
-
- // Open in new tab
- const printWindow = window.open(pdfUrl, '_blank');
-
- if (!printWindow) {
- alert("Please allow popups to view the PDF!");
- }
-
- // Hide overlay after short delay to show success message
- setTimeout(() => {
- overlay.style.display = 'none';
- addLog('✅ PDF opened! Please select "Save as PDF".', 'success');
- }, 1500);
-
- } catch (error) {
- console.error("Error:", error);
- addLog(`❌ Critical Error: ${error.message}`, 'error');
- overlay.style.display = 'none';
- } finally {
- btn.disabled = false;
- btn.textContent = "Generate & Download PDF";
- }
- });
+        } catch (error) {
+            console.error("Error:", error);
+            addLog(`❌ ত্রুটি: ${error.message}`, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Generate & Download PDF";
+        }
+    });
 </script>
 
 </body>
