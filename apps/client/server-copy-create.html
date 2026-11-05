@@ -85,16 +85,6 @@
         .error { color: #991b1b; font-weight: bold; }
         .info { color: #1e40af; }
         
-        .download-link {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 8px 12px;
-            background: #065f46;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-        }
         .back-btn {
             display: block;
             text-align: center;
@@ -112,14 +102,7 @@
     
     <form id="createForm">
         <label for="nid">NID Number:</label>
-        <!-- ১০, ১৩ অথবা ১৭ ডিজিটের NID সাপোর্ট করার জন্য রেজেক্স আপডেট করা হয়েছে -->
-        <input 
-            type="text" 
-            id="nid" 
-            placeholder="১০, ১৩ বা ১৭ ডিজিটের NID লিখুন" 
-            required 
-            pattern="^(\d{10}|\d{13}|\d{17})$" 
-            title="সঠিক ১০, ১৩ অথবা ১৭ ডিজিটের NID নম্বর দিন">
+        <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
 
         <label for="dob">Date of Birth:</label>
         <input type="date" id="dob" required>
@@ -134,19 +117,12 @@
 </div>
 
 <script>
-    function addLog(message, type = 'info', isHtml = false) {
+    function addLog(message, type = 'info') {
         const statusDiv = document.getElementById('status');
         statusDiv.style.display = 'block';
         const logItem = document.createElement('div');
         logItem.className = `log-item ${type}`;
-        
-        const timestamp = `[${new Date().toLocaleTimeString()}] `;
-        if (isHtml) {
-            logItem.innerHTML = timestamp + message;
-        } else {
-            logItem.textContent = timestamp + message;
-        }
-        
+        logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
         statusDiv.appendChild(logItem);
         statusDiv.scrollTop = statusDiv.scrollHeight;
     }
@@ -159,30 +135,53 @@
         const btn = document.getElementById('btnSubmit');
         
         btn.disabled = true;
-        btn.textContent = "Processing...";
+        btn.textContent = "Generating...";
         document.getElementById('status').innerHTML = ''; 
         
         try {
             addLog('প্রক্রিয়া শুরু হয়েছে...', 'info');
             
-            // API কনফিগারেশন (প্রোডাকশনে ব্যাকএন্ড API রাউট ব্যবহার করা সবচেয়ে নিরাপদ)
+            // Configuration
             const baseUrl = 'https://servercopy.work';
             const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
             
-            const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${encodeURIComponent(nid)}&dob=${encodeURIComponent(dob)}`;
+            // Step 1: Try to verify data first (Optional, but good for debugging)
+            const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
             
-            addLog('PDF প্রস্তুত করা হচ্ছে...', 'info');
-
-            // নতুন উইন্ডো খোলার চেষ্টা (Popup Block প্রতিরোধে সেফগার্ড)
-            const newTab = window.open(pdfUrl, '_blank');
+            addLog(`Checking Data via sv.php...`, 'info');
             
-            if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                // পপ-আপ ব্লক হলে ম্যানুয়াল ডাউনলোডের বোতাম দেখানো হবে
-                addLog('⚠️ ব্রাউজার পপ-আপ ব্লক করেছে। নিচের বাটনে ক্লিক করে ফাইলটি ওপেন করুন:', 'error');
-                addLog(`<a href="${pdfUrl}" target="_blank" class="download-link">📥 ওপেন / ডাউনলোড করুন</a>`, 'info', true);
-            } else {
-                addLog('✅ PDF নতুন ট্যাবে সফলভাবে চালু হয়েছে।', 'success');
+            let isValid = false;
+            try {
+                const response = await fetch(apiUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("SV Response:", data);
+                    if (data.success || data.data) {
+                        isValid = true;
+                        addLog('✅ ডাটা ভ্যালিড হয়েছে!', 'success');
+                    } else {
+                        addLog('⚠️ ডাটা ভ্যালিড হয়নি, তবুও PDF জেনারেট করার চেষ্টা করা হচ্ছে...', 'error');
+                        // We will still try to generate PDF even if validation fails
+                        isValid = true; 
+                    }
+                } else {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+            } catch (err) {
+                addLog(`ℹ️ sv.php চেক ব্যর্থ হয়েছে (${err.message}), সরাসরি PDF জেনারেট করা হবে।`, 'info');
+                isValid = true; // Proceed anyway
             }
+
+            // Step 2: Generate PDF
+            const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+            
+            addLog(`PDF URL: ${pdfUrl}`, 'info');
+            addLog('PDF জেনারেট করা হচ্ছে...', 'info');
+            
+            // Open PDF in a new tab
+            window.open(pdfUrl, '_blank');
+            
+            addLog('✅ PDF নতুন ট্যাবে খোলা হয়েছে! ডাউনলোড করুন।', 'success');
 
         } catch (error) {
             console.error("Error:", error);
