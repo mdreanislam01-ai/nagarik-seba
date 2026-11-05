@@ -145,7 +145,7 @@
  const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
  const baseUrl = 'https://servercopy.work';
  
- // Step 1: Try to verify data first
+ // Step 1: Try to verify data first (Optional but good for debugging)
  const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
  let isValid = false;
  try {
@@ -166,54 +166,44 @@
  isValid = true; 
  }
 
- // Step 2: Fetch PDF Content (The Fix)
+ // Step 2: Generate PDF using Iframe Method (Most Reliable)
  const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
- addLog('Fetching PDF content...', 'info');
+ addLog('Generating PDF...', 'info');
 
+ // Create an iframe element
+ const iframe = document.createElement('iframe');
+ iframe.style.width = '1px';
+ iframe.style.height = '1px';
+ iframe.style.border = 'none';
+ iframe.src = pdfUrl;
+ document.body.appendChild(iframe);
+
+ // Wait for the iframe to load completely
+ iframe.onload = function() {
  try {
- // We fetch the HTML content directly
- const response = await fetch(pdfUrl);
- if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+ // Focus the iframe and trigger print
+ iframe.focus();
+ iframe.contentWindow.print();
  
- const htmlContent = await response.text();
+ addLog('✅ PDF opened! Please select "Save as PDF" in the print dialog.', 'success');
  
- // Check if content is empty or just loading script
- if (!htmlContent || htmlContent.length < 50) {
- throw new Error("Received empty or minimal content from server.");
- }
-
- addLog('✅ Content received. Generating secure file...', 'success');
-
- // Create a Blob and open it in a new window for printing
- const blob = new Blob([htmlContent], { type: 'text/html' });
- const url = URL.createObjectURL(blob);
- 
- // Open in a new tab/window
- const printWindow = window.open(url, '_blank');
-
- if (!printWindow) {
- alert("Please allow popups to view the PDF!");
- URL.revokeObjectURL(url);
- return;
- }
-
- // Wait for the new window to load fully before printing
+ // Clean up after some time
  setTimeout(() => {
- printWindow.focus();
- printWindow.print();
- 
- // Close after 2 seconds to clean up
- setTimeout(() => {
- printWindow.close();
- }, 2000);
- }, 1000); // Give browser 1 second to render styles
-
- } catch (fetchErr) {
- console.error("Fetch Error:", fetchErr);
- addLog(`❌ Failed to get content: ${fetchErr.message}`, 'error');
- // Fallback: Just open the link directly
+ document.body.removeChild(iframe);
+ }, 5000);
+ } catch (printErr) {
+ addLog('❌ Print dialog failed. Opening in new tab.', 'error');
  window.open(pdfUrl, '_blank');
+ document.body.removeChild(iframe);
  }
+ };
+
+ // Fallback timeout in case onload doesn't fire
+ setTimeout(() => {
+ if (document.body.contains(iframe)) {
+ document.body.removeChild(iframe);
+ }
+ }, 10000);
 
  } catch (error) {
  console.error("Error:", error);
