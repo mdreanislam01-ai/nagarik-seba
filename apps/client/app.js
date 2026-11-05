@@ -608,6 +608,21 @@ function nsSlideTogglePass() { var p = document.getElementById('suPass'); if (p)
    admin approves it. The user messages the admin on WhatsApp (the site's
    support number, same as ns-wa-profile.js) via this wa.me link, with
    their details pre-filled, so the admin can approve them in the portal. */
+/* Signup errors (2026-11-06): the API returns short codes (phone_exists,
+   email_exists, ...). Map them to plain Bengali so the user never sees a
+   raw code like "phone_exists". */
+function nsSignupErrMsg(e) {
+  var m = {
+    registration_closed: 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।',
+    phone_exists: 'এই ফোন নম্বর দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট আছে। লগইন করুন অথবা অন্য নম্বর ব্যবহার করুন।',
+    email_exists: 'এই ইমেইল দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট আছে। লগইন করুন অথবা অন্য ইমেইল ব্যবহার করুন।',
+    invalid_email: 'সঠিক ইমেইল ঠিকানা লিখুন।',
+    invalid_phone: 'সঠিক ফোন নম্বর লিখুন।',
+    password_too_short: 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।',
+    name_required: 'আপনার নাম লিখুন।'
+  };
+  return m[e.message] || e.message;
+}
 function nsApprovalWaBtn(label) {
   var msg = 'আসসালামু আলাইকুম, আমি নাগরিক সেবায় রেজিস্ট্রেশন করেছি। ' + label + '। দয়া করে আমার অ্যাকাউন্টটি অনুমোদন করুন।';
   var url = 'https://wa.me/8801318325072?text=' + encodeURIComponent(msg);
@@ -617,7 +632,7 @@ async function nsSlideSignup() {
   var name = document.getElementById('suName').value.trim(), email = document.getElementById('suEmail').value.trim(),
     phone = document.getElementById('suPhone').value.trim(), password = document.getElementById('suPass').value;
   try { await nsCall('/auth/signup', 'POST', { name: name, email: email, phone: phone, password: password }); showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + name + ', ফোন: ' + phone)); location.hash = '#/login'; }
-  catch (e) { showModal('সাইনআপ হয়নি', e.message === 'registration_closed' ? 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' : e.message); }
+  catch (e) { showModal('সাইনআপ হয়নি', nsSignupErrMsg(e)); }
 }
 function nsLoginPortalHTML(mode) {
   mode = mode || 'login';
@@ -673,7 +688,7 @@ async function nsDoSignup() {
   const name = document.getElementById('authName').value.trim(), email = document.getElementById('authEmail').value.trim(),
     phone = document.getElementById('authPhone').value.trim(), password = document.getElementById('authPass').value;
   try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + name + ', ফোন: ' + phone)); location.hash = '#/login'; }
-  catch (e) { showModal('সাইনআপ হয়নি', e.message === 'registration_closed' ? 'রেজিস্ট্রেশন এখন বন্ধ আছে। নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' : e.message); }
+  catch (e) { showModal('সাইনআপ হয়নি', nsSignupErrMsg(e)); }
 }
 const _origRender = render;
 render = async function () {
