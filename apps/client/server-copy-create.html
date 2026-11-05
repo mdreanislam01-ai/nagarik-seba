@@ -3,250 +3,98 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Server Copy Create - Direct PDF</title>
- <!-- Supabase Client Library -->
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <title>Server Copy Create</title>
  <style>
- body {
-     font-family: system-ui, -apple-system, sans-serif;
-     background-color: #f0f4f8;
-     margin: 0;
-     padding: 20px;
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     min-height: 100vh;
- }
- .card {
-     background: white;
-     padding: 30px;
-     border-radius: 12px;
-     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-     width: 100%;
-     max-width: 450px;
- }
- h2 {
-     color: #1e3a8a;
-     text-align: center;
-     margin-bottom: 20px;
-     font-size: 24px;
- }
- label {
-     display: block;
-     margin-top: 15px;
-     font-weight: 600;
-     color: #333;
- }
- input {
-     width: 100%;
-     padding: 12px;
-     margin-top: 8px;
-     border: 1px solid #ccc;
-     border-radius: 6px;
-     font-size: 16px;
-     box-sizing: border-box;
- }
- button {
-     width: 100%;
-     padding: 14px;
-     margin-top: 25px;
-     background-color: #0070f3;
-     color: white;
-     border: none;
-     border-radius: 6px;
-     font-size: 16px;
-     font-weight: bold;
-     cursor: pointer;
-     transition: background 0.3s;
- }
- button:hover {
-     background-color: #005bb5;
- }
- button:disabled {
-     background-color: #ccc;
-     cursor: not-allowed;
- }
- #status {
-     margin-top: 20px;
-     padding: 15px;
-     border-radius: 6px;
-     display: none;
-     text-align: left;
-     font-size: 14px;
-     background-color: #f9fafb;
-     border: 1px solid #e5e7eb;
-     max-height: 200px;
-     overflow-y: auto;
- }
- .log-item {
-     margin-bottom: 5px;
-     padding-bottom: 5px;
-     border-bottom: 1px dashed #ddd;
- }
+ body { font-family: system-ui, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+ .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+ h2 { color: #1e3a8a; text-align: center; margin-bottom: 20px; }
+ label { display: block; margin-top: 15px; font-weight: 600; color: #333; }
+ input { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+ button { width: 100%; padding: 14px; margin-top: 25px; background-color: #0070f3; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+ button:hover { background-color: #005bb5; }
+ button:disabled { background-color: #ccc; }
+ #status { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; background-color: #f9fafb; border: 1px solid #e5e7eb; }
+ .log-item { margin-bottom: 5px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
  .success { color: #065f46; font-weight: bold; }
  .error { color: #991b1b; font-weight: bold; }
- .info { color: #1e40af; }
- 
- .back-btn {
-     display: block;
-     text-align: center;
-     margin-top: 15px;
-     color: #0070f3;
-     text-decoration: none;
-     font-size: 14px;
- }
+ .back-btn { display: block; text-align: center; margin-top: 15px; color: #0070f3; text-decoration: none; }
  </style>
+ <!-- Supabase SDK -->
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
 <div class="card">
  <h2>📄 Server Copy Create</h2>
- 
  <form id="createForm">
      <label for="nid">NID Number:</label>
-     <input type="text" id="nid" placeholder="আপনার NID নম্বর লিখুন" required pattern="\d{10}" title="Please enter a valid 10-digit NID">
+     <input type="text" id="nid" placeholder="Enter 10-digit NID" required pattern="\d{10}">
 
      <label for="dob">Date of Birth:</label>
      <input type="date" id="dob" required>
 
-     <button type="submit" id="btnSubmit">Generate & Download PDF</button>
+     <button type="submit" id="btnSubmit">Fetch & Save Data</button>
  </form>
-
- <!-- Status Log Area -->
  <div id="status"></div>
- 
  <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </div>
 
 <script>
- // --- Supabase Configuration ---
+ // --- Configuration ---
  const SUPABASE_URL = 'https://msaxqcgkfmjcldmihyvf.supabase.co';
  const SUPABASE_KEY = 'sb_publishable_fwr-UaCeYUoxbTqDr-mcxw_j7EYwiRL';
  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
- // --- Cloudflare Worker Proxy URL ---
- // তোমার Cloudflare Worker-এর URL এখানে বসাবে। 
- // উদাহরণ: 'https://your-worker.workers.dev'
- const PROXY_URL_BASE = 'https://your-cloudflare-worker.workers.dev'; 
-
- function addLog(message, type = 'info') {
-     const statusDiv = document.getElementById('status');
-     if (!statusDiv) return;
-     
-     statusDiv.style.display = 'block';
-     const logItem = document.createElement('div');
-     logItem.className = `log-item ${type}`;
-     logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-     statusDiv.appendChild(logItem);
-     statusDiv.scrollTop = statusDiv.scrollHeight;
+ function log(msg, type='info') {
+     const div = document.getElementById('status');
+     div.style.display = 'block';
+     const p = document.createElement('div');
+     p.className = `log-item ${type}`;
+     p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+     div.appendChild(p);
+     div.scrollTop = div.scrollHeight;
  }
 
- document.addEventListener('DOMContentLoaded', () => {
-     const form = document.getElementById('createForm');
-     if (!form) return;
+ document.getElementById('createForm').addEventListener('submit', async (e) => {
+     e.preventDefault();
+     const nid = document.getElementById('nid').value.trim();
+     const dob = document.getElementById('dob').value;
+     const btn = document.getElementById('btnSubmit');
 
-     form.addEventListener('submit', async function(e) {
-         e.preventDefault();
-         
-         const nid = document.getElementById('nid').value.trim();
-         const dob = document.getElementById('dob').value;
-         const btn = document.getElementById('btnSubmit');
-         
-         if (!nid || !dob) {
-             alert("Please enter both NID and DOB");
-             return;
-         }
+     if (!nid || !dob) return alert("Please fill all fields");
 
-         btn.disabled = true;
-         btn.textContent = "Generating...";
-         const statusDiv = document.getElementById('status');
-         if(statusDiv) statusDiv.innerHTML = ''; 
-         
-         try {
-             addLog('Connecting via Cloudflare Proxy...', 'info');
-             
-             // Configuration
-             const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
-             
-             // Step 1: Verify Data via Proxy
-             const apiUrl = `${PROXY_URL_BASE}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-             
-             addLog(`Checking Data via sv.php...`, 'info');
-             
-             let isValid = false;
-             try {
-                 const response = await fetch(apiUrl);
-                 if (response.ok) {
-                     const data = await response.json();
-                     console.log("SV Response:", data);
-                     
-                     // If data is found, mark as valid
-                     if (data.success || data.data) {
-                         isValid = true;
-                         addLog('✅ NID Verified Successfully!', 'success');
-                         
-                         // Optional: Save to Supabase
-                         await saveToSupabase(nid, dob, 'verified');
-                     } else {
-                         addLog('⚠️ Verification failed, but proceeding.', 'error');
-                         isValid = true; 
-                     }
-                 } else {
-                     throw new Error(`HTTP Error: ${response.status}`);
-                 }
-             } catch (err) {
-                 addLog(`ℹ️ Proxy connection issue (${err.message}), generating PDF anyway.`, 'info');
-                 isValid = true; 
-             }
+     btn.disabled = true;
+     btn.textContent = "Fetching...";
+     log("Connecting to Government Server...", "info");
 
-             // Step 2: Generate PDF via Proxy
-             const pdfUrl = `${PROXY_URL_BASE}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
-             
-             addLog(`PDF URL: ${pdfUrl}`, 'info');
-             addLog('Preparing PDF download...', 'info');
-             
-             // Open PDF in a new tab
-             window.open(pdfUrl, '_blank');
-             
-             addLog('✅ PDF Generated! Please check your browser downloads.', 'success');
-             
-             // Optional: Save action to Supabase
-             await saveToSupabase(nid, dob, 'pdf_generated');
-
-         } catch (error) {
-             console.error("Error:", error);
-             addLog(`❌ Final Error: ${error.message}`, 'error');
-         } finally {
-             btn.disabled = false;
-             btn.textContent = "Generate & Download PDF";
-         }
-     });
- });
-
- // Helper function to save data to Supabase
- async function saveToSupabase(nid, dob, action) {
      try {
-         // Assuming you have a table named 'user_logs' or similar
-         const { data, error } = await supabase
-             .from('user_logs') // তোমার টেবিলের নাম এখানে বসাবে
-             .insert([
-                 { 
-                     nid: nid, 
-                     dob: dob, 
-                     action: action, 
-                     created_at: new Date() 
-                 }
-             ]);
-         
-         if (error) {
-             console.warn("Supabase Insert Error:", error);
+         // Call your own Vercel API Function
+         const response = await fetch('/api/fetch-nid', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ nid, dob })
+         });
+
+         const result = await response.json();
+
+         if (response.ok) {
+             log(`Data fetched! Source: ${result.source}`, "success");
+             
+             // Generate PDF using the stored data logic or direct link
+             // Here we just open the PDF generation page with params
+             window.open(`/pdf-viewer.html?nid=${nid}&dob=${dob}`, '_blank');
          } else {
-             console.log("Data saved to Supabase:", data);
+             log(`Error: ${result.error}`, "error");
          }
+
      } catch (err) {
-         console.error("Supabase Connection Error:", err);
+         console.error(err);
+         log(`Network Error: ${err.message}`, "error");
+     } finally {
+         btn.disabled = false;
+         btn.textContent = "Fetch & Save Data";
      }
- }
+ });
 </script>
 
 </body>
