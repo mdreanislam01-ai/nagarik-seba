@@ -5,15 +5,34 @@ const $=s=>document.querySelector(s);
    badge, body, and বাতিল / ঠিক আছে pills when the body has no button
    of its own (Autoload forms keep their own buttons). Title stays
    plain text, as before. */
-function showModal(t,html){
-  const back=$('#modalBack');
-  const hasBtn=html.indexOf('<button')!==-1;
-  back.innerHTML='<div class="ns-rch-card"><div class="ns-rch-head"><span class="ns-rch-badge">✓</span><div><div class="ns-rch-title"></div></div><button type="button" class="ns-rch-x" aria-label="বন্ধ করুন">✕</button></div><div class="ns-rch-body"><div id="modalBody"></div>'+(hasBtn?'':'<div class="ns-rch-btns"><button type="button" class="ns-rch-cancel">বাতিল</button><button type="button" class="ns-rch-ok">ঠিক আছে <span>→</span></button></div>')+'</div></div>';
-  back.querySelector('.ns-rch-title').textContent=t;
-  back.querySelector('#modalBody').innerHTML=html;
-  back.querySelector('.ns-rch-x').addEventListener('click',function(){closeModal();});
-  const c=back.querySelector('.ns-rch-cancel'); if(c)c.addEventListener('click',function(){closeModal();});
-  const o=back.querySelector('.ns-rch-ok'); if(o)o.addEventListener('click',function(){closeModal();});
+/* White popup (2026-11-06): one popup design for the whole site, matching
+   the reference the user sent — white card, a coloured icon circle on top
+   (green check = success, red X = error, orange ! = warning, blue i =
+   info), a bold Bengali heading, the message, and a single teal OK button
+   (the site's colour). Replaces the old teal-header .ns-rch-card.
+   The icon type is inferred from the title + body so the existing
+   showModal calls need no changes; pass a type as the 3rd argument to
+   force one ('success' | 'error' | 'warn' | 'info'). The backdrop click
+   (in index.html) and the OK button both close it. Forms/tables in the
+   body are left-aligned; plain messages are centred. */
+function nsPopType(t, html) {
+  var s = (t || '') + ' ' + (html || '');
+  if (/বাতিল করা হয়েছে/.test(s)) return 'info';
+  if (/হয়নি|দুঃখিত|ভুল|ব্যর্থ|ত্রুটি|পড়া যায়নি|ফাইল বড়|Invalid/.test(s)) return 'error';
+  if (/সফল|সম্পন্ন|হয়েছে|জমা হয়েছে|সংরক্ষণ/.test(s)) return 'success';
+  if (/টাকা কাটা|নিশ্চিত|সতর্ক/.test(s)) return 'warn';
+  return 'info';
+}
+function showModal(t, html, type) {
+  const back = $('#modalBack');
+  const hasBtn = html.indexOf('<button') !== -1;
+  const kind = type || nsPopType(t, html);
+  const ico = { success: '✓', error: '✕', warn: '!', info: 'i' }[kind] || 'i';
+  const isForm = /<(input|select|textarea|label|table)/i.test(html);
+  back.innerHTML = '<div class="ns-pop' + (isForm ? ' ns-pop-form' : '') + '"><div class="ns-pop-ico ns-pop-' + kind + '">' + ico + '</div><div class="ns-pop-title"></div><div class="ns-pop-body"><div id="modalBody"></div>' + (hasBtn ? '' : '<div class="ns-pop-btns"><button type="button" class="ns-pop-ok">ঠিক আছে</button></div>') + '</div></div>';
+  back.querySelector('.ns-pop-title').textContent = t;
+  back.querySelector('#modalBody').innerHTML = html;
+  const o = back.querySelector('.ns-pop-ok'); if (o) o.addEventListener('click', function () { closeModal(); });
   back.classList.add('open');
 }
 function closeModal(){$('#modalBack').classList.remove('open')}
