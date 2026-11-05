@@ -260,59 +260,83 @@
  </head>
  <body>
  <div class="header">
- <div class="logo-container">
- <!-- Bangladesh Government Logo -->
- <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_Bangladesh.svg/1200px-Emblem_of_Bangladesh.svg.png" alt="Gov Logo" class="logo-img">
- </div>
- <h1>National ID Information</h1>
- <p>Government of the People's Republic of Bangladesh</p>
- </div>
+<script>
+ // Global Variables for Supabase (If you want to add caching later)
+ const SUPABASE_URL = 'https://msaxqcgkfmjcldmihyvf.supabase.co';
+ const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'; 
+ // Note: If you don't have Supabase yet, this part can be ignored or removed.
 
- <div class="content">
- <div class="field"><span class="label">NID Number:</span><span class="value">${nid}</span></div>
- <div class="field"><span class="label">Date of Birth:</span><span class="value">${formattedDate}</span></div>
- <div class="field"><span class="label">Generated On:</span><span class="value">${todayDate}</span></div>
- 
- <hr style="margin: 20px 0;">
- 
- <h3>Server Raw Data:</h3>
- <pre style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; font-size: 12px; overflow-x: auto;">
- ${JSON.stringify(apiData, null, 2)}
- </pre>
- </div>
-
- <div class="footer">
- This is a computer generated document verified via Server Copy API.
- </div>
- </body>
- </html>
- `;
-
- // Inject content and trigger print dialog
- printWindow.document.write(finalContent);
- printWindow.document.close(); // Important for older browsers
- 
- // Wait a moment then show print dialog
- setTimeout(() => {
- printWindow.print();
- }, 500);
-
- // Hide main UI loader
- setTimeout(() => {
- overlay.style.display = 'none';
- btn.disabled = false;
- btn.textContent = "Generate Official PDF";
- }, 1000);
-
- } catch (error) {
- console.error("Error:", error);
- addLog(`❌ Critical Error: ${error.message}`, 'error');
- overlay.style.display = 'none';
- btn.disabled = false;
- btn.textContent = "Generate Official PDF";
+ function addLog(message, type = 'info') {
+     const statusDiv = document.getElementById('status');
+     statusDiv.style.display = 'block';
+     const logItem = document.createElement('div');
+     logItem.className = `log-item ${type}`;
+     logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+     statusDiv.appendChild(logItem);
+     statusDiv.scrollTop = statusDiv.scrollHeight;
  }
+
+ document.getElementById('createForm').addEventListener('submit', async function(e) {
+     e.preventDefault();
+     
+     const nid = document.getElementById('nid').value.trim();
+     const dob = document.getElementById('dob').value;
+     const btn = document.getElementById('btnSubmit');
+     
+     btn.disabled = true;
+     btn.textContent = "Generating...";
+     document.getElementById('status').innerHTML = ''; 
+     
+     try {
+         addLog('Connecting to Server...', 'info');
+         
+         // Configuration
+         const baseUrl = 'https://servercopy.work';
+         const apiKey = '2a3b267ca79e6abc23fb675a0e381656';
+         
+         // Step 1: Verify Data via sv.php
+         const apiUrl = `${baseUrl}/sv.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+         
+         addLog(`Checking NID validity...`, 'info');
+         
+         let isValid = false;
+         try {
+             const response = await fetch(apiUrl);
+             if (response.ok) {
+                 const data = await response.json();
+                 console.log("SV Response:", data);
+                 if (data.success || data.data) {
+                     isValid = true;
+                     addLog('✅ NID Verified Successfully!', 'success');
+                 } else {
+                     addLog('⚠️ Verification failed, but proceeding to generate PDF.', 'error');
+                     isValid = true; 
+                 }
+             } else {
+                 throw new Error(`HTTP Error: ${response.status}`);
+             }
+         } catch (err) {
+             addLog(`ℹ️ sv.php connection issue (${err.message}), generating PDF anyway.`, 'info');
+             isValid = true; 
+         }
+
+         // Step 2: Generate PDF
+         const pdfUrl = `${baseUrl}/pdf.php?key=${apiKey}&nid=${nid}&dob=${dob}`;
+         
+         addLog(`PDF URL: ${pdfUrl}`, 'info');
+         addLog('Preparing PDF download...', 'info');
+         
+         // Open PDF in a new tab
+         window.open(pdfUrl, '_blank');
+         
+         addLog('✅ PDF Generated! Please check your browser downloads.', 'success');
+
+     } catch (error) {
+         console.error("Error:", error);
+         addLog(`❌ Final Error: ${error.message}`, 'error');
+     } finally {
+         btn.disabled = false;
+         btn.textContent = "Generate & Download PDF";
+     }
  });
 </script>
-
-</body>
-</html>
