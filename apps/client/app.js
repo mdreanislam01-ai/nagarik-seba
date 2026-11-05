@@ -642,6 +642,54 @@ function nsSignupErrMsg(e) {
   };
   return m[e.message] || e.message;
 }
+/* Email OTP at registration (2026-11-06): after the signup form is
+   submitted, the API emails a 6-digit code (Resend, from
+   noreply@nagarikseba.com); the account is created only after the code
+   is verified (POST /auth/verify-otp). The signup data is kept in
+   window._nsOtpSignup until verification succeeds. */
+function nsOtpErrMsg(e) {
+  var m = {
+    otp_invalid: 'ভুল কোড। কোডটি আবার দেখে লিখুন।',
+    otp_expired: 'কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড পাঠান।',
+    otp_cooldown: 'কোড এইমাত্র পাঠানো হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+    otp_too_many: 'অনেকবার কোড পাঠানো হয়েছে। এক ঘণ্টা পর আবার চেষ্টা করুন।',
+    email_not_configured: 'ইমেইল পাঠানো যাচ্ছে না। অ্যাডমিনের সঙ্গে যোগাযোগ করুন।',
+    email_send_failed: 'ইমেইল পাঠানো যায়নি। আবার চেষ্টা করুন।'
+  };
+  return m[e.message] || nsSignupErrMsg(e);
+}
+function nsShowOtpModal() {
+  var d = window._nsOtpSignup || {};
+  showModal('ইমেইল যাচাই করুন', '<div style="text-align:center"><p>আপনার ইমেইলে (<b>' + esc(d.email || '') + '</b>) ৬ সংখ্যার একটি কোড পাঠানো হয়েছে। কোডটি নিচে লিখুন।</p><p><input id="nsOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" style="text-align:center;font-size:26px;letter-spacing:10px;"></p><p id="nsOtpErr" style="color:#dc2626;min-height:20px;margin:6px 0;"></p><p><button class="btn" onclick="nsVerifyOtp()">যাচাই করুন</button></p><p class="muted">কোড পাননি? <a href="javascript:void(0)" onclick="nsResendOtp()">আবার পাঠান</a></p></div>');
+  setTimeout(function () { var el = document.getElementById('nsOtpCode'); if (el) el.focus(); }, 120);
+}
+async function nsVerifyOtp() {
+  var d = window._nsOtpSignup || {};
+  var el = document.getElementById('nsOtpCode');
+  var code = String((el && el.value) || '').trim();
+  var errEl = document.getElementById('nsOtpErr');
+  if (!/^\d{6}$/.test(code)) { if (errEl) errEl.textContent = '৬ সংখ্যার কোডটি লিখুন।'; return; }
+  try {
+    await nsCall('/auth/verify-otp', 'POST', { name: d.name, email: d.email, phone: d.phone, password: d.password, code: code });
+    closeModal();
+    window._nsOtpSignup = null;
+    showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + d.name + ', ফোন: ' + d.phone));
+    location.hash = '#/login';
+  } catch (e) {
+    if (errEl) errEl.textContent = nsOtpErrMsg(e);
+    else showModal('যাচাই হয়নি', nsOtpErrMsg(e));
+  }
+}
+async function nsResendOtp() {
+  var d = window._nsOtpSignup || {};
+  var errEl = document.getElementById('nsOtpErr');
+  try {
+    await nsCall('/auth/send-otp', 'POST', { name: d.name, email: d.email, phone: d.phone, password: d.password });
+    if (errEl) { errEl.style.color = '#16a34a'; errEl.textContent = 'নতুন কোড পাঠানো হয়েছে। ইমেইল চেক করুন।'; }
+  } catch (e) {
+    if (errEl) { errEl.style.color = '#dc2626'; errEl.textContent = nsOtpErrMsg(e); }
+  }
+}
 function nsApprovalWaBtn(label) {
   var msg = 'আসসালামু আলাইকুম, আমি নাগরিক সেবায় রেজিস্ট্রেশন করেছি। ' + label + '। দয়া করে আমার অ্যাকাউন্টটি অনুমোদন করুন।';
   var url = 'https://wa.me/8801318325072?text=' + encodeURIComponent(msg);
@@ -650,8 +698,12 @@ function nsApprovalWaBtn(label) {
 async function nsSlideSignup() {
   var name = document.getElementById('suName').value.trim(), email = document.getElementById('suEmail').value.trim(),
     phone = document.getElementById('suPhone').value.trim(), password = document.getElementById('suPass').value;
-  try { await nsCall('/auth/signup', 'POST', { name: name, email: email, phone: phone, password: password }); showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + name + ', ফোন: ' + phone)); location.hash = '#/login'; }
-  catch (e) { showModal('সাইনআপ হয়নি', nsSignupErrMsg(e)); }
+  try {
+    await nsCall('/auth/send-otp', 'POST', { name: name, email: email, phone: phone, password: password });
+    window._nsOtpSignup = { name: name, email: email, phone: phone, password: password };
+    nsShowOtpModal();
+  }
+  catch (e) { showModal('সাইনআপ হয়নি', nsOtpErrMsg(e)); }
 }
 function nsLoginPortalHTML(mode) {
   mode = mode || 'login';
@@ -706,8 +758,12 @@ async function nsDoForgot() {
 async function nsDoSignup() {
   const name = document.getElementById('authName').value.trim(), email = document.getElementById('authEmail').value.trim(),
     phone = document.getElementById('authPhone').value.trim(), password = document.getElementById('authPass').value;
-  try { await nsCall('/auth/signup', 'POST', { name, email, phone, password }); showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + name + ', ফোন: ' + phone)); location.hash = '#/login'; }
-  catch (e) { showModal('সাইনআপ হয়নি', nsSignupErrMsg(e)); }
+  try {
+    await nsCall('/auth/send-otp', 'POST', { name, email, phone, password });
+    window._nsOtpSignup = { name, email, phone, password };
+    nsShowOtpModal();
+  }
+  catch (e) { showModal('সাইনআপ হয়নি', nsOtpErrMsg(e)); }
 }
 const _origRender = render;
 render = async function () {
