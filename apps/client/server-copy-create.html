@@ -205,7 +205,7 @@
  throw new Error(`HTTP Error: ${response.status}`);
  }
  } catch (err) {
- apiData = { error: err.message };
+ apiData = { error: err.message, note: "Using fallback mode due to network/CORS issue." };
  addLog(`ℹ️ API check skipped (${err.message}), generating blank form.`, 'info');
  }
 
