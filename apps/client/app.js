@@ -79,12 +79,20 @@ function nsProfAvatarHTML() {
   const img = ph || getProfilePhoto() || nsAvatarFor(u.name);
   return '<img src="' + img + '" alt="প্রোফাইল ছবি">' + (u.verified ? '<span class="ns-vbadge">✓</span>' : '');
 }
+/* Dashboard avatar (2026-11-06 fix): same photo chain as the profile
+   page — server photo first, then this browser's saved photo — and
+   the real user's initial when no photo exists anywhere. The demo
+   anime avatar is never used here: it is what made the dashboard
+   show a different face from the profile page. */
 function profileAvatarHTML(){
   const u = nsCurrentUser();
-  const ph = getProfilePhoto();
-  const img = ph || nsAvatarFor(u && u.name);
+  let ph = '';
+  try { ph = (typeof NS_STATE !== 'undefined' && NS_STATE.photoData) || ''; } catch (e) {}
+  if (!ph) ph = getProfilePhoto();
   const badge = u && u.verified ? '<span class="ns-vbadge">✓</span>' : '';
-  return `<span class="ns-avatar-wrap"><span class="avatar-ph avatar-photo"><img src="${img}" alt="প্রোফাইল ছবি"></span>${badge}</span>`;
+  if (ph) return `<span class="ns-avatar-wrap"><span class="avatar-ph avatar-photo"><img src="${ph}" alt="প্রোফাইল ছবি"></span>${badge}</span>`;
+  const ch = esc(((u && u.name) || '').trim().charAt(0) || 'ন');
+  return `<span class="ns-avatar-wrap"><span class="avatar-ph avatar-photo"><span style="font-size:30px;font-weight:800;color:#fff">${ch}</span></span>${badge}</span>`;
 }
 function profilePreviewHTML(){
   const ph=getProfilePhoto();
@@ -136,7 +144,7 @@ function removeProfilePhoto(){
    profile sync. Email stays disabled/unchanged, balance/UID/Verified
    are deliberately NOT changed by this form. */
 const PROFILE_KEY='nagarikseba_profile_info';
-const PROFILE_DEFAULTS={name:'নমুনা ব্যবহারকারী',phone:'01XXXXXXXXX'};
+const PROFILE_DEFAULTS={name:'',phone:''}; /* 2026-11-06: sample defaults removed — no fake name/phone may ever render. */
 function getProfileInfo(){
   try{
     const raw=localStorage.getItem(PROFILE_KEY);
@@ -388,21 +396,33 @@ function render(){
  const hash=location.hash.replace('#/','')||'dashboard';const parts=hash.split('/');
  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.toggle('active',a.dataset.r===hash));
  let m=$('#main');let h='';
+ /* Dashboard display values (2026-11-06 fix): the REAL logged-in user
+    from /me, or a neutral dash while the data is still loading. The
+    old template hard-coded sample data (নমুনা ব্যবহারকারী, UID
+    #BD-982410, ৳ ১০, counts 1/3) that showed on every render until
+    the API answered — on a slow connection that fake account stayed
+    on screen for seconds, and after a failed /me it never got
+    corrected. No sample value is ever painted now. */
+ const _du = (typeof NS_STATE !== 'undefined' && NS_STATE.user) || null;
+ const _dName = (_du && _du.name) || (function(){ try { const _p = getProfileInfo(); return (_p.name && _p.name !== 'নমুনা ব্যবহারকারী') ? _p.name : ''; } catch (e) { return ''; } })() || '—';
+ const _dUid = (_du && _du.uid) ? 'UID: #' + _du.uid : 'UID: —';
+ const _dBal = (typeof NS_STATE !== 'undefined' && NS_STATE.wallet != null) ? '৳ ' + NS_STATE.wallet : '৳ —';
+ const _dCnt = function (id) { try { if (NS_STATE.stats && NS_STATE.stats.by_service && NS_STATE.stats.by_service[id] != null) return NS_STATE.stats.by_service[id] + ' কার্ড তালিকা'; } catch (e) {} return '— কার্ড তালিকা'; };
  if(hash==='dashboard'){
   h+=`<section class="profile-card">
   <div class="profile-row">
     ${profileAvatarHTML()}
-    <div class="profile-info"><b class="profile-name">${esc(getProfileInfo().name)}</b> <span class="verified-pill">✓ ভেরিফাইড</span><div class="profile-uid">UID: #BD-982410</div></div>
-    <button class="qr-btn" type="button" onclick="showModal('QR কোড','UID: #BD-982410 — এই QR বোতামটি নমুনা; আসল এনকোড করা QR পেতে আসল ব্যবহারকারী তথ্য / ব্যাকএন্ড প্রয়োজন।')" aria-label="QR কোড"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3"/></svg></button>
+    <div class="profile-info"><b class="profile-name">${esc(_dName)}</b> ${(_du && _du.verified) ? '<span class="verified-pill">✓ ভেরিফাইড</span>' : ''}<div class="profile-uid">${_dUid}</div></div>
+    <button class="qr-btn" type="button" onclick="showModal('QR কোড','${_dUid} — এই বোতামটি শুধু UID দেখায়; এটি এনকোড করা QR কোড নয়।')" aria-label="QR কোড"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3"/></svg></button>
   </div>
   <hr class="profile-divider">
-  <div class="bal-row"><div class="bal-left"><span class="bal-label">বর্তমান ব্যালেন্স</span><div class="bal-amount">৳ ১০</div></div>
+  <div class="bal-row"><div class="bal-left"><span class="bal-label">বর্তমান ব্যালেন্স</span><div class="bal-amount">${_dBal}</div></div>
   <a class="recharge-pill" href="#/recharge"><span class="recharge-plus">+</span> রিচার্জ করুন <span aria-hidden="true">›</span></a></div>
   </section>
   <a class="wa-card" href="#/support"><span class="wa-icon"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.7-1.2A9 9 0 1 0 12 3zm0 16.5a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15zm-3.2-9.3c.3-.6 1-1 1.6-.7l1.1.7c.2.1.4.3.5.5l.7 1.2c.1.3 0 .7-.2.9l-.6.7c-.2.2-.3.5-.1.8.5 1 1.3 1.8 2.3 2.3.3.2.6.1.8-.1l.7-.6c.2-.2.6-.3.9-.2l1.2.7c.2.1.4.3.5.5l.7 1.1c.3.6-.1 1.3-.7 1.6-.6.3-1.2.4-1.8.2-2.6-.8-4.9-3.1-5.7-5.7-.2-.6-.1-1.2.2-1.8z"/></svg></span><span class="wa-text"><b>হোয়াটসঅ্যাপ সাপোর্ট <span class="wa-dot" aria-hidden="true"></span></b><span class="wa-sub">সরাসরি কথা বলুন • ২৪/৭ সক্রিয় সহায়তা</span></span><span class="wa-arrow" aria-hidden="true">→</span></a>
 
   <div class="need-head"><span class="need-dot" aria-hidden="true"></span><h3>প্রয়োজনীয় নাগরিক সেবাসমূহ</h3><button class="all-services" type="button" onclick="document.getElementById('service-cards').scrollIntoView({behavior:'smooth'})">সকল সেবা ›</button></div>
-  <div class="card" id="service-cards"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${d[1]} কার্ড তালিকা</span></div></article>`}).join('')+`</div></div>
+  <div class="card" id="service-cards"><h3>সার্ভিস কার্ড</h3><div class="grid svc-grid">`+SERVICES.map(s=>{const d={nid:[5,1,'#2f5aa8'],snid:[10,3,'#0f766e'],brn:[5,1,'#0ea5e9'],brni:[100,0,'#0f766e'],sc:[1,0,'#1d4ed8'],ssc:[5,0,'#06b6d4'],tin:[40,0,'#dc2626'],ncf:[25,0,'#65a30d'],vuk:[10,0,'#1e3a8a']}[s.id]||[s.cost,0,'#0f766e'];return `<article class="svc-card"><div class="svc-head" style="background:${d[2]}"><span class="card-ico">${ico(s.id)}</span><b>${s.name}</b></div><div class="svc-body"><span>$ ${d[0]} কার্ড খরচ</span><span>${_dCnt(s.id)}</span></div></article>`}).join('')+`</div></div>
   <div class="card orders-logs-card"><h3>Orders Logs</h3><p class="muted">১৮টি অর্ডার সার্ভিসের প্রতিটিতে Pending / Received / Completed / Refunded — সব ০।</p>`+ordersLogsHTML()+`</div>
   <div class="card qa-card"><h3 class="qa-head"><span class="qa-bolt"><svg viewBox="0 0 24 24" fill="#0f766e" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span><span>Quick Access</span></h3><div class="qa-grid">
   <a class="qa-tile qa-recharge" href="#/recharge"><span class="qa-icon"><span class="qa-dollar">$</span></span><span class="qa-label">রিচার্জ</span></a>
@@ -463,6 +483,10 @@ function render(){
  else if(hash==='profile'){h+=nsToken()?nsProfPageHTML():'<div class="card"><h2>প্রোফাইল</h2><p>লগইন করলে আপনার আসল প্রোফাইল দেখা যাবে।</p><p><a class="btn" href="#/login">লগইন করুন</a></p></div>';}
  else if(hash==='devices'){h+=`<div class="card"><h2>ডিভাইস</h2>${tableHTML(['SL','IP','DEVICE ID','PLATFORM','SESSION','ACTIVED','CREATED','ACTION'],[['1','•••.•••','-ID','Android','Expired','—',''],['2','•••.•••','-ID','Linux / Chrome','Expired','—',''],['3','•••.•••','-ID','Android','Active','—',''],['4','•••.•••','-ID','Linux / Chromium','Current','—','']],'<button class="btn ghost" onclick="demoMsg(\'সেশন রিমুভ\')">Remove</button>')}<p class="muted">কোনো আসল IP / ডিভাইস ID এখানে নেই, কোনো সেশন সরানো হয় না।</p></div>`}
  else if(hash==='logout'){h+=`<div class="card"><h2>লগআউট</h2><p> লগআউট করা হয় না — এই পেজ শুধু কাঠামো দেখায়।</p><button class="btn accent" onclick="demoMsg('লগআউট')">লগআউট</button></div>`}
+ else if(hash==='notices'){
+    h+=`<div class="card"><h2>ঘোষণা</h2><div id="nsNoticesList"><p class="muted">ঘোষণা আনা হচ্ছে…</p></div></div>`;
+    setTimeout(function(){ try { nsNoticesFill(); } catch (e) {} }, 0);
+  }
  else{h+='<div class="card"><p>পেজ পাওয়া যায়নি। সাইডবার থেকে বাছুন।</p></div>'}
  m.innerHTML=h;
 }
@@ -1917,6 +1941,26 @@ function nsMyInfoDownload() {
   const text = ['নাগরিক সেবা — আমার তথ্য (সারাংশ)', s.disclaimer || '', '', 'নাম: ' + (s.full_name || ''), 'আইডির শেষ ৪ সংখ্যা: ••••' + (s.nid_last4 || ''), 'এলাকা: ' + (s.area_text || ''), 'নোট: ' + (s.notes || '')].join('\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); a.download = 'amar-tothyo.txt'; a.click();
 }
+/* Client notices page (#/notices, 2026-11-06): the profile page's
+   "View Notices" button linked here but no branch handled it, so it
+   showed the "page not found" card. Lists the same public admin
+   announcements the ticker already fetches (/api/notices). */
+function nsNoticesFill() {
+  const box = document.getElementById('nsNoticesList'); if (!box) return;
+  nsCall('/notices').then(function (j) {
+    const el = document.getElementById('nsNoticesList'); if (!el) return;
+    const list = (j && j.notices) || [];
+    if (!list.length) { el.innerHTML = '<p class="muted">এখন কোনো ঘোষণা নেই।</p>'; return; }
+    el.innerHTML = list.map(function (n) {
+      let when = '';
+      try { if (n.created_at) when = new Date(n.created_at).toLocaleDateString('en-GB'); } catch (e) {}
+      return '<div class="ns-notice-item"><b>' + esc(n.title || 'ঘোষণা') + '</b>' + (when ? ' <small class="muted">' + esc(when) + '</small>' : '') + '<p>' + esc(n.body || '') + '</p></div>';
+    }).join('');
+  }).catch(function () {
+    const el = document.getElementById('nsNoticesList'); if (!el) return;
+    el.innerHTML = '<p class="muted">ঘোষণা আনা যায়নি — সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</p>';
+  });
+}
 const _renderStep22Client = render;
 render = async function () {
   await _renderStep22Client();
@@ -1924,6 +1968,11 @@ render = async function () {
   if (hash !== 'myinfo') return;
   const main = document.querySelector('#main'); if (!main) return;
   if (!nsToken()) return; // login gate inside the wrapped render already showed the portal
+  /* Paint the real page title at once (same tick as the base render),
+     so the base render's "page not found" card is never visible while
+     the record loads. On repeat visits the last loaded record shows
+     at once instead of any loading text. */
+  main.innerHTML = window.__nsMyInfo ? nsMyInfoHTML() : '<div class="card"><h2>আমার তথ্য</h2><p class="muted">আপনার তথ্য আনা হচ্ছে…</p></div>';
   await nsMyInfoLoad();
   main.innerHTML = nsMyInfoHTML();
 };
@@ -2033,7 +2082,7 @@ nsRefresh = async function (force) {
     try {
       const [svc, me, ord, rch, logs] = await Promise.all([
         nsCall('/services').catch(() => null),
-        tok ? nsCall('/me').catch(() => null) : Promise.resolve(null),
+        tok ? nsCall('/me').catch((e) => ({ __nsErr: e })) : Promise.resolve(null),
         tok ? nsCall('/orders').catch(() => null) : Promise.resolve(null),
         tok ? nsCall('/recharges').catch(() => null) : Promise.resolve(null),
         tok ? nsCall('/me/login-logs').catch(() => null) : Promise.resolve(null),
@@ -2041,7 +2090,14 @@ nsRefresh = async function (force) {
       if (svc) NS_STATE.services = svc.services || [];
       if (!tok) { NS_STATE.user = null; NS_STATE.wallet = null; NS_STATE.orders = []; NS_STATE.recharges = []; NS_STATE.logs = []; }
       else {
-        if (me) { NS_STATE.user = me.user; NS_STATE.wallet = me.wallet_bdt; } else NS_STATE.user = null;
+        if (me && !me.__nsErr) { NS_STATE.user = me.user; NS_STATE.wallet = me.wallet_bdt; NS_STATE.meAuthFailed = false; }
+        else if (me && me.__nsErr) {
+          const _m = (me.__nsErr && me.__nsErr.message) || '';
+          if (_m === 'unauthorized' || _m === 'HTTP 401' || _m.indexOf('401') !== -1) { NS_STATE.user = null; NS_STATE.meAuthFailed = true; }
+          /* Network/timeout failure: keep the previous user and token.
+             Only a real 401 clears the session — a failed /me must
+             never look like a logout or a sample account. */
+        }
         if (ord) NS_STATE.orders = ord.orders || [];
         if (rch) NS_STATE.recharges = rch.recharges || [];
         if (logs) NS_STATE.logs = logs.login_logs || [];

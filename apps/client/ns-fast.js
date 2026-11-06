@@ -55,9 +55,13 @@
   function token() {
     try { return typeof nsToken === 'function' ? nsToken() : ''; } catch (e) { return ''; }
   }
-  // 1. Remove the loading card text immediately.
+  // 1. Remove the loading card only when the cached dashboard paints
+  // in the same tick right below — never leave a blank page behind.
+  // (2026-11-06 fix: with no cache the clear left #main empty for
+  // the whole slow first render on a slow connection.)
+  var cache = token() ? getCache() : null;
   var main = document.getElementById('main');
-  if (main && main.textContent.indexOf('লোড হচ্ছে') !== -1) main.innerHTML = '';
+  if (main && cache && main.textContent.indexOf('লোড হচ্ছে') !== -1) main.innerHTML = '';
   // 1b. Fallback 2026-10-30: if the first paint is still stuck on
   // loading/empty after 4 seconds (slow or hanging API calls in
   // nsRefresh / the render wrapper), paint directly with the
@@ -81,7 +85,6 @@
     setTimeout(function(){ clearInterval(t); }, 12000);
   })();
   // 2. Instant paint from cache, if available.
-  var cache = token() ? getCache() : null;
   if (cache) {
     try {
       NS_STATE.user = cache.user; NS_STATE.wallet = cache.wallet;
@@ -91,9 +94,10 @@
       if (cache.logs) NS_STATE.logs = cache.logs;
       if (typeof _renderStep3Client === 'function') {
         _renderStep3Client();
-        // The pre-wrapper render uses sample UID/balance in its
-        // template; correct those two spots from the cache now,
-        // the wrapper render will correct everything else shortly.
+        // The base template now reads NS_STATE (set from the cache
+        // just above), so it paints the real user directly. These
+        // spot corrections stay as a safety net; the wrapper render
+        // will correct everything else shortly.
         var uidEl = document.querySelector('.profile-uid');
         if (uidEl) uidEl.textContent = 'UID: #' + cache.user.uid;
         var balEl = document.querySelector('.bal-amount');
