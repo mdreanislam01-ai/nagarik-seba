@@ -899,7 +899,7 @@ render = async function () {
     const btn = [...document.querySelectorAll('#main .btn')].find(b => b.textContent.trim() === 'Recharge');
     if (btn && !document.getElementById('rchMethod')) {
       const wrap = document.createElement('div');
-      wrap.innerHTML = '<label>পেমেন্ট মাধ্যম*</label><select id="rchMethod"><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Bank</option></select><label>যে নম্বর থেকে পেমেন্ট*</label><input id="rchSender" placeholder="01XXXXXXXXX"><label>Transaction ID*</label><input id="rchTrx" placeholder="TrxID">';
+      wrap.innerHTML = '<label>পেমেন্ট মাধ্যম*</label><select id="rchMethod"><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Bank</option><option value="BanglaQR">বাংলা কিউআর</option></select><label>যে নম্বর থেকে পেমেন্ট*</label><input id="rchSender" placeholder="01XXXXXXXXX"><label>Transaction ID*</label><input id="rchTrx" placeholder="TrxID">';
       btn.parentNode.insertBefore(wrap, btn); btn.setAttribute('onclick', 'nsRechargeSubmit()');
     }
     // Compact history: one small row per recharge (no wide tables,
