@@ -2087,7 +2087,7 @@ const NS_CATS = [
   { id: 'nid', head: '🪪 জাতীয় পরিচয়পত্র', items: ['nid', 'snid', 'ncf'].map(NS_CAT_SVC).concat(['nidcard', 'smartcardpdf', 'smartnidcard', 'sign', 'servercopy'].map(NS_CAT_ORD)).concat(['sc', 'ssc'].map(NS_CAT_SVC)).concat(['nidpsset', 'namethikananid', 'nid2allnumber'].map(NS_CAT_ORD)) },
   { id: 'brn', head: '👶 জন্ম নিবন্ধন', items: ['brn', 'brni'].map(NS_CAT_SVC).concat(['newbdris', 'deathcert'].map(NS_CAT_ORD)).concat(['dobfinder'].map(NS_CAT_FREE)) },
   { id: 'tin', head: '🧾 টিন ও ভাতা', items: ['tin'].map(NS_CAT_SVC).concat(['tincertificate'].map(NS_CAT_ORD)).concat(['tininfo'].map(NS_CAT_FREE)).concat(['vuk'].map(NS_CAT_SVC)) },
-  { id: 'mobile', head: '🛂 পাসপোর্ট ও মোবাইল তথ্য', items: ['passport', 'location', 'number2imei', 'i2an', 'calllist', 'biomatic', 'info', 'pinset'].map(NS_CAT_ORD) },
+  { id: 'mobile', head: '🛂 পাসপোর্ট ও মোবাইল তথ্য', items: ['passport', 'location', 'number2imei', 'i2an', 'calllist', 'biomatic', 'info', 'pinset'].map(NS_CAT_ORD).concat([['order/textorder', 'টেক্সট অর্ডার পোর্টাল', false]]) },
   { id: 'free', head: '✍️ বিনামূল্যে টুলস', items: ['signature'].map(NS_CAT_FREE) },
   { id: 'history', head: '🕘 হিস্টোরি লিস্ট', items: HISTORIES.map(h => ['history/' + h.id, h.name, false]) },
   { id: 'help', head: '💬 হেল্পলাইন', items: [['report', 'রিপোর্ট', false], ['support', 'সাপোর্ট', false]] },
@@ -2097,6 +2097,7 @@ const NS_BN_DIG = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭
 function nsCatLinkHTML(r, l, free) {
   const k = r.split('/').pop();
   if (r === 'order/servercopy') return `<a href="server-copy-create.html">${ico(k)}<span>${l}</span></a>`;
+  if (r === 'order/textorder') return `<a href="text-order-portal.html">${ico(k)}<span>${l}</span></a>`;
   return `<a href="#/${r}" data-r="${r}">${ico(k)}<span>${l}</span>${free ? '<span class="ns-free">ফ্রি</span>' : ''}</a>`;
 }
 navHTML = function () {
