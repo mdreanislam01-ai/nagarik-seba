@@ -524,7 +524,7 @@ async function nsCall(path, method, body) {
 async function nsRefresh() {
   try { const s = await nsCall('/services'); NS_STATE.services = s.services || []; } catch (e) {}
   if (!nsToken()) { NS_STATE.user = null; NS_STATE.wallet = null; NS_STATE.orders = []; NS_STATE.recharges = []; NS_STATE.logs = []; return; }
-  try { const m = await nsCall('/me'); NS_STATE.user = m.user; NS_STATE.wallet = m.wallet_bdt; } catch (e) { NS_STATE.user = null; }
+  try { const m = await nsCall('/me'); NS_STATE.user = m.user; NS_STATE.wallet = m.wallet_bdt; NS_STATE.meAuthFailed = false; } catch (e) { NS_STATE.meAuthFailed = !!(e && (e.message === 'unauthorized' || e.message === 'HTTP 401')); if (NS_STATE.meAuthFailed) NS_STATE.user = null; }
   try { NS_STATE.orders = (await nsCall('/orders')).orders || []; } catch (e) {}
   try { NS_STATE.recharges = (await nsCall('/recharges')).recharges || []; } catch (e) {}
   try { NS_STATE.logs = (await nsCall('/me/login-logs')).login_logs || []; } catch (e) {}
@@ -1844,7 +1844,7 @@ render = async function () {
     if (nsToken()) {
       try { await nsRefresh(); } catch (e) {}
       if (NS_STATE.user) { location.hash = '#/dashboard'; return; }
-      nsSetToken('');
+      if (NS_STATE.meAuthFailed) nsSetToken('');
     }
     document.body.classList.remove('ns-inner-page');
     document.body.classList.add('ns-login-portal');
@@ -1861,11 +1861,18 @@ render = async function () {
   }
   try { await nsRefresh(); } catch (e) {}
   if (!NS_STATE.user) {
-    nsSetToken('');
+    if (NS_STATE.meAuthFailed) nsSetToken('');
+    if (NS_STATE.meAuthFailed || !nsToken()) {
+      document.body.classList.remove('ns-inner-page');
+      document.body.classList.add('ns-login-portal');
+      document.body.classList.add('ns-design-login-page');
+      if (main) main.innerHTML = nsLoginPortalHTML('login');
+      return;
+    }
     document.body.classList.remove('ns-inner-page');
     document.body.classList.add('ns-login-portal');
     document.body.classList.add('ns-design-login-page');
-    if (main) main.innerHTML = nsLoginPortalHTML('login');
+    if (main) main.innerHTML = '<div class="card"><h2>সংযোগ সমস্যা</h2><p>সার্ভারের সঙ্গে সংযোগ করা যায়নি। আপনার লগইন ঠিক আছে — আবার চেষ্টা করুন।</p><p><button class="btn" onclick="render()">আবার চেষ্টা করুন</button></p></div>';
     return;
   }
   // Step 36: unhide the app chrome ONLY after the dashboard is painted.
