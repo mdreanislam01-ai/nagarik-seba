@@ -29,7 +29,9 @@ function showModal(t, html, type) {
   const kind = type || nsPopType(t, html);
   const ico = { success: '✓', error: '✕', warn: '!', info: 'i' }[kind] || 'i';
   const isForm = /<(input|select|textarea|label|table)/i.test(html);
-  back.innerHTML = '<div class="ns-pop' + (isForm ? ' ns-pop-form' : '') + '"><div class="ns-pop-ico ns-pop-' + kind + '">' + ico + '</div><div class="ns-pop-title"></div><div class="ns-pop-body"><div id="modalBody"></div>' + (hasBtn ? '' : '<div class="ns-pop-btns"><button type="button" class="ns-pop-ok">ঠিক আছে</button></div>') + '</div></div>';
+  /* type 'none' (OTP card): no icon circle, just the title — matches the user's reference picture. */
+  const icoHtml = (kind === 'none') ? '' : '<div class="ns-pop-ico ns-pop-' + kind + '">' + ico + '</div>';
+  back.innerHTML = '<div class="ns-pop' + (isForm ? ' ns-pop-form' : '') + '">' + icoHtml + '<div class="ns-pop-title"></div><div class="ns-pop-body"><div id="modalBody"></div>' + (hasBtn ? '' : '<div class="ns-pop-btns"><button type="button" class="ns-pop-ok">ঠিক আছে</button></div>') + '</div></div>';
   back.querySelector('.ns-pop-title').textContent = t;
   back.querySelector('#modalBody').innerHTML = html;
   const o = back.querySelector('.ns-pop-ok'); if (o) o.addEventListener('click', function () { closeModal(); });
@@ -695,25 +697,96 @@ function nsOtpErrMsg(e) {
   };
   return m[e.message] || nsSignupErrMsg(e);
 }
+function nsOtpErrMsgEn(e) {
+  var m = {
+    otp_invalid: 'Incorrect code. Please check and try again.',
+    otp_expired: 'This code has expired. Please request a new code.',
+    otp_cooldown: 'A code was just sent. Please wait a moment and try again.',
+    otp_too_many: 'Too many codes sent. Please try again in an hour.',
+    email_not_configured: 'Email could not be sent. Please contact the admin.',
+    email_send_failed: 'Email could not be sent. Please try again.'
+  };
+  return m[e.message] || 'Something went wrong. Please try again.';
+}
+/* OTP entry card (2026-11-06): matches the user's reference pictures —
+   6 separate digit boxes (grey when empty, ORANGE border on focus,
+   GREEN border once filled), "Enter OTP" heading, the email the code
+   was sent to, and a live resend countdown in the picture's format.
+   No icon circle on this card (showModal type 'none'). */
+function nsOtpCode() {
+  var boxes = document.querySelectorAll('.ns-otp-box');
+  if (!boxes || !boxes.length) { var s = document.getElementById('nsOtpCode'); return String((s && s.value) || '').trim(); }
+  var c = '';
+  for (var i = 0; i < boxes.length; i++) c += (boxes[i].value || '');
+  return c;
+}
+function nsOtpBoxType(el, i) {
+  if (!el) return;
+  el.value = String(el.value || '').replace(/\D/g, '').slice(0, 1);
+  if (el.value) el.classList.add('filled'); else el.classList.remove('filled');
+  var boxes = document.querySelectorAll('.ns-otp-box');
+  if (el.value && boxes[i + 1]) { boxes[i + 1].focus(); return; }
+  if (el.value && nsOtpCode().length === 6) nsVerifyOtp();
+}
+function nsOtpBoxKey(el, i, ev) {
+  if (!ev || ev.key !== 'Backspace') return;
+  if (el.value) return; /* clears normally; the input handler keeps the filled class in sync */
+  var boxes = document.querySelectorAll('.ns-otp-box');
+  if (boxes[i - 1]) { boxes[i - 1].focus(); boxes[i - 1].value = ''; boxes[i - 1].classList.remove('filled'); }
+}
+function nsOtpBoxPaste(el, ev) {
+  if (!ev || !ev.clipboardData) return;
+  ev.preventDefault();
+  var t = String(ev.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+  if (!t) return;
+  var boxes = document.querySelectorAll('.ns-otp-box');
+  for (var i = 0; i < boxes.length; i++) {
+    boxes[i].value = t[i] || '';
+    if (boxes[i].value) boxes[i].classList.add('filled'); else boxes[i].classList.remove('filled');
+  }
+  if (t.length === 6) { if (boxes[5]) boxes[5].focus(); nsVerifyOtp(); }
+  else if (boxes[t.length]) boxes[t.length].focus();
+}
+function nsOtpCountdown(sec) {
+  try { if (window._nsOtpTimer) clearInterval(window._nsOtpTimer); } catch (e) {}
+  var left = sec || 60;
+  var tick = function () {
+    var r = document.getElementById('nsOtpResend');
+    if (!r || !document.querySelector('.ns-otp-box')) { try { clearInterval(window._nsOtpTimer); } catch (e) {} return; }
+    if (left <= 0) {
+      r.innerHTML = '<a href="javascript:void(0)" onclick="nsResendOtp()" style="color:#0f766e;font-weight:700;text-decoration:underline">Resend code</a>';
+      try { clearInterval(window._nsOtpTimer); } catch (e) {}
+      return;
+    }
+    var m = Math.floor(left / 60), s = left % 60;
+    r.innerHTML = 'Resend code available in <b>' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + 's</b>';
+    left--;
+  };
+  tick();
+  window._nsOtpTimer = setInterval(tick, 1000);
+}
 function nsShowOtpModal() {
   var d = window._nsOtpSignup || {};
-  showModal('ইমেইল যাচাই করুন', '<div style="text-align:center"><p>আপনার ইমেইলে (<b>' + esc(d.email || '') + '</b>) ৬ সংখ্যার একটি কোড পাঠানো হয়েছে। কোডটি নিচে লিখুন।</p><p><input id="nsOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" style="text-align:center;font-size:26px;letter-spacing:10px;"></p><p id="nsOtpErr" style="color:#dc2626;min-height:20px;margin:6px 0;"></p><p><button class="btn" onclick="nsVerifyOtp()">যাচাই করুন</button></p><p class="muted">কোড পাননি? <a href="javascript:void(0)" onclick="nsResendOtp()">আবার পাঠান</a></p></div>');
-  setTimeout(function () { var el = document.getElementById('nsOtpCode'); if (el) el.focus(); }, 120);
+  var boxes = '';
+  for (var i = 0; i < 6; i++) boxes += '<input class="ns-otp-box" type="text" inputmode="numeric"' + (i === 0 ? ' autocomplete="one-time-code"' : '') + ' maxlength="1" placeholder="-" oninput="nsOtpBoxType(this,' + i + ')" onkeydown="nsOtpBoxKey(this,' + i + ',event)" onpaste="nsOtpBoxPaste(this,event)">';
+  showModal('Enter OTP', '<div class="ns-otp-card"><p class="ns-otp-sub">Enter the OTP sent to<br><b>' + esc(d.email || '') + '</b></p><div class="ns-otp-boxes">' + boxes + '</div><p id="nsOtpErr" class="ns-otp-err"></p><p><button class="btn ns-otp-verify" onclick="nsVerifyOtp()">Verify</button></p><p class="ns-otp-resend">Didn\'t receive the OTP? Check your spam folder or<br><span id="nsOtpResend"></span></p></div>', 'none');
+  setTimeout(function () { var b = document.querySelector('.ns-otp-box'); if (b) b.focus(); }, 120);
+  nsOtpCountdown(60);
 }
 async function nsVerifyOtp() {
   var d = window._nsOtpSignup || {};
-  var el = document.getElementById('nsOtpCode');
-  var code = String((el && el.value) || '').trim();
+  var code = nsOtpCode();
   var errEl = document.getElementById('nsOtpErr');
-  if (!/^\d{6}$/.test(code)) { if (errEl) errEl.textContent = '৬ সংখ্যার কোডটি লিখুন।'; return; }
+  if (!/^\d{6}$/.test(code)) { if (errEl) errEl.textContent = 'Please enter the 6-digit code.'; return; }
   try {
     await nsCall('/auth/verify-otp', 'POST', { name: d.name, email: d.email, phone: d.phone, password: d.password, code: code });
+    try { if (window._nsOtpTimer) clearInterval(window._nsOtpTimer); } catch (e) {}
     closeModal();
     window._nsOtpSignup = null;
     showModal('রেজিস্ট্রেশন সম্পন্ন', 'আপনার অ্যাকাউন্টটি অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।' + nsApprovalWaBtn('নাম: ' + d.name + ', ফোন: ' + d.phone));
     location.hash = '#/login';
   } catch (e) {
-    if (errEl) errEl.textContent = nsOtpErrMsg(e);
+    if (errEl) errEl.textContent = nsOtpErrMsgEn(e);
     else showModal('যাচাই হয়নি', nsOtpErrMsg(e));
   }
 }
@@ -722,9 +795,10 @@ async function nsResendOtp() {
   var errEl = document.getElementById('nsOtpErr');
   try {
     await nsCall('/auth/send-otp', 'POST', { name: d.name, email: d.email, phone: d.phone, password: d.password });
-    if (errEl) { errEl.style.color = '#16a34a'; errEl.textContent = 'নতুন কোড পাঠানো হয়েছে। ইমেইল চেক করুন।'; }
+    if (errEl) { errEl.style.color = '#16a34a'; errEl.textContent = 'New code sent. Please check your email.'; }
+    nsOtpCountdown(60);
   } catch (e) {
-    if (errEl) { errEl.style.color = '#dc2626'; errEl.textContent = nsOtpErrMsg(e); }
+    if (errEl) { errEl.style.color = '#dc2626'; errEl.textContent = nsOtpErrMsgEn(e); }
   }
 }
 function nsApprovalWaBtn(label) {

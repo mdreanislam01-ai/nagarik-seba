@@ -1,0 +1,24 @@
+/* OTP entry card (2026-11-06, v1): matches the user's reference pictures —
+   6 digit boxes: grey border when empty, ORANGE border on focus,
+   GREEN border once filled. */
+.ns-pop-form .ns-pop-body .ns-otp-card{text-align:center}
+.ns-otp-sub{color:#6b7280;font-size:15px;line-height:1.6;margin:2px 0 18px}
+.ns-otp-sub b{color:#111827}
+.ns-otp-boxes{display:flex;justify-content:center;gap:10px;margin:0 0 14px}
+.ns-otp-box{width:48px;height:56px;padding:0;text-align:center;font-size:24px;font-weight:700;color:#111827;background:#fff;border:1.5px solid #d1d5db;border-radius:12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.ns-otp-box::placeholder{color:#d1d5db;font-weight:400}
+.ns-otp-box.filled{border-color:#22c55e}
+.ns-otp-box:focus{border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.15)}
+.ns-otp-err{color:#dc2626;min-height:20px;margin:6px 0;font-size:14px}
+.ns-otp-verify{width:100%;margin-top:2px}
+.ns-otp-resend{color:#9ca3af;font-size:14px;line-height:1.8;margin:14px 0 0}
+.ns-otp-resend b{color:#111827}
+.ns-otp-resend a{color:#0f766e;font-weight:700;text-decoration:underline}
+@media (max-width:380px){
+  .ns-otp-boxes{gap:8px}
+  .ns-otp-box{width:42px;height:52px;font-size:22px}
+}
+body.dark .ns-otp-box{background:#0f172a;border-color:#475569;color:#e2e8f0}
+body.dark .ns-otp-sub{color:#94a3b8}
+body.dark .ns-otp-sub b,body.dark .ns-otp-resend b{color:#e2e8f0}
+body.dark .ns-otp-resend{color:#64748b}
