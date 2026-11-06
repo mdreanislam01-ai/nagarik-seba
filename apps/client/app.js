@@ -402,11 +402,18 @@ function render(){
     #BD-982410, ৳ ১০, counts 1/3) that showed on every render until
     the API answered — on a slow connection that fake account stayed
     on screen for seconds, and after a failed /me it never got
-    corrected. No sample value is ever painted now. */
- const _du = (typeof NS_STATE !== 'undefined' && NS_STATE.user) || null;
- const _dName = (_du && _du.name) || (function(){ try { const _p = getProfileInfo(); return (_p.name && _p.name !== 'নমুনা ব্যবহারকারী') ? _p.name : ''; } catch (e) { return ''; } })() || '—';
- const _dUid = (_du && _du.uid) ? 'UID: #' + _du.uid : 'UID: —';
- const _dBal = (typeof NS_STATE !== 'undefined' && NS_STATE.wallet != null) ? '৳ ' + NS_STATE.wallet : '৳ —';
+    corrected. No sample value is ever painted now.
+    NOTE: render() is first called BEFORE `const NS_STATE` is
+    initialized, so a bare NS_STATE read here throws and aborts the
+    whole script — every read below is inside try/catch and falls
+    back to the neutral dashes. */
+ let _du = null, _dName = '—', _dUid = 'UID: —', _dBal = '৳ —';
+ try {
+   _du = NS_STATE.user || null;
+   _dName = (_du && _du.name) || (function(){ try { const _p = getProfileInfo(); return (_p.name && _p.name !== 'নমুনা ব্যবহারকারী') ? _p.name : ''; } catch (e) { return ''; } })() || '—';
+   _dUid = (_du && _du.uid) ? 'UID: #' + _du.uid : 'UID: —';
+   _dBal = (NS_STATE.wallet != null) ? '৳ ' + NS_STATE.wallet : '৳ —';
+ } catch (e) { /* NS_STATE not initialized yet on first paint — neutrals stand. */ }
  const _dCnt = function (id) { try { if (NS_STATE.stats && NS_STATE.stats.by_service && NS_STATE.stats.by_service[id] != null) return NS_STATE.stats.by_service[id] + ' কার্ড তালিকা'; } catch (e) {} return '— কার্ড তালিকা'; };
  if(hash==='dashboard'){
   h+=`<section class="profile-card">
