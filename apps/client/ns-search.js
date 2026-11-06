@@ -1,7 +1,7 @@
 /* Nagarik Seba client — topbar search bar, client only
-   (2026-10-30, user request).
-   A search bar is placed in the marked empty area of the
-   topbar (between the brand and the dark-mode switch).
+   (2026-10-30, user request; v2 2026-11-07: own full-width row
+   below header row 1, left SVG icon, placeholder
+   "খুঁজুন বা সার্চ করুন...").
    As the customer types, a dropdown below the bar shows
    every matching item — services, order services, free
    tools and main pages — filtered by what was typed, in
@@ -44,7 +44,7 @@
     var box = document.createElement('div');
     box.id = 'nsSearchBox';
     box.className = 'ns-search';
-    box.innerHTML = '<input id="nsSearchInput" type="search" placeholder="🔍 সার্চ করুন…" autocomplete="off" aria-label="সেবা সার্চ করুন"><div id="nsSearchDrop" class="ns-search-drop" hidden></div>';
+    box.innerHTML = '<span class="ns-search-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg></span><input id="nsSearchInput" type="search" placeholder="খুঁজুন বা সার্চ করুন..." autocomplete="off" aria-label="সেবা সার্চ করুন"><div id="nsSearchDrop" class="ns-search-drop" hidden></div>';
     if (spacer) { spacer.style.flex = '0 0 4px'; header.insertBefore(box, spacer); }
     else header.appendChild(box);
     var input = box.querySelector('#nsSearchInput');

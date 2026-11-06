@@ -1,4 +1,4 @@
-/* ns-shell.js v2 — Whole customer portal in the dhakaseba layout style (own brand + own prices).
+/* ns-shell.js v3 — Whole customer portal in the dhakaseba layout style (own brand + own prices).
    Shell: fixed white sidebar (own logo + name, bottom profile card), white header
    (Home button + real balance pill + bell + theme switch), pale grey-blue page,
    mobile bottom nav (Home/Wallet/Services/Transactions/Profile, as in the reference
@@ -47,16 +47,22 @@
   function ensureHeader() {
     var header = document.querySelector('header.topbar');
     if (!header) return;
+    /* BUG FIX 2026-11-07: the old code inserted Home before
+       `.logo-mark`.nextSibling — but .logo-mark now lives inside the
+       `.logo-new` wrapper, so its next sibling is NOT a child of the
+       header and insertBefore threw NotFoundError on EVERY tick. The
+       throw killed the whole tick (sidebar head, bottom nav, live
+       balance, option pills never ran). Anchor on the bell instead —
+       it is a direct child of the header, like the balance pill. */
+    var bell = header.querySelector('.ns-bell');
     if (!document.getElementById('nsShHome')) {
       var home = document.createElement('a');
       home.id = 'nsShHome';
       home.className = 'ns-sh-home';
       home.href = '#/dashboard';
       home.innerHTML = HOME_SVG + '<span>হোম</span>';
-      var logo = header.querySelector('.logo-mark');
-      if (logo && logo.nextSibling) header.insertBefore(home, logo.nextSibling);
-      else if (logo) header.appendChild(home);
-      else header.insertBefore(home, header.firstChild);
+      if (bell) header.insertBefore(home, bell);
+      else header.appendChild(home);
     }
     if (!document.getElementById('nsShBal')) {
       var bal = document.createElement('a');
@@ -64,7 +70,6 @@
       bal.className = 'ns-sh-bal';
       bal.href = '#/recharge';
       bal.innerHTML = WALLET_SVG + '<span class="ns-sh-bal-amt">৳ —</span>';
-      var bell = header.querySelector('.ns-bell');
       if (bell) header.insertBefore(bal, bell);
       else header.appendChild(bal);
     }
@@ -189,11 +194,10 @@
   function tick() {
     if (!loggedIn()) { document.body.classList.remove('ns-sh-on'); return; }
     document.body.classList.add('ns-sh-on');
-    ensureHeader();
-    ensureSidebar();
-    ensureBottomNav();
-    syncLive();
-    enhanceOptionPage();
+    /* 2026-11-07: each step guarded — one broken step (e.g. a bad
+       insertBefore) must never again silently kill the whole shell. */
+    var steps = [ensureHeader, ensureSidebar, ensureBottomNav, syncLive, enhanceOptionPage];
+    for (var i = 0; i < steps.length; i++) { try { steps[i](); } catch (e) {} }
   }
   tick();
   setInterval(tick, 400);
