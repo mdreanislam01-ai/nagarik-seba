@@ -8,7 +8,7 @@ body.ns-sh-on .main { max-width: 1280px; padding: 20px 24px; }
 /* ---- Sidebar: full-height white, own logo + name on top ---- */
 body.ns-sh-on .sidebar { background: #fff; border-right: 1px solid #e8eef2; }
 .ns-sh-side-head { display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; border-bottom: 1px solid #eef2f7; flex: none; }
-.ns-sh-side-logo { width: 36px; height: 36px; min-width: 36px; border-radius: 12px; overflow: hidden; background: #0f766e; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
+.ns-sh-side-logo { width: 28px; height: 28px; min-width: 28px; border-radius: 12px; overflow: hidden; background: #0f766e; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
 .ns-sh-side-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .ns-sh-side-name { font-size: 19px; font-weight: 800; color: #0f172a; white-space: nowrap; }
 body.ns-sh-on .sidebar .sidebar-scroll { padding: 8px 12px; }
@@ -89,17 +89,18 @@ body.ns-sh-on #main #nsOrderBtn { width: 100%; }
 }
 
 
-/* Header logo size (2026-11-06, user request): the new solid logo looked
-   oversized in the header. Scoped to .topbar so the login-page brand is
-   untouched. styles.css loads before this file, and .topbar .logo-mark
-   outranks its .logo-mark, so no !important is needed. */
-.topbar .logo-mark{width:36px;height:36px;min-width:36px}
-.topbar .logo-mark svg{width:36px;height:36px}
+/* Header logo size (2026-11-07, user request): smaller still — the logo
+   still looked oversized in the header (28px desktop / 26px / 24px phone).
+   Scoped to .topbar so the login-page brand is untouched. styles.css loads
+   before this file, and .topbar .logo-mark outranks its .logo-mark, so no
+   !important is needed. */
+.topbar .logo-mark{width:28px;height:28px;min-width:28px}
+.topbar .logo-mark svg{width:28px;height:28px}
 @media(max-width:520px){
-  .topbar .logo-mark,.topbar .logo-mark svg{width:32px;height:32px;min-width:32px}
+  .topbar .logo-mark,.topbar .logo-mark svg{width:26px;height:26px;min-width:26px}
 }
 @media(max-width:400px){
-  .topbar .logo-mark,.topbar .logo-mark svg{width:30px;height:30px;min-width:30px}
+  .topbar .logo-mark,.topbar .logo-mark svg{width:24px;height:24px;min-width:24px}
 }
 
 
@@ -132,3 +133,4 @@ body.dark .ns-pop-form .ns-pop-body label{color:#e2e8f0}
 /* Login-success popup: same light icon-circle style as the white popup
    (its white card + teal button already match). */
 .ns-login-ok-badge{background:#e8f8ee;color:#22c55e;box-shadow:0 0 0 10px rgba(34,197,94,.12)}
+
