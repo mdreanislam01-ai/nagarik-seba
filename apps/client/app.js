@@ -487,7 +487,19 @@ function render(){
  }
  else if(hash==='report'){h+=`<div class="card"><h2>রিপোর্ট</h2><label>সমস্যার বিষয়*</label><input><label>সমস্যার ব্যাখ্যা*</label><textarea></textarea><p class="muted">ছবি যোগ করতে চাইলে লাইভ চ্যাট ব্যবহার করতে বলা আছে (মূল নোট)তে ছবি পাঠানো হয় না।</p><p><button class="btn" onclick="demoMsg('রিপোর্ট Submit')">Submit</button></p></div>`}
  else if(hash==='support'){h+=`<div class="card"><h2>সাপোর্ট</h2><p>মূল সাইটে সাপোর্ট বাইরের WhatsApp গ্রুপের লিংক খুলত। এখানে কোনো গ্রুপ লিংক দেওয়া হয়নি, জয়েন/মেসেজ করা হয় না — শুধু প্লেসহোল্ডার।</p><button class="btn ghost" onclick="demoMsg('সাপোর্ট প্লেসহোল্ডার')">সাপোর্ট</button></div>`}
- else if(hash==='profile'){h+=nsToken()?nsProfPageHTML():'<div class="card"><h2>প্রোফাইল</h2><p>লগইন করলে আপনার আসল প্রোফাইল দেখা যাবে।</p><p><a class="btn" href="#/login">লগইন করুন</a></p></div>';}
+ else if(hash==='profile'){
+  /* v16 fix: same TDZ hazard as the v14 dashboard crash — render() is
+     first called BEFORE `const nsToken` / `const NS_STATE` are
+     initialized, so a bare nsToken() / NS_STATE read here throws and
+     aborts the whole script (refreshing on #/profile killed the app:
+     blank #main, dashboard stuck on "—"). Token is read straight from
+     storage on first paint; the panel itself guards its NS_STATE reads.
+     nsRefresh -> render() repaints with the real user once /me lands. */
+  let _hasTok=false;
+  try{_hasTok=!!nsToken();}catch(e){try{_hasTok=!!(localStorage.getItem('ns_token')||sessionStorage.getItem('ns_token'));}catch(e2){}}
+  try{h+=_hasTok?nsProfPageHTML():'<div class="card"><h2>প্রোফাইল</h2><p>লগইন করলে আপনার আসল প্রোফাইল দেখা যাবে।</p><p><a class="btn" href="#/login">লগইন করুন</a></p></div>';}
+  catch(e){h+='<div class="card"><h2>প্রোফাইল</h2><p class="muted">লোড হচ্ছে…</p></div>';}
+ }
  else if(hash==='devices'){h+=`<div class="card"><h2>ডিভাইস</h2>${tableHTML(['SL','IP','DEVICE ID','PLATFORM','SESSION','ACTIVED','CREATED','ACTION'],[['1','•••.•••','-ID','Android','Expired','—',''],['2','•••.•••','-ID','Linux / Chrome','Expired','—',''],['3','•••.•••','-ID','Android','Active','—',''],['4','•••.•••','-ID','Linux / Chromium','Current','—','']],'<button class="btn ghost" onclick="demoMsg(\'সেশন রিমুভ\')">Remove</button>')}<p class="muted">কোনো আসল IP / ডিভাইস ID এখানে নেই, কোনো সেশন সরানো হয় না।</p></div>`}
  else if(hash==='logout'){h+=`<div class="card"><h2>লগআউট</h2><p> লগআউট করা হয় না — এই পেজ শুধু কাঠামো দেখায়।</p><button class="btn accent" onclick="demoMsg('লগআউট')">লগআউট</button></div>`}
  else if(hash==='notices'){
@@ -2171,11 +2183,14 @@ render = async function () {
    (.ns-pn-avatar, object-fit cover) with the verified tick on the
    photo when the account is verified. */
 function nsProfPageHTML() {
-  const u = NS_STATE.user || {};
+  /* v16: NS_STATE is in TDZ on render()'s first call — guard like the dashboard values. */
+  let u = {};
+  try { u = NS_STATE.user || {}; } catch (e) {}
   const draft = (typeof window !== 'undefined' && window._nsPnDraft) || {};
   const name = draft.name != null ? draft.name : (u.name || '');
   const phone = draft.phone != null ? draft.phone : (u.phone || '');
-  const wallet = (typeof NS_STATE !== 'undefined' && NS_STATE.wallet != null) ? NS_STATE.wallet : '';
+  let wallet = '';
+  try { wallet = (NS_STATE.wallet != null) ? NS_STATE.wallet : ''; } catch (e) {}
   const verified = !!u.verified;
   let joined = '—';
   try { if (u.created_at) joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }); } catch (e) {}
