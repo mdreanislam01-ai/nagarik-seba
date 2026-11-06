@@ -460,13 +460,7 @@ function render(){
  }
  else if(hash==='report'){h+=`<div class="card"><h2>রিপোর্ট</h2><label>সমস্যার বিষয়*</label><input><label>সমস্যার ব্যাখ্যা*</label><textarea></textarea><p class="muted">ছবি যোগ করতে চাইলে লাইভ চ্যাট ব্যবহার করতে বলা আছে (মূল নোট)তে ছবি পাঠানো হয় না।</p><p><button class="btn" onclick="demoMsg('রিপোর্ট Submit')">Submit</button></p></div>`}
  else if(hash==='support'){h+=`<div class="card"><h2>সাপোর্ট</h2><p>মূল সাইটে সাপোর্ট বাইরের WhatsApp গ্রুপের লিংক খুলত। এখানে কোনো গ্রুপ লিংক দেওয়া হয়নি, জয়েন/মেসেজ করা হয় না — শুধু প্লেসহোল্ডার।</p><button class="btn ghost" onclick="demoMsg('সাপোর্ট প্লেসহোল্ডার')">সাপোর্ট</button></div>`}
- else if(hash==='profile'){const _pi=getProfileInfo();h+=`<div class="card"><h2>প্রোফাইল</h2><p>${esc(_pi.name)} • Verified: Yes • Balance: 10 • Joined: তারিখ</p>
- <h3>প্রোফাইল ছবি</h3><div class="photo-upload"><span class="avatar-ph photo-preview" id="photoPreviewWrap">${profilePreviewHTML()}</span><div class="photo-upload-actions"><label class="btn" for="profilePhotoInput">ছবি আপলোড করুন</label><input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhotoFile(this)"><button class="btn ghost" id="photoSaveBtn" type="button" disabled onclick="saveProfilePhoto()">সংরক্ষণ করুন</button><button class="btn ghost" type="button" onclick="removeProfilePhoto()">ছবি সরান</button><p class="muted" id="photoMsg">ছবি বাছলে এখানে প্রিভিউ দেখা যাবে। সংরক্ষণ করুন চাপলে হোমপেজের প্রোফাইল কার্ডে এই ছবি দেখা যাবে।</p><p class="muted">ছবি শুধু এই ব্রাউজার / ডিভাইসে সংরক্ষিত হবে — অন্য ফোন / পিসিতে দেখা যাবে না, আর ব্রাউজার ডাটা মুছলে মুছে যাবে।</p></div></div>
- <h3>Profile Update</h3><label>নাম*</label><input id="profileNameInput" value="${esc(_pi.name)}"><label>ইমেল* (disabled)</label><input disabled value="demo@example.com"><label>নম্বর*</label><input id="profilePhoneInput" value="${esc(_pi.phone)}"><p><button class="btn" onclick="saveProfileUpdate()">Update Profile</button></p><p class="muted">নাম ও নম্বর আপডেট করলে প্রোফাইল হেডার, এই ফর্ম এবং হোমপেজের প্রোফাইল কার্ড — তিন জায়গাতেই নতুন নাম দেখা যাবে। এটি শুধু এই ব্রাউজার / ডিভাইসে সংরক্ষিত হবে।</p>
- <h3>Change Password</h3><label>পুরাতন পাসওয়ার্ড*</label><input type="password"><label>নতুন পাসওয়ার্ড*</label><input type="password"><label>কনফার্ম পাসওয়ার্ড*</label><input type="password"><p><button class="btn" onclick="demoMsg('Update Password')">Update Password</button></p>
- <h3>Theme Color</h3><p><span class="swatch" style="background:#ff4961" onclick="document.documentElement.style.setProperty('--accent','#ff4961')"></span><span class="swatch" style="background:#0f766e" onclick="document.documentElement.style.setProperty('--accent','#0f766e')"></span><span class="swatch" style="background:#2563eb" onclick="document.documentElement.style.setProperty('--accent','#2563eb')"></span> <span class="muted">বর্তমান অ্যাকসেন্ট: #ff4961</span></p>
- <h3>Cards Lists (All Time)</h3><p>NID: 1, Smart NID: 3, BRN: 1, Server Copy: 0, OTP Server Copy: 0, Sign to Server Copy: 0, Tin: 0, NID Correction Form: 0</p>
- <h3>লগআউট</h3><p><a class="btn accent" href="#/logout">লগআউট</a></p><p class="muted">লগআউট পেজটি প্রোটোটাইপ — এতে কোনো সার্ভার লগআউট হয় না, শুধু লগআউট পেজ দেখায়।</p></div>`}
+ else if(hash==='profile'){h+=nsToken()?nsProfPageHTML():'<div class="card"><h2>প্রোফাইল</h2><p>লগইন করলে আপনার আসল প্রোফাইল দেখা যাবে।</p><p><a class="btn" href="#/login">লগইন করুন</a></p></div>';}
  else if(hash==='devices'){h+=`<div class="card"><h2>ডিভাইস</h2>${tableHTML(['SL','IP','DEVICE ID','PLATFORM','SESSION','ACTIVED','CREATED','ACTION'],[['1','•••.•••','-ID','Android','Expired','—',''],['2','•••.•••','-ID','Linux / Chrome','Expired','—',''],['3','•••.•••','-ID','Android','Active','—',''],['4','•••.•••','-ID','Linux / Chromium','Current','—','']],'<button class="btn ghost" onclick="demoMsg(\'সেশন রিমুভ\')">Remove</button>')}<p class="muted">কোনো আসল IP / ডিভাইস ID এখানে নেই, কোনো সেশন সরানো হয় না।</p></div>`}
  else if(hash==='logout'){h+=`<div class="card"><h2>লগআউট</h2><p> লগআউট করা হয় না — এই পেজ শুধু কাঠামো দেখায়।</p><button class="btn accent" onclick="demoMsg('লগআউট')">লগআউট</button></div>`}
  else{h+='<div class="card"><p>পেজ পাওয়া যায়নি। সাইডবার থেকে বাছুন।</p></div>'}
@@ -2098,59 +2092,112 @@ render = async function () {
   if (main) main.innerHTML = `<div class="card"><h3>Activity Logs</h3>` + activityLogsHTML() + `</div>`;
 };
 
-/* ===== Step 41 — Profile page rebuilt to the reference design =====
-   Reference: big round avatar, name/email/phone, Profile Completion
-   bar + checklist, Account Details (Verified/Balance/Joined),
-   Profile Update form. Single "প্রোফাইল" title only (the old page
-   repeated it), photo upload integrated under the avatar, Change
-   Password kept below as its own card (wired to nsChangePassword,
-   which reads the 3 password inputs in order). Theme Color, Cards
-   Lists and the in-page logout card are gone (reference has none;
-   logout lives in the sidebar). NO reference-person data is copied:
-   every value comes from the logged-in user's own NS_STATE
-   (name/email/phone/verified/wallet/created_at) and their own
-   recharge list. Profile Completion is computed honestly:
-   Account Created always; Phone added if a phone is on file;
-   Recharged if any recharge is approved; Email verified stays
-   pending because this site has no email-verification system yet
-   (never shown as verified when it is not). Dashboard untouched. */
+/* ===== Profile page — NEW design only (2026-11-06 fix).
+   The old profile page is REMOVED: the prototype card (base render:
+   "প্রোফাইল", photo upload, Cards Lists) and the Step-41 page
+   (Profile Completion / Profile Update / Change Password cards).
+   They kept coming back because render() painted the old page first
+   and ns-profile-new.js only replaced it on its next tick (up to
+   400ms later) — and EVERY later render() call (refresh, moving
+   between options, notice/balance refresh) painted the old page
+   again, so the page flipped old <-> new and the avatar flipped
+   between the two designs' sizes. Now render() itself emits this
+   new panel, the Step-41 override only re-creates it if it is
+   missing, and ns-profile-new.js only wires the tabs/buttons
+   (it never rebuilds the panel). Avatar: fixed 88px circle
+   (.ns-pn-avatar, object-fit cover) with the verified tick on the
+   photo when the account is verified. */
 function nsProfPageHTML() {
   const u = NS_STATE.user || {};
-  const done = [
-    ['Account Created.', true],
-    ['Email verified.', false],
-    ['Phone number added.', !!(u.phone || '').trim()],
-    ['Have recharged successfully.', (NS_STATE.recharges || []).some(r => r.status === 'approved')],
-  ];
-  const pct = Math.round(done.filter(d => d[1]).length * 100 / done.length);
+  const draft = (typeof window !== 'undefined' && window._nsPnDraft) || {};
+  const name = draft.name != null ? draft.name : (u.name || '');
+  const phone = draft.phone != null ? draft.phone : (u.phone || '');
+  const wallet = (typeof NS_STATE !== 'undefined' && NS_STATE.wallet != null) ? NS_STATE.wallet : '';
+  const verified = !!u.verified;
   let joined = '—';
   try { if (u.created_at) joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }); } catch (e) {}
-  return '<div class="ns-prof-page"><h2>প্রোফাইল</h2>' +
-    '<div class="card ns-prof-head"><div class="ns-prof-avatar">' + nsProfAvatarHTML() + '</div>' +
-    '<div class="ns-prof-name">' + esc(u.name || '') + '</div>' +
-    '<div class="ns-prof-contact">' + esc(u.email || '') + '</div>' +
-    '<div class="ns-prof-contact">' + esc(u.phone || '') + '</div></div>' +
-    '<div class="card"><div class="ns-prof-comp-head"><span>Profile Completion</span><b>' + pct + '% Complete</b></div>' +
-    '<div class="ns-prof-bar"><div style="width:' + pct + '%"></div></div><ul class="ns-prof-check">' +
-    done.map(d => '<li class="' + (d[1] ? 'ok' : 'no') + '">' + (d[1] ? '✓ ' : '○ ') + d[0] + '</li>').join('') + '</ul></div>' +
-    '<div class="card"><h3>Account Details</h3>' +
-    '<div class="ns-prof-row"><span>Verified:</span>' + (u.verified ? 'Yes' : 'No') + '</div>' +
-    '<div class="ns-prof-row"><span>Balance:</span>৳ ' + (NS_STATE.wallet != null ? NS_STATE.wallet : '') + '</div>' +
-    '<div class="ns-prof-row"><span>Joined:</span>' + joined + '</div></div>' +
-    '<div class="card ns-prof-update"><h3>Profile Update</h3>' +
-    '<label>নাম*</label><input id="profileNameInput" value="' + esc(u.name || '') + '">' +
-    '<label>ইমেল*</label><input disabled value="' + esc(u.email || '') + '">' +
-    '<label>নম্বর*</label><input id="profilePhoneInput" value="' + esc(u.phone || '') + '">' +
-    '<p><button class="btn" onclick="saveProfileUpdate()">Update Profile</button></p></div>' +
-    '<div class="card"><h3>Change Password</h3><label>পুরাতন পাসওয়ার্ড*</label><input type="password"><label>নতুন পাসওয়ার্ড*</label><input type="password"><label>কনফার্ম পাসওয়ার্ড*</label><input type="password"><p><button class="btn" onclick="nsChangePassword()">Update Password</button></p></div></div>';
+  let ph = '';
+  try { ph = NS_STATE.photoData || ''; } catch (e) {}
+  if (!ph) { try { ph = getProfilePhoto() || ''; } catch (e) {} }
+  if (!ph) { try { ph = nsAvatarFor(u.name) || ''; } catch (e) {} }
+  const ch = ((u.name || 'ন').trim().charAt(0)) || 'ন';
+  const avatar = ph ? '<img src="' + esc(ph) + '" alt="প্রোফাইল ছবি">' : '<span class="ns-pn-initials">' + esc(ch) + '</span>';
+  const badge = verified ? '<span class="ns-pn-vbadge">✓</span>' : '';
+  const darkChecked = (typeof document !== 'undefined' && document.body && document.body.classList.contains('dark')) ? 'checked' : '';
+  return '<div class="ns-pn-panel">'
+    + '<h1>Profile &amp; Settings</h1>'
+    + '<p class="ns-pn-intro">Manage your profile information, email &amp; password, preferences, and sessions.</p>'
+    + '<nav class="ns-pn-tabs">'
+    + '<button type="button" class="ns-pn-tab active" data-tab="profile">Profile</button>'
+    + '<button type="button" class="ns-pn-tab" data-tab="account">Account</button>'
+    + '<button type="button" class="ns-pn-tab" data-tab="preferences">Preferences</button>'
+    + '<button type="button" class="ns-pn-tab" data-tab="sessions">Sessions</button>'
+    + '</nav>'
+    + '<section class="ns-pn-content active" id="ns-pn-profile">'
+    + '<div class="ns-pn-cover"><div class="ns-pn-avatar">' + avatar + badge + '</div></div>'
+    + '<div class="ns-pn-identity"><h2>' + esc(u.name || '') + '</h2>'
+    + '<div class="ns-pn-email">' + esc(u.email || '') + '</div>'
+    + '<div class="ns-pn-badges"><span class="ns-pn-badge member">Member</span>'
+    + (verified ? '<span class="ns-pn-badge verified">✓ Verified Account</span>' : '')
+    + '</div></div>'
+    + '<div class="ns-pn-section"><h3>Personal Information</h3><p class="ns-pn-desc">Update your personal details here.</p>'
+    + '<div class="ns-pn-field"><label>Name</label><input id="nsPnName" value="' + esc(name) + '"></div>'
+    + '<div class="ns-pn-field"><label>Email</label><input value="' + esc(u.email || '') + '" disabled><p class="ns-pn-hint">Email cannot be changed from here.</p></div>'
+    + '<div class="ns-pn-field"><label>Phone Number</label><input id="nsPnPhone" value="' + esc(phone) + '" type="tel"></div>'
+    + '<div class="ns-pn-row"><button type="button" class="ns-pn-btn" onclick="nsPnCancel()">Cancel</button>'
+    + '<button type="button" class="ns-pn-btn teal" onclick="nsPnSave()">Save Changes</button></div>'
+    + '</div>'
+    + '<div class="ns-pn-section"><h3>Account Details</h3>'
+    + '<div class="ns-pn-field"><label>User ID</label><input value="' + esc(u.uid || '') + '" disabled></div>'
+    + '<div class="ns-pn-field"><label>Balance</label><input value="৳ ' + esc(wallet) + '" disabled></div>'
+    + '<div class="ns-pn-field"><label>Joined</label><input value="' + esc(joined) + '" disabled></div>'
+    + '</div>'
+    + '</section>'
+    + '<section class="ns-pn-content" id="ns-pn-account">'
+    + '<div class="ns-pn-section" style="border:0;padding-top:0;margin-top:0"><h3 class="ns-pn-orange-title">Password Change</h3>'
+    + '<p class="ns-pn-desc">Use a strong password for your account security.</p>'
+    + '<div class="ns-pn-field"><label>Current Password</label><input id="nsPnOldPass" type="password" placeholder="বর্তমান পাসওয়ার্ড"></div>'
+    + '<div class="ns-pn-field"><label>New Password</label><input id="nsPnNewPass" type="password" placeholder="কমপক্ষে ৮ অক্ষর"></div>'
+    + '<div class="ns-pn-field"><label>Confirm Password</label><input id="nsPnConfPass" type="password" placeholder="আবার পাসওয়ার্ড লিখুন"></div>'
+    + '<button type="button" class="ns-pn-btn teal" onclick="nsChangePassword()">Update Password</button></div>'
+    + '<div class="ns-pn-section"><h3 class="ns-pn-orange-title">Linked Accounts</h3>'
+    + '<p class="ns-pn-desc">Your login methods for this account.</p>'
+    + '<div class="ns-pn-account-card"><div class="ns-pn-account-head"><div class="ns-pn-gicon">@</div>'
+    + '<div><div class="ns-pn-account-name">Email &amp; Password</div><div class="ns-pn-account-sub">' + esc(u.email || '') + '</div></div>'
+    + '<span class="ns-pn-account-status">✓ Active</span></div></div>'
+    + '</div>'
+    + '</section>'
+    + '<section class="ns-pn-content" id="ns-pn-preferences">'
+    + '<div class="ns-pn-section" style="border:0;padding-top:0;margin-top:0"><h3>Preferences</h3>'
+    + '<p class="ns-pn-desc">Your display and notification settings.</p>'
+    + '<div class="ns-pn-toggle-row"><div><strong>Dark Mode</strong><small>Switch the site to a dark theme.</small></div>'
+    + '<label class="ns-pn-switch"><input type="checkbox" id="nsPnDark" ' + darkChecked + '><span class="ns-pn-slider"></span></label></div>'
+    + '<div class="ns-pn-toggle-row"><div><strong>Notifications</strong><small>See notices and updates from the admin.</small></div>'
+    + '<button type="button" class="ns-pn-btn" onclick="location.hash=\'#/notices\'">View Notices</button></div>'
+    + '</div>'
+    + '</section>'
+    + '<section class="ns-pn-content" id="ns-pn-sessions">'
+    + '<div class="ns-pn-section" style="border:0;padding-top:0;margin-top:0"><h3>Security &amp; Sessions</h3>'
+    + '<p class="ns-pn-desc">View and manage your active logins across different devices.</p>'
+    + '<div id="nsPnDevices"><p class="ns-pn-desc">Loading sessions…</p></div>'
+    + '<div class="ns-pn-info-box">For your account security, change your password if you see a login from an unfamiliar device.</div>'
+    + '</div>'
+    + '</section>'
+    + '</div>';
 }
+
 const NS_PREV_RENDER_41 = render;
 render = async function () {
   await NS_PREV_RENDER_41();
   const hash = (location.hash || '').replace('#/', '') || 'dashboard';
   if (hash !== 'profile' || !nsToken() || !NS_STATE.user) return;
   const main = document.querySelector('#main');
-  if (main) main.innerHTML = nsProfPageHTML();
+  if (!main) return;
+  /* The new panel is already rendered by the base render above; only
+     re-create it if another step wiped it, so a re-render never flashes
+     the old design back and never loses typed input. */
+  if (!main.querySelector('.ns-pn-panel')) main.innerHTML = nsProfPageHTML();
+  try { if (typeof window.nsPnWire === 'function') window.nsPnWire(main); } catch (e) {}
 };
 
 /* ===== Step 49 — customer recharge popup: reference format, site colours =====

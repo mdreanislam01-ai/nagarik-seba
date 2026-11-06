@@ -1,4 +1,4 @@
-/* Nagarik Seba — Profile & Settings redesign (2026-11-06).
+/* Nagarik Seba — Profile & Settings redesign (2026-11-06), v2.
    Layout follows the user's supplied profile-settings HTML (4 tabs:
    Profile / Account / Preferences / Sessions, cover + avatar,
    identity, sections) but uses ONLY the site's own teal colours
@@ -6,16 +6,21 @@
    Sample data in the HTML file (Tuhin, sirajulmostafat2002@gmail.com,
    +8801830713325, @Tuhin) is NEVER used: every field shows the real
    logged-in user from NS_STATE.user (/me).
-   REAL wiring only: name+phone save -> PUT /me (server-side, replaces
-   the old localStorage-only saveProfileUpdate); password change ->
-   the existing nsChangePassword() (POST /auth/change-password);
+   REAL wiring only: name+phone save -> PUT /me (server-side); password
+   change -> the existing nsChangePassword() (POST /auth/change-password);
    sessions -> GET /me/devices + nsRevokeDevice(); preferences ->
    the real dark-mode toggle + notifications link. Demo-only parts
    of the HTML (profession, email-change form, Google link, Telegram /
    WhatsApp order system, delete-account) are NOT built: there is no
    API for them.
-   Tick pattern (same as ns-login-land / ns-brn-maker): replaces the
-   old .ns-prof-page when on #/profile while logged in. */
+   v2 (2026-11-06 fix): this file NO LONGER builds the panel. app.js
+   render() now emits the new panel itself (nsProfPageHTML), so the old
+   design can never come back on a re-render. This file only WIRES the
+   panel (tabs, draft, dark toggle, sessions) via window.nsPnWire,
+   called by app.js right after render and by the tick below.
+   build() is kept ONLY as a fallback: if the panel is missing
+   (e.g. an old cached app.js is still serving the old page), the
+   tick builds it — same markup as nsProfPageHTML in app.js. */
 (function () {
   'use strict';
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -35,14 +40,21 @@
     try { if (typeof NS_STATE !== 'undefined' && NS_STATE.photoData) src = NS_STATE.photoData; } catch (e) {}
     if (!src) { try { if (typeof getProfilePhoto === 'function') src = getProfilePhoto() || ''; } catch (e) {} }
     if (!src) { try { if (typeof nsAvatarFor === 'function') src = nsAvatarFor(u.name) || ''; } catch (e) {} }
-    if (src) return '<img src="' + esc(src) + '" alt="প্রোফাইল ছবি">';
-    var ch = (u.name || 'ন').trim().charAt(0) || 'ন';
-    return '<span class="ns-pn-initials">' + esc(ch) + '</span>';
+    var inner = '';
+    if (src) inner = '<img src="' + esc(src) + '" alt="প্রোফাইল ছবি">';
+    else {
+      var ch = (u.name || 'ন').trim().charAt(0) || 'ন';
+      inner = '<span class="ns-pn-initials">' + esc(ch) + '</span>';
+    }
+    if (u.verified) inner += '<span class="ns-pn-vbadge">✓</span>';
+    return inner;
   }
   function joinedStr(u) {
     try { if (u.created_at) return new Date(u.created_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }); } catch (e) {}
     return '—';
   }
+  /* Fallback only: build the panel when app.js did not render it
+     (old cached app.js). Same markup as nsProfPageHTML() in app.js. */
   function build() {
     var main = document.querySelector('#main');
     if (!main) return;
@@ -118,12 +130,22 @@
       + '</section>'
       + '</div>';
     main.innerHTML = html;
+    wirePanel(main);
+  }
+  /* Wire an already-rendered panel (idempotent). Called by app.js
+     right after render and by the tick below. Never rebuilds HTML. */
+  function wirePanel(main) {
+    main = main || document.querySelector('#main');
+    if (!main) return;
+    var panel = main.querySelector('.ns-pn-panel');
+    if (!panel || panel.dataset.nsPnWired) return;
+    panel.dataset.nsPnWired = '1';
     // Tabs
-    var tabs = main.querySelectorAll('.ns-pn-tab');
+    var tabs = panel.querySelectorAll('.ns-pn-tab');
     tabs.forEach(function (btn) {
       btn.addEventListener('click', function () {
         tabs.forEach(function (x) { x.classList.toggle('active', x === btn); });
-        main.querySelectorAll('.ns-pn-content').forEach(function (c) { c.classList.toggle('active', c.id === 'ns-pn-' + btn.dataset.tab); });
+        panel.querySelectorAll('.ns-pn-content').forEach(function (c) { c.classList.toggle('active', c.id === 'ns-pn-' + btn.dataset.tab); });
         if (btn.dataset.tab === 'sessions') loadDevices();
       });
     });
@@ -146,6 +168,7 @@
     });
     loadDevices();
   }
+  window.nsPnWire = wirePanel;
   function loadDevices() {
     var box = document.getElementById('nsPnDevices');
     if (!box) return;
@@ -188,8 +211,9 @@
       var r = await nsCall('/me', 'PUT', { name: name, phone: phone });
       if (r && r.user) { try { NS_STATE.user = r.user; } catch (e) {} if (r.wallet_bdt != null) { try { NS_STATE.wallet = r.wallet_bdt; } catch (e) {} } }
       window._nsPnDraft = null;
-      var main = document.querySelector('#main');
-      if (main) { var p = main.querySelector('.ns-pn-panel'); if (p) p.remove(); }
+      /* v2: do NOT remove the panel (that forced a rebuild and lost the
+         tab state). Just update the shown name in place. */
+      try { var h2 = document.querySelector('.ns-pn-identity h2'); if (h2) h2.textContent = name; } catch (e) {}
       if (typeof showModal === 'function') showModal('প্রোফাইল আপডেট হয়েছে', 'নাম ও নম্বর সংরক্ষিত হয়েছে।');
     } catch (e) {
       var m = (e && e.message) || '';
@@ -197,7 +221,13 @@
       if (typeof showModal === 'function') showModal('প্রোফাইল আপডেট হয়নি', msg);
     }
   };
-  function tick() { if (ready()) build(); }
+  function tick() {
+    if (!ready()) return;
+    var main = document.querySelector('#main');
+    if (!main) return;
+    if (main.querySelector('.ns-pn-panel')) wirePanel(main);
+    else build(); // fallback only (old cached app.js)
+  }
   setInterval(tick, 400);
   window.addEventListener('hashchange', function () { setTimeout(tick, 60); });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(tick, 60); });
