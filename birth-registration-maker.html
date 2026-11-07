@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>জন্ম নিবন্ধন মেকার — নাগরিক সেবা</title>
+<title>ঢাকাসেবা — জন্মনিবন্ধন মেইন UI</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 :root{--ink:#172238;--muted:#858b95;--line:#dce2eb;--orange:#f36a21;--pale:#fff7f1;--bg:#f5f7fa;--blue:#0b8bc9;--green:#0aa878;--purple:#7823ef}
@@ -27,7 +27,7 @@ label{display:block;font-size:15px;font-weight:600;margin:14px 0 6px}.field{widt
 </head>
 <body>
 <div class="browser"><span>⌂</span><div class="url">dhakaseba.com/dashbo</div><span>✦</span><span>◼</span><span>⋮</span></div>
-<header class="top"><div class="hamb">☰</div><div class="brand"><div class="brandmark">ঢ</div><div><div class="brandname">ঢাক<b>াসেবা</b></div><small>আপনার ডিজিটাল সেবার প্রতিষ্ঠান · dhakaseba.com</small></div></div><div class="balance">◬ ৳<br><b>1,000.00</b></div><div class="round">♧<span class="dot">1</span></div><div class="round avatar">👩🏻</div></header>
+<header class="top"><div class="hamb">☰</div><div class="brand"><div class="brandmark">ঢ</div><div><div class="brandname">ঢাক<b>াসেবা</b></div><small>আপনার ডিজিটাল সেবার প্রতিষ্ঠান · dhakaseba.com</small></div></div><div class="balance">◬ ৳<br><b>0.00</b></div><div class="round">♧<span class="dot">1</span></div><div class="round avatar">👩🏻</div></header>
 <main>
  <div class="intro"><div class="introicon">◬</div><div><h1>জন্মনিবন্ধন মেইন</div><div class="sub">২০১৪ সালের জন্ম নিবন্ধন নম্বর ও জন্মতারিখের ভিত্তিতে...</div></div>
  <div class="pills"><span class="pill">✓ অটো ফি: ৳5</span><span class="pill pink">◬ বার্নিং: ৳0</span><span class="pill gray">⊙ রিয়াল টাইম (0)</span></div>
@@ -123,11 +123,11 @@ const badgeNames={none:'কোনো লোগো নেই (সাধারণ 
 document.querySelectorAll('.choice').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');let v=c.dataset.badge;let p=document.getElementById('badgePreview');p.textContent=badgeNames[v];p.className=v==='none'?'sub':'badge-preview'}));
 function makeQR(){let c=document.getElementById('qr'),x=c.getContext('2d'),n=29;x.fillStyle='#fff';x.fillRect(0,0,150,150);let seed=Math.random()*10000|0;function finder(a,b){x.fillStyle='#000';x.fillRect(a,b,7,7);x.fillStyle='#fff';x.fillRect(a+1,b+1,5,5);x.fillStyle='#000';x.fillRect(a+2,b+2,3,3)}for(let r=0;r<n;r++)for(let col=0;col<n;col++){let v=((r*col+seed+r*17+col*31)^(r<<2))%7<3;if(v){x.fillStyle='#000';x.fillRect(col*5+2,r*5+2,4,4)}}finder(2,2);finder(117,2);finder(2,117);document.getElementById('qrCode').textContent=Math.random().toString(36).slice(2,6).toUpperCase()}makeQR();
 
-// --- API INTEGRATION LOGIC STARTS HERE ---
+// --- FIXED API LOGIC STARTS HERE ---
 async function fetchAutoPDF() {
     const btn = document.getElementById('autoBtn');
-    const brnInput = document.getElementById('brnInput'); // Using ID for accuracy
-    const dobInput = document.getElementById('dobInput');  // Using ID for accuracy
+    const brnInput = document.getElementById('brnInput'); 
+    const dobInput = document.getElementById('dobInput');  
     
     const brn = brnInput.value.trim();
     const dob = dobInput.value;
@@ -142,8 +142,8 @@ async function fetchAutoPDF() {
     btn.disabled = true;
 
     try {
-        // Construct the API URL with provided parameters
-        const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}`;
+        // FIXED URL with response parameters to bypass CORS issues
+        const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}&response-type=file&response-disposition=attachment`;
         
         // Fetch the PDF as a blob
         const response = await fetch(apiUrl);
