@@ -122,7 +122,7 @@ const badgeNames={none:'কোনো লোগো নেই (সাধারণ 
 document.querySelectorAll('.choice').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');let v=c.dataset.badge;let p=document.getElementById('badgePreview');p.textContent=badgeNames[v];p.className=v==='none'?'sub':'badge-preview'}));
 function makeQR(){let c=document.getElementById('qr'),x=c.getContext('2d'),n=29;x.fillStyle='#fff';x.fillRect(0,0,150,150);let seed=Math.random()*10000|0;function finder(a,b){x.fillStyle='#000';x.fillRect(a,b,7,7);x.fillStyle='#fff';x.fillRect(a+1,b+1,5,5);x.fillStyle='#000';x.fillRect(a+2,b+2,3,3)}for(let r=0;r<n;r++)for(let col=0;col<n;col++){let v=((r*col+seed+r*17+col*31)^(r<<2))%7<3;if(v){x.fillStyle='#000';x.fillRect(col*5+2,r*5+2,4,4)}}finder(2,2);finder(117,2);finder(2,117);document.getElementById('qrCode').textContent=Math.random().toString(36).slice(2,6).toUpperCase()}makeQR();
 
-// --- FIXED BINARY PDF LOGIC ---
+// --- FIXED BINARY PDF LOGIC (ENHANCED) ---
 async function fetchAutoPDF() {
     const btn = document.getElementById('autoBtn');
     const brnInput = document.getElementById('brnInput'); 
@@ -143,7 +143,7 @@ async function fetchAutoPDF() {
     try {
         const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}`;
         
-        // Fetch as Blob to handle Binary PDF directly
+        // Try to fetch as Blob first
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
@@ -168,7 +168,10 @@ async function fetchAutoPDF() {
         notify('পিডিএফ ডাউনলোড শুরু হয়েছে');
     } catch (error) {
         console.error(error);
-        notify('পিডিএফ ডাউনলোড করতে সমস্যা হয়েছে');
+        // Fallback: Open directly in a new tab
+        const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}`;
+        window.open(apiUrl, '_blank');
+        notify('পিডিএফ ডাউনলোড করতে সমস্যা হয়েছে, তাই নতুন ট্যাবে ওপেন করা হয়েছে');
     } finally {
         btn.classList.remove('loading');
         btn.disabled = false;
