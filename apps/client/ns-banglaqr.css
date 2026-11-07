@@ -1,9 +1,0 @@
-/* Bangla QR card on the recharge page (2026-11-06, v1). */
-#nsBanglaQr{margin:12px 0 4px}
-.ns-bqr-card{text-align:center;background:#fff;border:1px solid #dbe7e6;border-radius:16px;padding:16px 12px}
-.ns-bqr-card img{display:block;width:100%;max-width:280px;height:auto;margin:0 auto;border-radius:12px}
-.ns-bqr-text{font-weight:700;color:#16302e;margin:12px 0 4px;line-height:1.7}
-.ns-bqr-note{color:#64748b;font-size:14px;line-height:1.7;margin:0}
-body.dark .ns-bqr-card{background:#1e293b;border-color:#334155}
-body.dark .ns-bqr-text{color:#e2e8f0}
-body.dark .ns-bqr-note{color:#94a3b8}
