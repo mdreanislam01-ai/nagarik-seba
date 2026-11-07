@@ -53,7 +53,6 @@ label{display:block;font-size:15px;font-weight:600;margin:14px 0 6px}.field{widt
 .drawerUser small{display:block;color:#8d96a5;font:11px Inter;margin-top:2px}
 .miniAvatar{height:38px;width:38px;border:3px solid #b34de1;border-radius:50%;background:#fff0dc;display:grid;place-items:center;font-size:21px}
 .profilePopupUser .miniAvatar{height:44px;width:44px}
-@media (min-width:760px){}
 @media (max-width:440px){.top{padding:6px 9px;gap:7px}.brandName{font-size:18px}.brandMark{height:36px;width:36px}.balance{min-width:68px;padding:5px 9px}.balance b{font-size:14px}.round{height:36px;width:36px}}
 .navitem{cursor:pointer}
 html,body{overflow-x:clip}
@@ -136,7 +135,7 @@ html,body{overflow-x:clip}
  <div class="pills"><span class="pill">✧ অটো ফি: ৳5</span><span class="pill pink">▣ ব্যালেন্স: ৳0</span><span class="pill gray">☷ রেকর্ড তালিকা (0)</span></div>
  <section class="panel"><div class="stripe"></div><div class="panelbody">
   <div class="modes"><button class="mode active" data-mode="auto"><span>ϟ</span>অটো<br>মোড<small>৳5</small></button><button class="mode" data-mode="manual"><span style="color:#079d75">⌕</span>ম্যানুয়াল<br>মোড<small>৳5</small></button><button class="mode" data-mode="direct"><span style="color:#078dcc">⊞</span>সরাসরি<br>পূরণ<small>৳5</small></button></div>
-  <div id="autoFields"><label>জন্ম নিবন্ধন নম্বর (BRN)</label><input class="field" maxlength="17" placeholder="১৭ ডিজিটের জন্ম নিবন্ধন নম্বর" inputmode="numeric"><label>জন্মতারিখ (DOB)</label><div class="fieldrow"><input class="field" type="date"><button class="calendar" type="button">▦</button></div></div>
+  <div id="autoFields"><label>জন্ম নিবন্ধন নম্বর (BRN)</label><input class="field" maxlength="17" placeholder="১৭ ডিজিটের জন্ম নিবন্ধন নম্বর" inputmode="numeric"><label>জন্মতারিখ (DOB)</label><div class="fieldrow"><input class="field" type="date"><button class="calendar" type="button">▦</button></div><button class="primary" onclick="notify('অপর্যাপ্ত ব্যালেন্স')">ϟ অটো অনুসন্ধান করুন (৳5)</button></div>
   <div id="manualFields" hidden><div class="info">ম্যানুয়াল মোডে তথ্য নিজে পূরণ করে জমা দিন।</div><button class="primary" onclick="goForm()">ম্যানুয়াল ফর্ম পূরণ করুন (৳5)</button></div>
   <div id="directFields" hidden><div class="info">নিজে ফর্ম পূরণ করে তথ্য জমা দিন।</div></div>
  </div></section>
