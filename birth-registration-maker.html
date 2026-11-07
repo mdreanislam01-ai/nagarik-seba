@@ -47,7 +47,6 @@ label{display:block;font-size:15px;font-weight:600;margin:14px 0 6px}.field{widt
     
     <p class="hint"><i>ℹ</i> স্বয়ংক্রিয়ভাবে ডাটা পূরণ হবে যাতে করে ৳5 খরচ হয়।</p>
     
-    <!-- UPDATED BUTTON WITH ONCLICK FUNCTION -->
     <button class="primary" id="autoBtn" onclick="fetchAutoPDF()">⚙ অটো অ্যান্যুয়াল করুন (৳5)</button>
  </div>
 
@@ -123,7 +122,7 @@ const badgeNames={none:'কোনো লোগো নেই (সাধারণ 
 document.querySelectorAll('.choice').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');let v=c.dataset.badge;let p=document.getElementById('badgePreview');p.textContent=badgeNames[v];p.className=v==='none'?'sub':'badge-preview'}));
 function makeQR(){let c=document.getElementById('qr'),x=c.getContext('2d'),n=29;x.fillStyle='#fff';x.fillRect(0,0,150,150);let seed=Math.random()*10000|0;function finder(a,b){x.fillStyle='#000';x.fillRect(a,b,7,7);x.fillStyle='#fff';x.fillRect(a+1,b+1,5,5);x.fillStyle='#000';x.fillRect(a+2,b+2,3,3)}for(let r=0;r<n;r++)for(let col=0;col<n;col++){let v=((r*col+seed+r*17+col*31)^(r<<2))%7<3;if(v){x.fillStyle='#000';x.fillRect(col*5+2,r*5+2,4,4)}}finder(2,2);finder(117,2);finder(2,117);document.getElementById('qrCode').textContent=Math.random().toString(36).slice(2,6).toUpperCase()}makeQR();
 
-// --- FIXED API LOGIC STARTS HERE ---
+// --- FIXED BINARY PDF LOGIC ---
 async function fetchAutoPDF() {
     const btn = document.getElementById('autoBtn');
     const brnInput = document.getElementById('brnInput'); 
@@ -142,33 +141,31 @@ async function fetchAutoPDF() {
     btn.disabled = true;
 
     try {
-        // STEP 1: Get the PDF URL first (JSON response avoids CORS issues)
         const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}`;
         
+        // Fetch as Blob to handle Binary PDF directly
         const response = await fetch(apiUrl);
+        
         if (!response.ok) {
             throw new Error(`API Error: ${response.status}`);
         }
 
-        const data = await response.json();
+        const blob = await response.blob();
         
-        // Check if we have a valid PDF URL from the JSON response
-        let pdfUrl = null;
-        if (data.pdf_url) {
-            pdfUrl = data.pdf_url;
-        } else if (data.data && data.data.pdf_url) {
-            pdfUrl = data.data.pdf_url;
-        } else if (typeof data === 'string') {
-            pdfUrl = data;
-        }
-
-        if (pdfUrl) {
-            // STEP 2: Open or Download the PDF directly
-            window.open(pdfUrl, '_blank');
-            notify('পিডিএফ ডাউনলোড শুরু হয়েছে');
-        } else {
-            throw new Error('No PDF URL found in response');
-        }
+        // Create a download link for the blob
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `birth_certificate_${brn}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        notify('পিডিএফ ডাউনলোড শুরু হয়েছে');
     } catch (error) {
         console.error(error);
         notify('পিডিএফ ডাউনলোড করতে সমস্যা হয়েছে');
