@@ -33,7 +33,7 @@ main{max-width:720px;margin:0 auto;padding:12px 16px 86px}
 .info p{font-size:10px;line-height:1.75;margin:0 0 5px}
 .info ul{margin:4px 0 0;padding-left:17px;font-size:10px;line-height:1.8}
 .bottom{position:fixed;bottom:0;left:0;right:0;height:55px;background:#fff;border-top:1px solid #e8eaf0;display:flex;justify-content:space-around;align-items:center;z-index:4}
-.nav{flex:1;text-align:center;color:#969ba4;font-size:9px;line-height:1.35}.nav i{font-style:normal;font-size:17px;display:block;line-height:20px}.nav.active{color:#f15c16;font-weight:800}
+.nav{flex:1;text-align:center;color:#969ba4;font-size:9px;line-height:1.35;cursor:pointer}.nav i{font-style:normal;font-size:17px;display:block;line-height:20px}.nav.active{color:#f15c16;font-weight:800}
 @media(min-width:650px){main{padding-top:20px}.alert{padding:14px 16px}.empty{height:210px}}
 @media(max-width:380px){main{padding-left:11px;padding-right:11px}.heading h1{font-size:13px}.stats{margin-left:46px}.empty{height:170px}}
 .top{height:67px;position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e9eaf0;display:flex;align-items:center;padding:7px 14px;gap:11px}.hamb{font-size:23px;border:0;background:none;color:#253246;cursor:pointer}.brand{display:flex;align-items:center;gap:6px;min-width:0}.brandMark{width:40px;height:40px;border-radius:9px;background:linear-gradient(140deg,#08717b,#11a5a3);display:grid;place-items:center;color:#fff;font-size:23px;font-weight:800}.brandName{font-size:21px;font-weight:800;color:#c93d39;line-height:1}.brandName small{display:block;font:8px Inter;color:#566273;margin-top:3px}.grow{flex:1}.balance{width:112px;min-width:112px;max-width:112px;flex:0 0 auto;box-sizing:border-box;border-radius:14px;background:linear-gradient(135deg,#0d9488,#16a34a);padding:4px 8px;text-align:center;box-shadow:0 2px 8px rgba(13,148,136,.35);overflow:hidden;white-space:nowrap}.balance small{display:block;color:#d1fae5;font-size:9px;line-height:1.3}.balance b{font:700 13px Inter;color:#fff;font-variant-numeric:tabular-nums}.round{height:39px;width:39px;border:1px solid #ececf0;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:19px;position:relative;cursor:pointer}.greenDot{position:absolute;width:8px;height:8px;background:#10b981;border-radius:50%;right:3px;bottom:3px}.avatarBtn{height:42px;width:42px;border-radius:50%;border:3px solid #a74ee4;background:#fff0df;display:grid;place-items:center;font-size:22px;cursor:pointer}
@@ -140,7 +140,7 @@ main{max-width:720px;margin:0 auto;padding:12px 16px 86px}
 </section>
 </main>
 <nav class="bottom">
-<div class="nav"><i>⌂</i>Home</div><div class="nav"><i>▱</i>Wallet</div><div class="nav active"><i>▦</i>Services</div><div class="nav"><i>▤</i>Transactions</div><div class="nav"><i>♙</i>Profile</div>
+<div class="nav" onclick="location.href='index.html'"><i>⌂</i>Home</div><div class="nav" onclick="location.href='recharge.html'"><i>▱</i>Wallet</div><div class="nav active" onclick="location.href='index.html'"><i>▦</i>Services</div><div class="nav" onclick="location.href='transactions.html'"><i>▤</i>Transactions</div><div class="nav" onclick="location.href='index.html'"><i>♙</i>Profile</div>
 </nav>
 <script>
 document.getElementById('search').addEventListener('input',function(){
