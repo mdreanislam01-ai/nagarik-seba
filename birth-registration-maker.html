@@ -142,32 +142,33 @@ async function fetchAutoPDF() {
     btn.disabled = true;
 
     try {
-        // FIXED URL with response parameters to bypass CORS issues
-        const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}&response-type=file&response-disposition=attachment`;
+        // STEP 1: Get the PDF URL first (JSON response avoids CORS issues)
+        const apiUrl = `https://lmnxbirth-cirtificate-api-pdf.vercel.app?brn=${encodeURIComponent(brn)}&dob=${encodeURIComponent(dob)}`;
         
-        // Fetch the PDF as a blob
         const response = await fetch(apiUrl);
-        
         if (!response.ok) {
             throw new Error(`API Error: ${response.status}`);
         }
 
-        const blob = await response.blob();
+        const data = await response.json();
         
-        // Create a download link
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `birth_certificate_${brn}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Cleanup
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        notify('পিডিএফ ডাউনলোড শুরু হয়েছে');
+        // Check if we have a valid PDF URL from the JSON response
+        let pdfUrl = null;
+        if (data.pdf_url) {
+            pdfUrl = data.pdf_url;
+        } else if (data.data && data.data.pdf_url) {
+            pdfUrl = data.data.pdf_url;
+        } else if (typeof data === 'string') {
+            pdfUrl = data;
+        }
+
+        if (pdfUrl) {
+            // STEP 2: Open or Download the PDF directly
+            window.open(pdfUrl, '_blank');
+            notify('পিডিএফ ডাউনলোড শুরু হয়েছে');
+        } else {
+            throw new Error('No PDF URL found in response');
+        }
     } catch (error) {
         console.error(error);
         notify('পিডিএফ ডাউনলোড করতে সমস্যা হয়েছে');
