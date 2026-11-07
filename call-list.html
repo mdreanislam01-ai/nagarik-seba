@@ -85,7 +85,7 @@ document.getElementById('submit').addEventListener('click',()=>{
  else if(!phone){document.getElementById('phone').focus();return;}
  else {document.getElementById('toast').textContent='❌ অপর্যাপ্ত ব্যালেন্স! দয়া করে রিচার্জ করুন | 🥺';document.getElementById('formcard').classList.add('alerted');}
  const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+});
 function toggleDrawer(v){document.getElementById('drawerShade').style.display=v?'block':'none'}
 function toggleSub(){let e=document.getElementById('subMenu');e.style.display=e.style.display==='none'?'block':'none'}
-});
 </script></body></html>

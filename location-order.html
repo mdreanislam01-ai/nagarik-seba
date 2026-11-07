@@ -132,8 +132,8 @@ document.getElementById('submit').addEventListener('click',()=>{
  if(!selected){hint.hidden=false;hint.textContent='অনুগ্রহ করে একটি ভ্যারিয়েন্ট নির্বাচন করুন।';return;}
  if(!number){document.getElementById('number').focus();return;}
  const toast=document.getElementById('toast');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200);
+});
 function toggleDrawer(v){document.getElementById('drawerShade').style.display=v?'block':'none'}
 function toggleSub(){let e=document.getElementById('subMenu');e.style.display=e.style.display==='none'?'block':'none'}
-});
 </script>
 </body></html>
