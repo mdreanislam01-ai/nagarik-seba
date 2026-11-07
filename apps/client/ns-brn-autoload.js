@@ -1,9 +1,9 @@
-/* ns-brn-autoload.js â€” BRN "Autoload Information" popup (v2, Updated for Direct PDF).
+/* ns-brn-autoload.js â€” BRN "Autoload Information" popup (v3 - Direct PDF Load).
    WHAT IT DOES: 
    1. Opens popup.
    2. On 'Load', calls your Vercel API endpoint.
-   3. If API returns a pdfUrl, it opens that URL in a new tab immediately.
-   4. It does NOT try to fill the form manually unless you add specific field mapping logic later.
+   3. If API returns a pdfUrl, it immediately opens that URL in the current window or a new tab.
+   4. It fills the form fields with BRN and DOB for record keeping.
 */
 (function () {
     'use strict';
@@ -66,7 +66,7 @@
         }
     }
 
-    // --- UPDATED LOAD LOGIC ---
+    // --- UPDATED LOAD LOGIC FOR DIRECT PDF DOWNLOAD ---
     function doLoad() {
         var brn = (el('ns-aload-brn').value || '').trim();
         var dob = (el('ns-aload-dob').value || '').trim();
@@ -103,10 +103,7 @@
                 
                 // Check if pdfUrl exists in response
                 if (data.pdfUrl) {
-                    // Open the PDF in a new tab
-                    window.open(data.pdfUrl, '_blank');
-                    
-                    // Optional: Fill the form fields with BRN and DOB just in case user needs them visible
+                    // Fill the form fields first
                     var card = ctxCard;
                     var grid = card ? card.querySelector('.brn-grid') : document.querySelector('.brn-grid');
                     if (grid) {
@@ -124,8 +121,15 @@
                             }
                         }
                     }
+
+                    // Open the PDF URL directly
+                    // Option 1: Open in new tab (Recommended for PDFs)
+                    window.open(data.pdfUrl, '_blank');
                     
-                    alert("PDF is opening in a new tab. Please download from there.");
+                    // Option 2: If you want to force download in same window, use:
+                    // window.location.href = data.pdfUrl;
+
+                    alert("PDF is loading. Please check the new tab.");
                     closePopup();
                 } else {
                     fail("PDF link not found in API response.");
