@@ -436,7 +436,7 @@
                                 <i class="fa-solid fa-lock text-amber-400 mr-1.5"></i> পাসওয়ার্ড তৈরি করুন
                             </label>
                             <div class="relative">
-                                <input type="password" id="regPassword" required minlength="6" placeholder="কমপক্ষে ৬ ডিজিটের পাসওয়ার্ড"
+                                <input type="password" id="regPassword" required minlength="8" placeholder="কমপক্ষে ৮ ডিজিটের পাসওয়ার্ড"
                                     class="w-full px-3 py-2 bg-slate-950/60 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition" />
                                 <button type="button" onclick="togglePassVisibility('regPassword', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
                                     <i class="fa-regular fa-eye"></i>
@@ -522,8 +522,8 @@
                 </div>
 
                 <div class="text-center">
-                    <button type="button" onclick="autoFillMockOTP()" class="text-[11px] text-amber-400 underline hover:text-amber-300">
-                        [ডেমো টেস্ট কোড অটো-ফিল করুন (942851)]
+                    <button type="button" onclick="resendOtp()" id="resendOtpBtn" class="text-[11px] text-amber-400 underline hover:text-amber-300">
+                        কোড পাননি? আবার পাঠান
                     </button>
                 </div>
 
@@ -548,7 +548,7 @@
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        <span class="text-xs font-mono text-slate-300">@NagarikSebaVerifyBot</span>
+                        <span class="text-xs font-mono text-slate-300">@Nagarik_Seba_bot</span>
                     </div>
                     <span id="tgBotStatus" class="text-xs text-amber-400 font-semibold">সংযুক্ত হচ্ছে...</span>
                 </div>
@@ -580,7 +580,7 @@
                     </div>
                     <div class="flex justify-between text-slate-400">
                         <span>হোয়াটসঅ্যাপ স্ট্যাটাস:</span>
-                        <span id="waStatusText" class="text-emerald-400 font-medium">অ্যাডমিন বার্তা পাঠানো হয়েছে ✔</span>
+                        <span id="waStatusText" class="text-emerald-400 font-medium">অ্যাডমিন অনুমোদনের অপেক্ষায়</span>
                     </div>
                 </div>
 
@@ -803,21 +803,52 @@
                 showToast('শুধুমাত্র ভেরিফায়েড Gmail দিয়ে রেজিস্টার করুন', false);
                 return;
             }
+            if (pass.length < 8) {
+                showToast('পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।', false);
+                return;
+            }
 
-            tempRegData = { name, mobile, username, email, pass };
+            const form = e.target;
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+            showToast('আপনার জিমেইলে OTP পাঠানো হচ্ছে...');
 
-            // Set up modal initial display
-            document.getElementById('displayTargetEmail').innerText = email;
-            document.getElementById('summaryName').innerText = name;
-            document.getElementById('summaryUser').innerText = '@' + username;
-
-            // Reset modal step to 1
-            showStep(1);
-
-            // Show modal
-            const modal = document.getElementById('verificationModal');
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, email: email, phone: mobile, password: pass })
+            }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok: r.ok, d: d }; }); }).then(function(res){
+                if (!res.ok) {
+                    const msg = {
+                        name_required: 'আপনার নাম দিন।',
+                        invalid_email: 'সঠিক জিমেইল ঠিকানা দিন।',
+                        invalid_phone: 'সঠিক মোবাইল নম্বর দিন।',
+                        password_too_short: 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।',
+                        email_exists: 'এই জিমেইল দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে। লগইন করুন।',
+                        phone_exists: 'এই নম্বর দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে। লগইন করুন।',
+                        otp_cooldown: 'একটু পরে আবার চেষ্টা করুন।',
+                        otp_too_many: 'অনেকবার চেষ্টা হয়েছে। ১ ঘণ্টা পর আবার চেষ্টা করুন।',
+                        registration_closed: 'নিবন্ধন এখন বন্ধ আছে।',
+                        email_send_failed: 'ইমেইল পাঠানো যায়নি। আবার চেষ্টা করুন।'
+                    }[res.d.error] || 'OTP পাঠানো যায়নি। আবার চেষ্টা করুন।';
+                    showToast(msg, false);
+                    return;
+                }
+                tempRegData = { name: name, mobile: mobile, username: username, email: email, pass: pass };
+                document.getElementById('displayTargetEmail').innerText = email;
+                document.getElementById('summaryName').innerText = name;
+                document.getElementById('summaryUser').innerText = '@' + username;
+                otpInputs.forEach(function(inp){ inp.value = ''; });
+                showStep(1);
+                const modal = document.getElementById('verificationModal');
+                modal.classList.remove('hidden');
+                setTimeout(function(){ modal.classList.remove('opacity-0'); }, 10);
+                showToast('৬ সংখ্যার OTP আপনার জিমেইলে পাঠানো হয়েছে।');
+            }).catch(function(){
+                showToast('নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।', false);
+            }).finally(function(){
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            });
         }
 
         function closeVerificationModal() {
@@ -873,21 +904,67 @@
             });
         });
 
-        function autoFillMockOTP() {
-            const mock = ['9', '4', '2', '8', '5', '1'];
-            otpInputs.forEach((inp, idx) => inp.value = mock[idx]);
-            showToast('টেস্ট ওটিপি পূরণ করা হয়েছে');
+        function resendOtp() {
+            if (!tempRegData.email) { showToast('আগে রেজিস্ট্রেশন ফর্মটি পূরণ করুন।', false); return; }
+            const btn = document.getElementById('resendOtpBtn');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+            fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: tempRegData.name, email: tempRegData.email, phone: tempRegData.mobile, password: tempRegData.pass })
+            }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok: r.ok, d: d }; }); }).then(function(res){
+                if (!res.ok) {
+                    if (res.d.error === 'otp_cooldown') {
+                        const s = res.d.retry_after_seconds ? res.d.retry_after_seconds + ' সেকেন্ড' : 'একটু';
+                        showToast(s + ' পর আবার চেষ্টা করুন।', false);
+                    } else if (res.d.error === 'otp_too_many') {
+                        showToast('অনেকবার চেষ্টা হয়েছে। ১ ঘণ্টা পর আবার চেষ্টা করুন।', false);
+                    } else {
+                        showToast('OTP পাঠানো যায়নি। আবার চেষ্টা করুন।', false);
+                    }
+                    return;
+                }
+                otpInputs.forEach(function(inp){ inp.value = ''; });
+                showToast('নতুন OTP আপনার জিমেইলে পাঠানো হয়েছে।');
+            }).catch(function(){
+                showToast('নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।', false);
+            }).finally(function(){
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            });
         }
 
         function verifyStep1() {
             let code = '';
-            otpInputs.forEach(i => code += i.value);
+            otpInputs.forEach(function(inp){ code += inp.value; });
             if (code.length < 6) {
                 showToast('৬ সংখ্যার সঠিক ওটিপি দিন', false);
                 return;
             }
-            showToast('জিমেইল ওটিপি সঠিকভাবে যাচাই করা হয়েছে ✔');
-            setTimeout(() => showStep(2), 600);
+            const btn = document.querySelector('#stepContent1 button[onclick="verifyStep1()"]');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+            fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: tempRegData.name, email: tempRegData.email, phone: tempRegData.mobile, password: tempRegData.pass, code: code })
+            }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok: r.ok, d: d }; }); }).then(function(res){
+                if (!res.ok) {
+                    const msg = {
+                        otp_invalid: 'ভুল ওটিপি। আবার চেষ্টা করুন।',
+                        otp_expired: 'ওটিপির মেয়াদ শেষ। নতুন কোড পাঠান।',
+                        email_exists: 'এই জিমেইল দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে। লগইন করুন।',
+                        phone_exists: 'এই নম্বর দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে। লগইন করুন।',
+                        registration_closed: 'নিবন্ধন এখন বন্ধ আছে।'
+                    }[res.d.error] || 'ওটিপি যাচাই হয়নি। আবার চেষ্টা করুন।';
+                    showToast(msg, false);
+                    return;
+                }
+                showToast('জিমেইল OTP যাচাই হয়েছে ✔ অ্যাকাউন্ট তৈরি হয়েছে।');
+                setTimeout(function(){ showStep(3); }, 600);
+            }).catch(function(){
+                showToast('নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।', false);
+            }).finally(function(){
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            });
         }
 
         // Step 2: Telegram Bot Automated Simulation
@@ -909,7 +986,7 @@
         // Step 3: Finish All Registration & Redirect to Login
         function finishAllRegistrations() {
             closeVerificationModal();
-            showToast(`নিবন্ধন সফল! আপনার ইউজারনেম @${tempRegData.username || 'user'}। এবার জিমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন।`, true);
+            showToast('নিবন্ধন সফল! অ্যাডমিন অনুমোদনের পর জিমেইল ও পাসওয়ার্ড দিয়ে লগইন করতে পারবেন।', true);
             switchAuthTab('login');
             if (tempRegData.email) {
                 document.getElementById('loginEmail').value = tempRegData.email;
