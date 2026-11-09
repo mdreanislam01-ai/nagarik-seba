@@ -61,7 +61,8 @@ html.dark .ns-bottom{background:#1e293b;border-top-color:#334155}
 
 .avatarBtn{position:relative;isolation:isolate;border:0;background:#fff0df;box-shadow:0 0 8px rgba(249,115,22,.45),0 0 3px rgba(168,85,247,.35);animation:avatarGlow 2.4s ease-in-out infinite}
 .avatarBtn::before{content:'';position:absolute;inset:-2.5px;border-radius:50%;background:conic-gradient(from 0deg,#f97316,#a855f7,#06b6d4,#ec4899,#f97316);animation:avatarSpin 3.5s linear infinite;z-index:-1}
-.avatarBtn>svg{width:96%;height:auto;aspect-ratio:1/1;display:block;background:#fff0df;border-radius:50%}
+.avatarBtn>svg{width:100%;height:auto;aspect-ratio:1/1;display:block;background:#fff0df;border-radius:50%}
+@media (max-width:440px){.avatarBtn{height:34px;width:34px}}
 html.dark .avatarBtn>svg{background:#1e293b}
 .avEye{transform-box:fill-box;transform-origin:center;animation:avBlink 4.5s ease-in-out infinite}
 @keyframes avatarSpin{to{transform:rotate(360deg)}}
