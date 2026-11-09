@@ -1,426 +1,438 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NID কার্ড মেকার — নগরীক সেবা</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap');
-        
-        :root {
-            --orange: #f05a0a;
-            --ink: #172033;
-            --line: #dedbd5;
-            --cream: #fffdf8;
-            --bg: #f6f7f9;
-        }
-        
-        * { box-sizing: border-box; }
-        
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--ink);
-            font-family: 'Noto Sans Bengali', Arial, sans-serif;
-            font-size: 14px;
-            padding-bottom: 80px;
-        }
-        
-        main {
-            max-width: 650px;
-            margin: auto;
-            padding: 20px 16px;
-        }
-        
-        .pagehead {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin: 10px 0 24px;
-        }
-        
-        h1 { font-size: 22px; margin: 0; font-weight: 800; }
-        
-        .card {
-            background: var(--cream);
-            border: 1px solid #e8e3da;
-            border-radius: 20px;
-            padding: 22px 18px;
-            margin-bottom: 22px;
-            box-shadow: 0 2px 5px #00000008;
-        }
-        
-        /* Upload Area Styling */
-        .upload-area {
-            border: 2px dashed #ffd0b5;
-            border-radius: 18px;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 18px;
-            color: #999;
-            background: #fffaf4;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-        }
-        
-        .upload-area:hover { background: #fff0e0; border-color: var(--orange); }
-        .upload-icon { font-size: 24px; color: var(--orange); margin-bottom: 8px; }
-        input[type="file"] { display: none; }
-        
-        label {
-            display: block;
-            font-size: 15px;
-            margin: 14px 0 7px;
-            color: #4b4f58;
-            font-weight: 600;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #d8d5d0;
-            border-radius: 12px;
-            background: #fffdfa;
-            font: 15px 'Noto Sans Bengali', sans-serif;
-            color: #333;
-            outline: none;
-        }
-        
-        input:focus, textarea:focus {
-            border-color: #f5a06f;
-            box-shadow: 0 0 0 3px #f05a0a14;
-        }
-        
-        textarea { min-height: 100px; resize: vertical; }
-        
-        .grid2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .btn-primary {
-            display: block;
-            width: 100%;
-            margin: 30px 0 10px;
-            padding: 16px;
-            border: 1px solid #bd4700;
-            border-radius: 16px;
-            background: linear-gradient(#ff6817, #e94d00);
-            color: white;
-            font: 700 18px 'Noto Sans Bengali';
-            box-shadow: 0 4px 0 #b83d00, 0 7px 14px #f05a0a2c;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        
-        .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 #b83d00; }
-        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
-        
-        /* Loader */
-        #loader {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.95);
-            z-index: 999;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--orange);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Toast Notification */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1001;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-size: 14px;
-        }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>NID Card Maker — Sample Service</title>
+ <style>
+ @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap');
+ 
+ :root {
+ --orange: #f05a0a;
+ --ink: #172033;
+ --line: #dedbd5;
+ --cream: #fffdf8;
+ --bg: #f6f7f9;
+ }
+ 
+ * { box-sizing: border-box; }
+ 
+ body {
+ margin: 0;
+ background: var(--bg);
+ color: var(--ink);
+ font-family: 'Noto Sans Bengali', Arial, sans-serif;
+ font-size: 14px;
+ padding-bottom: 80px;
+ }
+ 
+ main {
+ max-width: 650px;
+ margin: auto;
+ padding: 20px 16px;
+ }
+ 
+ .pagehead {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 8px;
+ margin: 10px 0 24px;
+ }
+ 
+ h1 { font-size: 22px; margin: 0; font-weight: 800; }
+ 
+ .card {
+ background: var(--cream);
+ border: 1px solid #e8e3da;
+ border-radius: 20px;
+ padding: 22px 18px;
+ margin-bottom: 22px;
+ box-shadow: 0 2px 5px #00000008;
+ }
+ 
+ /* Upload Area Styling */
+ .upload-area {
+ border: 2px dashed #ffd0b5;
+ border-radius: 18px;
+ min-height: 120px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ text-align: center;
+ padding: 18px;
+ color: #999;
+ background: #fffaf4;
+ cursor: pointer;
+ margin-bottom: 20px;
+ transition: all 0.2s;
+ }
+ 
+ .upload-area:hover { background: #fff0e0; border-color: var(--orange); }
+ .upload-icon { font-size: 24px; color: var(--orange); margin-bottom: 8px; }
+ input[type="file"] { display: none; }
+ 
+ label {
+ display: block;
+ font-size: 15px;
+ margin: 14px 0 7px;
+ color: #4b4f58;
+ font-weight: 600;
+ }
+ 
+ input, select, textarea {
+ width: 100%;
+ padding: 13px 14px;
+ border: 1px solid #d8d5d0;
+ border-radius: 12px;
+ background: #fffdfa;
+ font: 15px 'Noto Sans Bengali', sans-serif;
+ color: #333;
+ outline: none;
+ }
+ 
+ input:focus, textarea:focus {
+ border-color: #f5a06f;
+ box-shadow: 0 0 0 3px #f05a0a14;
+ }
+ 
+ textarea { min-height: 100px; resize: vertical; }
+ 
+ .grid2 {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 12px;
+ }
+ 
+ .btn-primary {
+ display: block;
+ width: 100%;
+ margin: 30px 0 10px;
+ padding: 16px;
+ border: 1px solid #bd4700;
+ border-radius: 16px;
+ background: linear-gradient(#ff6817, #e94d00);
+ color: white;
+ font: 700 18px 'Noto Sans Bengali';
+ box-shadow: 0 4px 0 #b83d00, 0 7px 14px #f05a0a2c;
+ cursor: pointer;
+ transition: transform 0.1s;
+ }
+ 
+ .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 #b83d00; }
+ .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+ 
+ /* Loader */
+ #loader {
+ position: fixed;
+ top: 0; left: 0; right: 0; bottom: 0;
+ background: rgba(255,255,255,0.95);
+ z-index: 999;
+ display: none;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ }
+ .spinner {
+ width: 40px; height: 40px;
+ border: 4px solid #f3f3f3;
+ border-top: 4px solid var(--orange);
+ border-radius: 50%;
+ animation: spin 1s linear infinite;
+ margin-bottom: 15px;
+ }
+ @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+ 
+ /* Toast Notification */
+ #toast {
+ visibility: hidden;
+ min-width: 250px;
+ background-color: #333;
+ color: #fff;
+ text-align: center;
+ border-radius: 8px;
+ padding: 16px;
+ position: fixed;
+ z-index: 1001;
+ left: 50%;
+ bottom: 30px;
+ transform: translateX(-50%);
+ font-size: 14px;
+ }
+ #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+ @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+ @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-    </style>
+ </style>
 </head>
 <body>
 
 <!-- Loader -->
 <div id="loader">
-    <div class="spinner"></div>
-    <div>পিডিএফ প্রসেস হচ্ছে...</div>
+ <div class="spinner"></div>
+ <div>প্রসেসিং হচ্ছে...</div>
 </div>
 
 <!-- Toast -->
 <div id="toast">Message</div>
 
 <main>
-    <div class="pagehead">
-        <h1>NID কার্ড মেকার</h1>
-    </div>
+ <div class="pagehead">
+ <h1>NID कार्ड मेकर</h1>
+ </div>
 
-    <form id="nidForm">
-        <!-- Profile Image -->
-        <label>প্রোফাইল ছবি</label>
-        <div class="upload-area" onclick="document.getElementById('profileInput').click()">
-            <div class="upload-icon">📷</div>
-            <strong>ছবি আপলোড করুন</strong>
-            <small>JPG/PNG (Max 2MB)</small>
-            <input type="file" id="profileInput" accept="image/*" required>
-        </div>
+ <form id="nidForm">
+ <!-- Profile Image -->
+ <label>প্রোফাইল ছবি</label>
+ <div class="upload-area" onclick="document.getElementById('profileInput').click()">
+ <div class="upload-icon">📷</div>
+ <strong>ছবি আপলোড করুন</strong>
+ <small>JPG/PNG (Max 2MB)</small>
+ <input type="file" id="profileInput" accept="image/*" required>
+ </div>
 
-        <!-- Personal Info -->
-        <div class="grid2">
-            <div>
-                <label>পার্ট নাম *</label>
-                <input type="text" id="name" placeholder="Rakib Hossain" required>
-            </div>
-            <div>
-                <label>বাংলা নাম *</label>
-                <input type="text" id="name_bn" placeholder="রাকিব হোসাইন" required>
-            </div>
-        </div>
+ <!-- Personal Info -->
+ <div class="grid2">
+ <div>
+ <label>পূর্ণ নাম *</label>
+ <input type="text" id="name" placeholder="Rakib Hossain" required>
+ </div>
+ <div>
+ <label>বাংলা নাম *</label>
+ <input type="text" id="name_bn" placeholder="রাকিব হাসান" required>
+ </div>
+ </div>
 
-        <div class="grid2">
-            <div>
-                <label>বাবার নাম (বাংলা)</label>
-                <input type="text" id="father_bn" placeholder="আব্দুল হাই">
-            </div>
-            <div>
-                <label>মায়ের নাম (বাংলা)</label>
-                <input type="text" id="mother_bn" placeholder="জয়নাব বানু">
-            </div>
-        </div>
+ <div class="grid2">
+ <div>
+ <label>বাবার নাম (বাংলা)</label>
+ <input type="text" id="father_bn" placeholder="আব্দুল হাই">
+ </div>
+ <div>
+ <label>মায়েদের নাম (বাংলা)</label>
+ <input type="text" id="mother_bn" placeholder="জাহানা বেগম">
+ </div>
+ </div>
 
-        <div class="grid2">
-            <div>
-                <label>জন্ম তারিখ</label>
-                <input type="date" id="date_of_birth">
-            </div>
-            <div>
-                <label>রক্তের গ্রুপ</label>
-                <input type="text" id="blood_group" placeholder="B+">
-            </div>
-        </div>
-        
-        <div class="grid2">
-             <div>
-                <label>জন্মস্থান (বাংলা)</label>
-                <input type="text" id="bplace_bn" placeholder="নীলফামারী">
-            </div>
-            <div>
-                <label>মূল নম্বর (Serial)</label>
-                <input type="text" id="serial" placeholder="০১">
-            </div>
-        </div>
+ <div class="grid2">
+ <div>
+ <label>জন্ম তারিখ</label>
+ <input type="date" id="date_of_birth">
+ </div>
+ <div>
+ <label>রক্তের গ্রুপ</label>
+ <input type="text" id="blood_group" placeholder="B+">
+ </div>
+ </div>
+ 
+ <div class="grid2">
+ <div>
+ <label>জন্মস্থান (বাংলা)</label>
+ <input type="text" id="bplace_bn" placeholder="নীলফামারী">
+ </div>
+ <div>
+ <label>সিরিয়াল (Serial)</label>
+ <input type="text" id="serial" placeholder="০১">
+ </div>
+ </div>
 
-        <label>ঠিকানা (লাইন ভাঙতে | চিহ্ন ব্যবহার করুন)</label>
-        <textarea id="address" placeholder="বাসা/হোল্ডিং: সুখধন | গ্রাম/রাস্তা: রামগঞ্জ | ..."></textarea>
+ <label>ঠিকানা (লাইন মাঝে | শহর/গ্রাম আলাদা করুন)</label>
+ <textarea id="address" placeholder="বাসা/হোল্ডিং: সূর্যগঙ্গা | গ্রাম/মহল্লা: রমনা | ..."></textarea>
 
-        <label>NID নম্বর (১০ ডিজিট) *</label>
-        <input type="text" id="nid" placeholder="1234567890" maxlength="10" pattern="\d{10}" required>
+ <label>NID নাম্বার (১০ ডিজিট) *</label>
+ <input type="text" id="nid" placeholder="1234567890" maxlength="10" pattern="\d{10}" required>
 
-        <label>কার্ড ইস্যু তারিখ</label>
-        <input type="date" id="issue_date">
+ <label>কার্ড ইস্যু তারিখ</label>
+ <input type="date" id="issue_date">
 
-        <!-- Signature Upload -->
-        <div style="margin-top: 20px;">
-            <label>কার্ডধারীর স্বাক্ষর</label>
-            <div class="upload-area" style="min-height: 80px;" onclick="document.getElementById('sigInput').click()">
-                <div class="upload-icon">✍️</div>
-                <strong>স্বাক্ষর আপলোড</strong>
-                <input type="file" id="sigInput" accept="image/png" required>
-            </div>
-        </div>
+ <!-- Signature Upload 1: User's Own Signature -->
+ <div style="margin-top: 20px;">
+ <label>আপনার স্বাক্ষর (User Signature)</label>
+ <div class="upload-area" style="min-height: 80px;" onclick="document.getElementById('sigInput').click()">
+ <div class="upload-icon">✍️</div>
+ <strong>আপনার স্বাক্ষর আপলোড করুন</strong>
+ <input type="file" id="sigInput" accept="image/png" required>
+ </div>
+ </div>
 
-        <button type="submit" class="btn-primary" id="generateBtn">পিডিএফ জেনারেট করুন</button>
-        
-        <div class="info-box" style="background: #fff8f6; border: 1px solid #ffd3c1; border-radius: 15px; padding: 16px; font-size: 13px; color: #666; line-height: 1.6; margin-top: 20px;">
-            <b>দ্রষ্টব্য:</b> ছবিগুলো অটোমেটিক কম্প্রেস করা হবে। যদি পিডিএফ লোড না হয়, তবে আপনার নেটওয়ার্ক চেক করুন।
-        </div>
-    </form>
+ <!-- Signature Upload 2: Authority Signature -->
+ <div style="margin-top: 20px;">
+ <label>কর্তৃপক্ষের স্বাক্ষর (Authority Signature)</label>
+ <div class="upload-area" style="min-height: 80px;" onclick="document.getElementById('authSigInput').click()">
+ <div class="upload-icon">🖋️</div>
+ <strong>কর্তৃপক্ষের স্বাক্ষর আপলোড করুন</strong>
+ <input type="file" id="authSigInput" accept="image/png" required>
+ </div>
+ </div>
+
+ <button type="submit" class="btn-primary" id="generateBtn">প্রসেস করে পেতে করুন</button>
+ 
+ <div class="info-box" style="background: #fff8f6; border: 1px solid #ffd3c1; border-radius: 15px; padding: 16px; font-size: 13px; color: #666; line-height: 1.6; margin-top: 20px;">
+ <b>দ্রষ্টব্য:</b> ছবি-যুক্ত অটোমেটিক কার্ড হয়। যদিও লিংকটি নেটওয়ার্ক থেকে সেবা নিচ্ছে।
+ </div>
+ </form>
 </main>
 
 <script>
-    // --- Helper Functions ---
+ // --- Helper Functions ---
 
-    // Resize Image to reduce size and avoid URI_TOO_LONG
-    const resizeImage = (file, maxWidth = 150, maxHeight = 150) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
+ // Resize Image to reduce size and avoid URI_TOO_LONG
+ const resizeImage = (file, maxWidth = 150, maxHeight = 150) => {
+ return new Promise((resolve, reject) => {
+ const reader = new FileReader();
+ reader.readAsDataURL(file);
+ reader.onload = (event) => {
+ const img = new Image();
+ img.src = event.target.result;
+ img.onload = () => {
+ const canvas = document.createElement('canvas');
+ let width = img.width;
+ let height = img.height;
 
-                    if (width > maxWidth) {
-                        height = Math.round(height * (maxWidth / width));
-                        width = maxWidth;
-                    }
-                    if (height > maxHeight) {
-                        width = Math.round(width * (maxHeight / height));
-                        height = maxHeight;
-                    }
+ if (width > maxWidth) {
+ height = Math.round(height * (maxWidth / width));
+ width = maxWidth;
+ }
+ if (height > maxHeight) {
+ width = Math.round(width * (maxHeight / height));
+ height = maxHeight;
+ }
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compress to 70% quality
-                };
-                img.onerror = reject;
-            };
-            reader.onerror = reject;
-        });
-    };
+ canvas.width = width;
+ canvas.height = height;
+ const ctx = canvas.getContext('2d');
+ ctx.drawImage(img, 0, 0, width, height);
+ resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compress to 70% quality
+ };
+ img.onerror = reject;
+ };
+ reader.onerror = reject;
+ });
+ };
 
-    // DOM Elements
-    const form = document.getElementById('nidForm');
-    const loader = document.getElementById('loader');
-    const toast = document.getElementById("toast");
+ // DOM Elements
+ const form = document.getElementById('nidForm');
+ const loader = document.getElementById('loader');
+ const toast = document.getElementById("toast");
 
-    const showToast = (msg) => {
-        toast.className = "show";
-        toast.innerText = msg;
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-    }
+ const showToast = (msg) => {
+ toast.className = "show";
+ toast.innerText = msg;
+ setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+ }
 
-    const showLoader = () => loader.style.display = 'flex';
-    const hideLoader = () => loader.style.display = 'none';
+ const showLoader = () => loader.style.display = 'flex';
+ const hideLoader = () => loader.style.display = 'none';
 
-    // Main Form Handler
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Validation
-        const nidVal = document.getElementById('nid').value;
-        if(nidVal.length !== 10 || isNaN(nidVal)) {
-            alert("NID নম্বর অবশ্যই ১০ সংখ্যার হতে হবে।");
-            return;
-        }
+ // Main Form Handler
+ form.addEventListener('submit', async (e) => {
+ e.preventDefault();
+ 
+ // Validation
+ const nidVal = document.getElementById('nid').value;
+ if(nidVal.length !== 10 || isNaN(nidVal)) {
+ alert("NID নাম্বার অবশ্যই ১০ সংখ্যার হতে হবে।");
+ return;
+ }
 
-        showLoader();
-        
-        try {
-            // 1. Convert Images with Compression
-            const profileFile = document.getElementById('profileInput').files[0];
-            const sigFile = document.getElementById('sigInput').files[0];
+ showLoader();
+ 
+ try {
+ // 1. Convert Images with Compression
+ const profileFile = document.getElementById('profileInput').files[0];
+ const sigFile = document.getElementById('sigInput').files[0];
+ const authSigFile = document.getElementById('authSigInput').files[0];
 
-            if (!profileFile || !sigFile) {
-                alert("দয়া করে প্রোফাইল ছবি এবং স্বাক্ষর আপলোড করুন।");
-                hideLoader();
-                return;
-            }
+ if (!profileFile || !sigFile || !authSigFile) {
+ alert("দয়া করে প্রোফাইল ছবি, আপনার স্বাক্ষর এবং কর্তৃপক্ষের স্বাক্ষর আপলোড করুন।");
+ hideLoader();
+ return;
+ }
 
-            // Resize images to keep URL short
-            const [profileBase64, sigBase64] = await Promise.all([
-                resizeImage(profileFile),
-                resizeImage(sigFile, 100, 50) // Signature is usually smaller/wider
-            ]);
+ // Resize images to keep URL short
+ const [profileBase64, sigBase64, authSigBase64] = await Promise.all([
+ resizeImage(profileFile),
+ resizeImage(sigFile, 100, 50), // User signature
+ resizeImage(authSigFile, 100, 50) // Authority signature
+ ]);
 
-            // 2. Construct Params
-            const params = new URLSearchParams();
-            
-            // Required
-            params.append('nid', nidVal);
-            params.append('name', document.getElementById('name').value.toUpperCase());
-            params.append('name_bn', document.getElementById('name_bn').value);
-            
-            // Optional Fields
-            const father = document.getElementById('father_bn').value;
-            if(father) params.append('father_bn', father);
-            
-            const mother = document.getElementById('mother_bn').value;
-            if(mother) params.append('mother_bn', mother);
-            
-            const address = document.getElementById('address').value;
-            if(address) params.append('address', address);
-            
-            const dob = document.getElementById('date_of_birth').value;
-            if(dob) params.append('date_of_birth', dob);
-            
-            const issueDate = document.getElementById('issue_date').value;
-            if(issueDate) params.append('issue_date', issueDate);
-            
-            const blood = document.getElementById('blood_group').value;
-            if(blood) params.append('blood_group', blood);
-            
-            const bplace = document.getElementById('bplace_bn').value;
-            if(bplace) params.append('bplace_bn', bplace);
-            
-            const serial = document.getElementById('serial').value;
-            if(serial) params.append('serial', serial);
+ // 2. Construct Params
+ const params = new URLSearchParams();
+ 
+ // Required
+ params.append('nid', nidVal);
+ params.append('name', document.getElementById('name').value.toUpperCase());
+ params.append('name_bn', document.getElementById('name_bn').value);
+ 
+ // Optional Fields
+ const father = document.getElementById('father_bn').value;
+ if(father) params.append('father_bn', father);
+ 
+ const mother = document.getElementById('mother_bn').value;
+ if(mother) params.append('mother_bn', mother);
+ 
+ const address = document.getElementById('address').value;
+ if(address) params.append('address', address);
+ 
+ const dob = document.getElementById('date_of_birth').value;
+ if(dob) params.append('date_of_birth', dob);
+ 
+ const issueDate = document.getElementById('issue_date').value;
+ if(issueDate) params.append('issue_date', issueDate);
+ 
+ const blood = document.getElementById('blood_group').value;
+ if(blood) params.append('blood_group', blood);
+ 
+ const bplace = document.getElementById('bplace_bn').value;
+ if(bplace) params.append('bplace_bn', bplace);
+ 
+ const serial = document.getElementById('serial').value;
+ if(serial) params.append('serial', serial);
 
-            // Images
-            params.append('profile', profileBase64);
-            params.append('own_sig', sigBase64);
-            params.append('author_sig', sigBase64);
+ // Images - Using the resized Base64 strings
+ params.append('profile', profileBase64);
+ params.append('own_sig', sigBase64); // User's own signature
+ params.append('author_sig', authSigBase64); // Authority's signature
 
-            // 3. Call API
-            const apiUrl = `https://nid-one.vercel.app/?${params.toString()}`;
-            
-            // Try to open in new tab first (Best for PDF)
-            const newTab = window.open(apiUrl, '_blank');
-            
-            if(!newTab || newTab.closed || typeof newTab.closed=='undefined') {
-                // If popup blocked, show in iframe fallback
-                showToast("পপ-আপ ব্লক হয়েছে। নিচের লিংকে ক্লিক করুন:");
-                const link = document.createElement('a');
-                link.href = apiUrl;
-                link.target = "_blank";
-                link.download = "";
-                link.textContent = "PDF ডাউনলোড করুন";
-                link.style.color = "var(--orange)";
-                link.style.fontWeight = "bold";
-                link.style.cursor = "pointer";
-                
-                const container = document.createElement('div');
-                container.style.textAlign = "center";
-                container.style.marginTop = "20px";
-                container.appendChild(link);
-                
-                // Append temporarily or just alert
-                alert("পিপ-আপ ব্লক হয়েছে। অনুগ্রহ করে এই লিংকে ক্লিক করুন:\n\n" + apiUrl);
-            } else {
-                showToast("পিডিএফ নতুন ট্যাবে ওপেন হয়েছে।");
-            }
+ // 3. Call API
+ const apiUrl = `https://nid-one.vercel.app/?${params.toString()}`;
+ 
+ // Try to open in new tab first (Best for PDF)
+ const newTab = window.open(apiUrl, '_blank');
+ 
+ if(!newTab || newTab.closed || typeof newTab.closed=='undefined') {
+ // If popup blocked, show in iframe fallback
+ showToast("পপ-আপ ব্লক হয়েছে। নিচের লিংকে ক্লিক করুন:");
+ const link = document.createElement('a');
+ link.href = apiUrl;
+ link.target = "_blank";
+ link.download = "";
+ link.textContent = "PDF ডাউনলোড করুন";
+ link.style.color = "var(--orange)";
+ link.style.fontWeight = "bold";
+ link.style.cursor = "pointer";
+ 
+ const container = document.createElement('div');
+ container.style.textAlign = "center";
+ container.style.marginTop = "20px";
+ container.appendChild(link);
+ 
+ // Append temporarily or just alert
+ alert("পপ-আপ ব্লক হয়েছে। অনুগ্রহ করে এখানে ক্লিক করুন:\n\n" + apiUrl);
+ } else {
+ showToast("প্রসেস সফলভাবে শেষ হয়েছে।");
+ }
 
-            hideLoader();
+ hideLoader();
 
-        } catch (error) {
-            console.error(error);
-            alert("একটি ত্রুটি ঘটেছে। আবার চেষ্টা করুন।");
-            hideLoader();
-        }
-    });
+ } catch (error) {
+ console.error(error);
+ alert("একটি ত্রুটি ঘটেছে। আবার চেষ্টা করুন।");
+ hideLoader();
+ }
+ });
 </script>
 
 </body>
-    </html>
+</html>
