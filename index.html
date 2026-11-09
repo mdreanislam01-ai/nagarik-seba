@@ -180,5 +180,36 @@ function openTelegramVerify(ev){
     .catch(function(){ if(w){ w.location.href = botUrl; } else { window.open(botUrl, '_blank'); } });
   return false;
 }
+(function(){
+  function fmtBDT(n){try{return '\u09f3 '+Number(n).toLocaleString('en-US');}catch(e){return '\u09f3 '+n;}}
+  var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function todayStr(){var d=new Date();return MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
+  var t='';try{t=localStorage.getItem('ns_token')||'';}catch(e){}
+  if(!t)return;
+  fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){
+    if(!r.ok)return null;
+    return r.json();
+  }).then(function(d){
+    if(!d||!d.user)return;
+    if(typeof d.wallet_bdt==='number'){
+      var hb=document.querySelector('.balance b');if(hb)hb.textContent=fmtBDT(d.wallet_bdt);
+      var rb=document.querySelector('.rechargeBalance b');if(rb)rb.textContent=fmtBDT(d.wallet_bdt);
+    }
+    var name=d.user.name||'',email=d.user.email||'';
+    if(name){
+      var sub=document.querySelector('.subtitle');if(sub)sub.textContent='\u09b8\u09cd\u09ac\u09be\u0997\u09a4\u09ae '+name+', \u0986\u099c '+todayStr();
+      var hero=document.querySelector('.heroName');if(hero)hero.textContent=name;
+      var pn=document.getElementById('profileName');if(pn)pn.value=name;
+      var who=document.querySelector('.who');if(who&&who.firstChild)who.firstChild.textContent=name;
+      var det=document.querySelector('.profilePopupUser .details');if(det&&det.firstChild)det.firstChild.textContent=name;
+    }
+    if(email){
+      var ws=document.querySelector('.who small');if(ws)ws.textContent=email;
+      var ds=document.querySelector('.profilePopupUser .details small');if(ds)ds.textContent=email;
+      var he=document.querySelector('.heroInfo .email');if(he)he.textContent='\u2709\u3000'+email;
+    }
+  }).catch(function(){});
+})();
+
 </script>
 </body></html>
