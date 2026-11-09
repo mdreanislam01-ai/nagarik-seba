@@ -216,7 +216,7 @@ html.dark .bottom{background:#1e293b;border-top-color:#334155}
   <div class="seclbl">অপশন সিলেক্ট করুন</div>
 
   <div class="opt sel" id="opt0" onclick="selectOpt(0)">
-    <div class="row1"><span class="radio"></span><div><div class="t">সাইন কপি (১০/১৭ ডিজিট)</div><div class="time">সময় ৫–২০ মিনিট</div></div><span class="price">৳180</span></div>
+    <div class="row1"><span class="radio"></span><div><div class="t">সাইন কপি (১০/১৭ ডিজিট)</div><div class="time">সময় ৫–২০ মিনিট</div></div><span class="price">৳234</span></div>
     <div class="fields">
       <div class="fld"><label>এনআইডি নম্বর <span class="req">*</span></label><input type="text" inputmode="numeric" placeholder="১০ বা ১৭ ডিজিটের এনআইডি নম্বর দিন" autocomplete="off"></div>
       <div class="fld"><label>জন্ম তারিখ <span class="req">*</span></label><input type="date" autocomplete="off"></div>
@@ -224,7 +224,7 @@ html.dark .bottom{background:#1e293b;border-top-color:#334155}
   </div>
 
   <div class="opt" id="opt1" onclick="selectOpt(1)">
-    <div class="row1"><span class="radio"></span><div><div class="t">সাইন কপি (ফরম / ১৩ ডিজিট)</div><div class="time">সময় ৫–২০ মিনিট</div></div><span class="price">৳180</span></div>
+    <div class="row1"><span class="radio"></span><div><div class="t">সাইন কপি (ফরম / ১৩ ডিজিট)</div><div class="time">সময় ৫–২০ মিনিট</div></div><span class="price">৳234</span></div>
     <div class="fields">
       <div class="fld"><label>ফরম নম্বর / স্লিপ নম্বর <span class="req">*</span></label><input type="text" inputmode="numeric" placeholder="ফরম নম্বর / স্লিপ নম্বর দিন" autocomplete="off"></div>
       <div class="fld"><label>জন্ম তারিখ <span class="req">*</span></label><input type="date" autocomplete="off"></div>
@@ -232,14 +232,14 @@ html.dark .bottom{background:#1e293b;border-top-color:#334155}
   </div>
 
   <div class="opt" id="opt2" onclick="selectOpt(2)">
-    <div class="row1"><span class="radio"></span><div><div class="t">সাইন কপি (মোবাইল নম্বর)</div><div class="time">সময় ৫–২০ মিনিট</div></div><span class="price">৳280</span></div>
+    <div class="row1"><span class="radio"></span><div><div class="t">সাইন কপি (মোবাইল নম্বর)</div><div class="time">সময় ৫–২০ মিনিট</div></div><span class="price">৳234</span></div>
     <div class="fields">
       <div class="fld"><label>মোবাইল নম্বর <span class="req">*</span></label><input type="tel" inputmode="numeric" placeholder="১১ ডিজিটের মোবাইল নম্বর দিন" autocomplete="off"></div>
       <div class="fld"><label>জন্ম তারিখ <span class="req">*</span></label><input type="date" autocomplete="off"></div>
     </div>
   </div>
 
-  <button class="submit" id="submitBtn" onclick="submitOrder()">✓ &nbsp;সাবমিট করুন (৳180)</button>
+  <button class="submit" id="submitBtn" onclick="submitOrder()">✓ &nbsp;সাবমিট করুন (৳234)</button>
 
   <div class="card hist">
     <h2><span class="dot"></span>আপনার সাইন কপি অর্ডারসমূহ</h2>
@@ -288,7 +288,9 @@ function signOut(){toggleProfilePopup(false);var t='';try{t=localStorage.getItem
 function closeService(){}
 
 
-var OPT_PRICES=[180,180,280];
+var OPT_PRICES=[234,234,234];
+var OPT_NAMES=['সাইন কপি (১০/১৭ ডিজিট)','সাইন কপি (ফরম / ১৩ ডিজিট)','সাইন কপি (মোবাইল নম্বর)'];
+var OPT_KEYS=['nid','form_number','mobile'];
 var selOpt=0;
 function selectOpt(i){
   selOpt=i;
@@ -306,9 +308,53 @@ function showToast(msg){
   t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 2600);
 }
-function submitOrder(){
-  showToast('অপর্যাপ্ত ব্যালেন্স');
+function fmtBDT(n){try{return '\u09f3 '+Number(n).toLocaleString('en-US');}catch(e){return '\u09f3 '+n;}}
+function setBalance(n){
+  var amt=document.querySelector('.amt');
+  if(amt){amt.textContent=fmtBDT(n);}
+  var hb=document.querySelector('.balance b');
+  if(hb){hb.textContent=fmtBDT(n);}
 }
+function loadBalance(){
+  var t='';try{t=localStorage.getItem('ns_token')||'';}catch(e){}
+  if(!t)return;
+  fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){
+    if(d&&typeof d.wallet_bdt==='number'){setBalance(d.wallet_bdt);}
+  }).catch(function(){});
+}
+function submitOrder(){
+  var opt=document.getElementById('opt'+selOpt);
+  if(!opt)return;
+  var inputs=opt.querySelectorAll('.fields input');
+  var idVal=inputs[0]?inputs[0].value.trim():'';
+  var dobVal=inputs[1]?inputs[1].value:'';
+  if(!idVal||!dobVal){showToast('সব তথ্য দিন');return;}
+  var t='';try{t=localStorage.getItem('ns_token')||'';}catch(e){}
+  if(!t){location.href='login.html';return;}
+  var btn=document.getElementById('submitBtn');
+  if(btn){btn.disabled=true;btn.textContent='অর্ডার হচ্ছে...';}
+  var payload={};payload[OPT_KEYS[selOpt]]=idVal;payload.dob=dobVal;
+  fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({service_id:'sign',option_name:OPT_NAMES[selOpt],payload:payload})}).then(function(r){return r.json().then(function(d){return{status:r.status,d:d};});}).then(function(res){
+    if(btn){btn.disabled=false;btn.textContent='\u2713 \u00a0সাবমিট করুন (\u09f3'+OPT_PRICES[selOpt]+')';}
+    if(res.status===201&&res.d&&res.d.order){
+      showToast('অর্ডার সফল হয়েছে! অর্ডার নম্বর: '+res.d.order.id);
+      if(typeof res.d.wallet_bdt==='number'){setBalance(res.d.wallet_bdt);}
+      if(inputs[0])inputs[0].value='';if(inputs[1])inputs[1].value='';
+    }else{
+      var e=(res.d&&res.d.error)||'';
+      var msg='অর্ডার করা যায়নি, আবার চেষ্টা করুন';
+      if(e==='insufficient_balance')msg='অপর্যাপ্ত ব্যালেন্স';
+      else if(e==='orders_closed')msg='অর্ডার গ্রহণ বর্তমানে বন্ধ আছে';
+      else if(e==='service_not_found')msg='সার্ভিসটি পাওয়া যায়নি';
+      else if(e==='option_required')msg='অপশনটি সঠিক নয়';
+      showToast(msg);
+    }
+  }).catch(function(){
+    if(btn){btn.disabled=false;btn.textContent='\u2713 \u00a0সাবমিট করুন (\u09f3'+OPT_PRICES[selOpt]+')';}
+    showToast('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন');
+  });
+}
+loadBalance();
 
 </script>
 </body>
