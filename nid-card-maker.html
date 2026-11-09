@@ -164,7 +164,14 @@
  @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
  @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
- </style>
+ 
+.ns-bottom{position:fixed;bottom:0;left:0;right:0;height:70px;background:#fff;border-top:1px solid #e7e9ee;display:flex;justify-content:space-around;align-items:center;z-index:10}
+html.dark .ns-bottom{background:#1e293b;border-top-color:#334155}
+.ns-navitem{text-align:center;color:#475569;font-size:11px;min-width:56px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:Inter,sans-serif}
+.ns-navitem.active{color:#f36b17}
+.nico{display:flex;align-items:center;justify-content:center;height:24px}
+.nico svg{width:24px;height:24px;display:block}
+</style>
 </head>
 <body>
 
@@ -434,5 +441,6 @@
  });
 </script>
 
+<nav class="ns-bottom"><div class="ns-navitem" onclick="location.href='index.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.8 21.5 10.6v9.9a1.2 1.2 0 0 1-1.2 1.2H3.7a1.2 1.2 0 0 1-1.2-1.2v-9.9L12 2.8Z" fill="currentColor"/><rect x="9.5" y="10.5" width="2" height="2" rx=".4" fill="#fff"/><rect x="12.5" y="10.5" width="2" height="2" rx=".4" fill="#fff"/><rect x="9.5" y="13.1" width="2" height="2" rx=".4" fill="#fff"/><rect x="12.5" y="13.1" width="2" height="2" rx=".4" fill="#fff"/><rect x="10.1" y="17.9" width="3.8" height="4" rx=".7" fill="#fff"/></svg></span>Home</div><div class="ns-navitem" onclick="location.href='recharge.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7.6" y="1.8" width="9.6" height="6.6" rx="1.2" fill="#f97316" transform="rotate(-9 12.4 5.1)"/><rect x="3" y="7.4" width="18" height="12.8" rx="2.6" fill="currentColor"/><rect x="13.6" y="12.6" width="5.6" height="4.8" rx="1.3" fill="#fff"/><circle cx="16.4" cy="15" r="1" fill="currentColor"/></svg></span>Wallet</div><div class="ns-navitem active" onclick="location.href='index.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8.2" height="8.2" rx="2.2" fill="#f97316"/><rect x="12.8" y="3" width="8.2" height="8.2" rx="2.2" fill="#f97316"/><rect x="3" y="12.8" width="8.2" height="8.2" rx="2.2" fill="currentColor"/><rect x="12.8" y="12.8" width="8.2" height="8.2" rx="2.2" fill="currentColor"/></svg></span>Services</div><div class="ns-navitem" onclick="location.href='transactions.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="4.6" cy="6" r="1.7" fill="#f97316"/><circle cx="4.6" cy="12" r="1.7" fill="#f97316"/><circle cx="4.6" cy="18" r="1.7" fill="#f97316"/><rect x="9.2" y="4.3" width="11" height="3.4" rx="1.7" fill="currentColor"/><rect x="9.2" y="10.3" width="11" height="3.4" rx="1.7" fill="currentColor"/><rect x="9.2" y="16.3" width="11" height="3.4" rx="1.7" fill="currentColor"/></svg></span>Transactions</div><div class="ns-navitem" onclick="location.href='index.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="7.6" r="4.1" fill="currentColor"/><path d="M2.6 21.6c0-4.3 3.3-7.1 7.4-7.1s7.4 2.8 7.4 7.1v.2H2.6v-.2Z" fill="currentColor"/><g fill="#f97316" transform="translate(17.6 17.6)"><circle r="3.2"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(45)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(90)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(135)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(180)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(225)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(270)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(315)"/><circle r="1.3" fill="#fff"/></g></svg></span>Profile</div></nav>
 </body>
 </html>
