@@ -736,8 +736,9 @@
             }, 3500);
         }
 
-        // Handle Login Submission
-        function handleLoginSubmit(e) {
+        // Handle Login Submission — REAL login via the site API.
+        // On success the session token is saved and the user goes to the dashboard.
+        async function handleLoginSubmit(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
             const pass = document.getElementById('loginPassword').value;
@@ -746,8 +747,44 @@
                 showToast('লগইন করার জন্য শুধুমাত্র @gmail.com গ্রহণযোগ্য!', false);
                 return;
             }
+            if (!pass) {
+                showToast('পাসওয়ার্ড দিন।', false);
+                return;
+            }
 
-            showToast(`স্বাগতম! ${email} দিয়ে নাগরিক সেবা সিস্টেমে লগইন সফল হয়েছে।`, true);
+            const rememberBox = document.querySelector('#loginForm input[type=checkbox]');
+            const rememberMe = !!(rememberBox && rememberBox.checked);
+            const btn = document.querySelector('#loginForm button[type=submit]');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+
+            try {
+                const r = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: email, password: pass, remember_me: rememberMe })
+                });
+                const j = await r.json().catch(function(){ return {}; });
+                if (r.ok && j.token) {
+                    try { localStorage.setItem('ns_token', j.token); } catch (e) {}
+                    if (j.user) { try { localStorage.setItem('ns_user', JSON.stringify(j.user)); } catch (e) {} }
+                    showToast('স্বাগতম! লগইন সফল হয়েছে।', true);
+                    setTimeout(function(){ window.location.href = 'index.html'; }, 700);
+                    return;
+                }
+                if (j.error === 'account_pending') {
+                    showToast(j.message || 'আপনার অ্যাকাউন্টটি এখনো অনুমোদনের অপেক্ষায় আছে। অ্যাডমিন অনুমোদন দিলে লগইন করতে পারবেন।', false);
+                } else if (j.error === 'account_deactivated') {
+                    showToast(j.message || 'এই অ্যাকাউন্টটি বর্তমানে নিষ্ক্রিয়। অ্যাডমিনের সাথে যোগাযোগ করুন।', false);
+                } else if (j.error === 'rate_limited') {
+                    showToast('অনেকবার ভুল চেষ্টা হয়েছে। ১৫ মিনিট পর আবার চেষ্টা করুন।', false);
+                } else {
+                    showToast('ভুল ইমেইল বা পাসওয়ার্ড। আবার চেষ্টা করুন।', false);
+                }
+            } catch (err) {
+                showToast('নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।', false);
+            } finally {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            }
         }
 
         // Store registration info for verification flow
