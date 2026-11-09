@@ -318,7 +318,10 @@ function setBalance(n){
 function loadBalance(){
   var t='';try{t=localStorage.getItem('ns_token')||'';}catch(e){}
   if(!t)return;
-  fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){
+  fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){
+    if(r.status===401){try{localStorage.removeItem('ns_token');localStorage.removeItem('ns_user');}catch(e){}location.replace('login.html');return null;}
+    return r.json();
+  }).then(function(d){
     if(d&&typeof d.wallet_bdt==='number'){setBalance(d.wallet_bdt);}
   }).catch(function(){});
 }
@@ -342,11 +345,18 @@ function submitOrder(){
       if(inputs[0])inputs[0].value='';if(inputs[1])inputs[1].value='';
     }else{
       var e=(res.d&&res.d.error)||'';
+      if(res.status===401||e==='unauthorized'){
+        showToast('সেশন শেষ হয়েছে, আবার লগইন করুন');
+        try{localStorage.removeItem('ns_token');localStorage.removeItem('ns_user');}catch(err){}
+        setTimeout(function(){location.replace('login.html');},1500);
+        return;
+      }
       var msg='অর্ডার করা যায়নি, আবার চেষ্টা করুন';
       if(e==='insufficient_balance')msg='অপর্যাপ্ত ব্যালেন্স';
       else if(e==='orders_closed')msg='অর্ডার গ্রহণ বর্তমানে বন্ধ আছে';
       else if(e==='service_not_found')msg='সার্ভিসটি পাওয়া যায়নি';
       else if(e==='option_required')msg='অপশনটি সঠিক নয়';
+      else if(e)msg='অর্ডার করা যায়নি ('+e+')';
       showToast(msg);
     }
   }).catch(function(){
