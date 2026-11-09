@@ -590,6 +590,11 @@
                     </div>
                 </div>
 
+                <button onclick="messageAdminWhatsApp()" class="w-full py-2.5 bg-[#25D366] hover:bg-[#1eb856] text-slate-950 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>হোয়াটসঅ্যাপে অ্যাডমিনকে মেসেজ করুন</span>
+                </button>
+
                 <button onclick="finishAllRegistrations()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-check-double"></i>
                     <span>নিবন্ধন সম্পন্ন করে লগইন করুন</span>
@@ -1043,6 +1048,14 @@
         function skipTelegramStep() {
             stopTelegramPolling();
             showStep(3);
+        }
+
+        // Step 3: Message the admin on WhatsApp to request account activation.
+        // Opens wa.me/8801318325072 (admin WhatsApp 01318325072) with a
+        // pre-filled Bengali message carrying the new customer's details.
+        function messageAdminWhatsApp() {
+            const msg = 'আসসালামু আলাইকুম। আমি নাগরিক সেবায় নতুন অ্যাকাউন্ট নিবন্ধন করেছি। অনুগ্রহ করে আমার অ্যাকাউন্টটি সক্রিয় করুন।\nনাম: ' + (tempRegData.name || '') + '\nইউজারনেম: @' + (tempRegData.username || '') + '\nজিমেইল: ' + (tempRegData.email || '');
+            window.open('https://wa.me/8801318325072?text=' + encodeURIComponent(msg), '_blank');
         }
 
         // Step 3: Finish All Registration & Redirect to Login
