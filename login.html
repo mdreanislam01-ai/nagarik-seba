@@ -539,7 +539,7 @@
                         <i class="fa-brands fa-telegram"></i>
                     </div>
                     <h4 class="text-sm font-semibold text-white">টেলিগ্রাম বট অটো ভেরিফিকেশন</h4>
-                    <p class="text-xs text-slate-400 mt-1">আপনার অ্যাকাউন্ট নিরাপত্তা নিশ্চিতে আমাদের টেলিগ্রাম ভেরিফিকেশন বটের সাথে লিঙ্ক হচ্ছে...</p>
+                    <p class="text-xs text-slate-400 mt-1">নিচের বোতামে চাপ দিয়ে ভেরিফিকেশন বটটি খুলুন, তারপর START চাপুন। যাচাই হলেই পরের ধাপে যাবে।</p>
                 </div>
 
                 <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
@@ -548,15 +548,21 @@
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        <span class="text-xs font-mono text-slate-300">@Nagarik_Seba_bot</span>
+                        <span class="text-xs font-mono text-slate-300">@nagarikseba_verify_bot</span>
                     </div>
                     <span id="tgBotStatus" class="text-xs text-amber-400 font-semibold">সংযুক্ত হচ্ছে...</span>
                 </div>
 
                 <button id="tgVerifyBtn" onclick="runTelegramBotVerification()" class="w-full py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-robot"></i>
-                    <span>টেলিগ্রাম অটো-ভেরিফিকেশন সম্পন্ন করুন</span>
+                    <span>টেলিগ্রাম বট খুলুন</span>
                 </button>
+
+                <div class="text-center">
+                    <button type="button" onclick="skipTelegramStep()" class="text-[11px] text-slate-400 underline hover:text-slate-300">
+                        টেলিগ্রাম নেই? এড়িয়ে যান
+                    </button>
+                </div>
             </div>
 
             <!-- STEP 3 CONTENT: WhatsApp Admin Permission -->
@@ -852,6 +858,7 @@
         }
 
         function closeVerificationModal() {
+            stopTelegramPolling();
             const modal = document.getElementById('verificationModal');
             modal.classList.add('opacity-0');
             setTimeout(() => modal.classList.add('hidden'), 300);
@@ -959,7 +966,7 @@
                     return;
                 }
                 showToast('জিমেইল OTP যাচাই হয়েছে ✔ অ্যাকাউন্ট তৈরি হয়েছে।');
-                setTimeout(function(){ showStep(3); }, 600);
+                setTimeout(function(){ showStep(2); prepareTelegramStep(); }, 600);
             }).catch(function(){
                 showToast('নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।', false);
             }).finally(function(){
@@ -967,20 +974,75 @@
             });
         }
 
-        // Step 2: Telegram Bot Automated Simulation
-        function runTelegramBotVerification() {
+        // Step 2: Telegram Bot Verification (REAL — @nagarikseba_verify_bot)
+        // The site issues a one-time code; the user opens the verify bot
+        // with /start <code>; the bot links their Telegram. This page polls
+        // /auth/telegram-status until the account shows verified.
+        let tgVerifyUrl = '';
+        let tgPollTimer = null;
+        function stopTelegramPolling() {
+            if (tgPollTimer) { clearInterval(tgPollTimer); tgPollTimer = null; }
+        }
+        function prepareTelegramStep() {
             const tgStatus = document.getElementById('tgBotStatus');
             const tgBtn = document.getElementById('tgVerifyBtn');
-            tgBtn.disabled = true;
-            tgBtn.classList.add('opacity-70');
-            tgStatus.innerText = "টেলিগ্রাম কানেকশন সম্পন্ন হচ্ছে...";
-
-            setTimeout(() => {
-                tgStatus.innerText = "ভেরিফাইড ও অনুমোদিত ✔";
-                tgStatus.className = "text-xs text-emerald-400 font-semibold";
-                showToast('টেলিগ্রাম বট অটো-ভেরিফিকেশন সফল!');
-                setTimeout(() => showStep(3), 800);
-            }, 1200);
+            tgStatus.innerText = 'যাচাই কোড নেওয়া হচ্ছে...';
+            tgStatus.className = 'text-xs text-amber-400 font-semibold';
+            if (tgBtn) { tgBtn.disabled = true; tgBtn.classList.add('opacity-70'); }
+            fetch('/api/auth/telegram-verify-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: tempRegData.email })
+            }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok: r.ok, d: d }; }); }).then(function(res){
+                if (!res.ok) {
+                    tgStatus.innerText = 'কোড নেওয়া যায়নি — এড়িয়ে যেতে পারেন';
+                    tgStatus.className = 'text-xs text-red-400 font-semibold';
+                    showToast('টেলিগ্রাম কোড নেওয়া যায়নি। এড়িয়ে যেতে পারেন।', false);
+                    if (tgBtn) { tgBtn.disabled = false; tgBtn.classList.remove('opacity-70'); }
+                    return;
+                }
+                tgVerifyUrl = res.d.bot_url || '';
+                tgStatus.innerText = 'বট খুলে START চাপুন';
+                tgStatus.className = 'text-xs text-amber-400 font-semibold';
+                if (tgBtn) { tgBtn.disabled = false; tgBtn.classList.remove('opacity-70'); }
+                startTelegramPolling();
+            }).catch(function(){
+                tgStatus.innerText = 'নেটওয়ার্ক সমস্যা — এড়িয়ে যেতে পারেন';
+                tgStatus.className = 'text-xs text-red-400 font-semibold';
+                if (tgBtn) { tgBtn.disabled = false; tgBtn.classList.remove('opacity-70'); }
+            });
+        }
+        function startTelegramPolling() {
+            stopTelegramPolling();
+            let tries = 0;
+            tgPollTimer = setInterval(function(){
+                tries++;
+                if (tries > 100) { stopTelegramPolling(); return; }
+                fetch('/api/auth/telegram-status?email=' + encodeURIComponent(tempRegData.email))
+                .then(function(r){ return r.json().catch(function(){ return {}; }); })
+                .then(function(d){
+                    if (d && d.verified) {
+                        stopTelegramPolling();
+                        const tgStatus = document.getElementById('tgBotStatus');
+                        tgStatus.innerText = 'ভেরিফাইড ও অনুমোদিত ✔';
+                        tgStatus.className = 'text-xs text-emerald-400 font-semibold';
+                        showToast('টেলিগ্রাম ভেরিফিকেশন সফল!');
+                        setTimeout(function(){ showStep(3); }, 800);
+                    }
+                }).catch(function(){});
+            }, 3000);
+        }
+        function runTelegramBotVerification() {
+            if (tgVerifyUrl) {
+                window.open(tgVerifyUrl, '_blank');
+                return;
+            }
+            prepareTelegramStep();
+            setTimeout(function(){ if (tgVerifyUrl) window.open(tgVerifyUrl, '_blank'); }, 800);
+        }
+        function skipTelegramStep() {
+            stopTelegramPolling();
+            showStep(3);
         }
 
         // Step 3: Finish All Registration & Redirect to Login
