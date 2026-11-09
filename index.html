@@ -151,7 +151,7 @@ let payment='bKash';function choosePay(b,v){payment=v;document.querySelectorAll(
 function submitRecharge(){let a=Number(document.getElementById('rechargeAmount').value),p=document.getElementById('payer').value.trim(),t=document.getElementById('trx').value.trim();if(!a||a<100){alert('কমপক্ষে ১০০ টাকা রিচার্জের পরিমাণ লিখুন।');return}if(!p||!t){alert('পেমেন্ট নম্বর এবং Transaction ID পূরণ করুন।');return}alert('ডেমো UI: '+payment+' দিয়ে ৳'+a+' রিচার্জ অনুরোধ জমা হয়েছে। লাইভ পেমেন্টের জন্য Backend প্রয়োজন।')}
 function saveProfile(){alert('ডেমো UI: প্রোফাইলের পরিবর্তন সংরক্ষিত হয়েছে।')}
 function resetProfile(){document.getElementById('profileName').value='Tushar';document.getElementById('phone').value='+8801786721079'}
-function signOut(){toggleProfilePopup(false);alert('ডেমো UI: Sign Out নির্বাচন করা হয়েছে। প্রকৃত লগআউটের জন্য Authentication যুক্ত করতে হবে।')}
+function signOut(){toggleProfilePopup(false);var t='';try{t=localStorage.getItem('ns_token')||'';}catch(e){}if(t){fetch('/api/auth/logout',{method:'POST',headers:{'Authorization':'Bearer '+t}}).catch(function(){});}try{localStorage.removeItem('ns_token');localStorage.removeItem('ns_user');}catch(e){}window.location.replace('login.html');}
 render();
 </script>
 <script>
