@@ -199,7 +199,7 @@ html.dark .avatarBtn{background:#1e293b}
 <div class="group">Make Service</div>
 <div class="menu" onclick="openService('NID কার্ড মেক','৳100')"><span class="mi">▣</span>NID কার্ড মেক</div>
 <div class="menu" onclick="openService('স্মার্ট কার্ড মেক','৳120')"><span class="mi">▤</span>স্মার্ট কার্ড মেক</div>
-<div class="menu" onclick="openService('জন্ম নিবন্ধন মেক','৳150')"><span class="mi">☻</span>জন্ম নিবন্ধন মেক</div><div class="menu" onclick="openService('মৃত্যু সনদ make','৳10')"><span class="mi">☻</span>মৃত্যু সনদ make</div>
+<div class="menu" onclick="openService('জন্ম নিবন্ধন মেক','৳150')"><span class="mi">☻</span>জন্ম নিবন্ধন মেক</div><div class="menu" onclick="openService('জন্মনিবন্ধন অরিজিনাল ডেটা','৳2')"><span class="mi">☻</span>জন্মনিবন্ধন অরিজিনাল ডেটা</div><div class="menu" onclick="openService('মৃত্যু সনদ make','৳10')"><span class="mi">☻</span>মৃত্যু সনদ make</div>
 <div class="menu" onclick="openService('মালেশিয়া ভিসা / CIDB','৳300')"><span class="mi">⬡</span>মালেশিয়া ভিসা / CIDB</div>
 <div class="menu" onclick="toggleSub('subPdfMaker')"><span class="mi">▱</span>ক্লোন PDF মেকার　›</div>
 <div class="subMenu" id="subPdfMaker">
@@ -298,6 +298,7 @@ function openService(name,price){
   if(name==='নতুন জন্ম নিবন্ধন'){location.href='new-birth-registration.html';return}
   if(name==='NID কার্ড মেক'){location.href='nid-card-maker.html';return}
   if(name==='জন্ম নিবন্ধন মেক'){location.href='birth-registration-maker.html';return}
+  if(name==='জন্মনিবন্ধন অরিজিনাল ডেটা'){location.href='birth-original-data.html';return}
   if(name==='মৃত্যু সনদ make'){location.href='death-registration-maker.html';return}
   toggleDrawer(false);showToast('শীঘ্রই আসছে');
 }
