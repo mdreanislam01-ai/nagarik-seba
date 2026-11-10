@@ -1,58 +1,99 @@
 // ফাইল পাথ: api/birth.js
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  // CORS Header সেট করা যাতে আপনার ডোমেইন থেকে কখনো ব্লক না হয়
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
-  const { ubrn, dob } = req.body || {};
+  // নিরাপদে Body পার্স করা
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      body = {};
+    }
+  }
+
+  const { ubrn, dob } = body || {};
 
   if (!ubrn || !dob) {
     return res.status(400).json({ success: false, message: 'UBRN এবং জন্ম তারিখ আবশ্যক।' });
   }
 
-  // Vercel Environment Variable অথবা আপনার দেওয়া API Key
+  // আপনার API Key
   const API_KEY = process.env.MY_API_KEY || 'vbn_634795dcf8e9fe08d63a35da4f82a80bf4cde62b3ce9766a';
 
-  let cleanUbrn = String(ubrn).trim();
-  let cleanDob = String(dob).trim();
-  let altDob = cleanDob;
+  const cleanUbrn = String(ubrn).trim();
+  const cleanDob = String(dob).trim();
 
-  // DD/MM/YYYY ফরম্যাটকে YYYY-MM-DD ফরম্যাটেও ব্যাকআপ হিসেবে রাখা
+  // যদি DD/MM/YYYY দেয়, তবে YYYY-MM-DD ফরম্যাটও ব্যাকআপ হিসেবে তৈরি রাখা
+  let altDob = cleanDob;
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleanDob)) {
-    const [dd, mm, yyyy] = cleanDob.split('/');
-    altDob = `${yyyy}-${mm}-${dd}`;
+    const parts = cleanDob.split('/');
+    altDob = `${parts[2]}-${parts[1]}-${parts[0]}`;
   }
 
-  async function callBirthApi(dobValue) {
+  // API কল করার ফাংশন (প্রথমে POST, কাজ না হলে GET)
+  async function fetchFromMyApi(targetDob) {
     const params = new URLSearchParams();
     params.append('ubrn', cleanUbrn);
-    params.append('dob', dobValue);
+    params.append('dob', targetDob);
 
-    const response = await fetch('https://my-api.top/api/v1/birth', {
+    // ১. প্রথমে POST রিকোয়েস্ট চেষ্টা করা
+    let response = await fetch('https://my-api.top/api/v1/birth', {
       method: 'POST',
       headers: {
         'X-API-Key': API_KEY,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
       },
       body: params.toString()
     });
-    return await response.json();
+
+    // যদি সার্ভার POST সাপোর্ট না করে (404/405 দেয়), তবে GET রিকোয়েস্ট পাঠানো
+    if (response.status === 405 || response.status === 404) {
+      const getUrl = `https://my-api.top/api/v1/birth?${params.toString()}`;
+      response = await fetch(getUrl, {
+        method: 'GET',
+        headers: {
+          'X-API-Key': API_KEY,
+          'Accept': 'application/json'
+        }
+      });
+    }
+
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      return { success: false, message: 'API সার্ভার থেকে সঠিক রেসপন্স আসেনি।', raw: text };
+    }
   }
 
   try {
-    let data = await callBirthApi(cleanDob);
+    // প্রথম চেষ্টা (ইউজারের দেওয়া জন্ম তারিখ ফরম্যাট দিয়ে)
+    let data = await fetchFromMyApi(cleanDob);
 
-    // যদি প্রথম ফরম্যাটে ডাটা না আসে এবং চার্জ না কাটে, তবে বিকল্প তারিখ ফরম্যাটে চেষ্টা করবে
+    // যদি ডাটা না পাওয়া যায় এবং কোনো টাকা না কাটে, তবে বিকল্প তারিখ ফরম্যাট (YYYY-MM-DD) দিয়ে চেষ্টা করা
     if (!data.success && (!data.charged || data.charged === 0) && altDob !== cleanDob) {
-      data = await callBirthApi(altDob);
+      data = await fetchFromMyApi(altDob);
     }
 
     return res.status(200).json(data);
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Serverless Function Error:', error);
     return res.status(500).json({
       success: false,
-      message: 'সার্ভারের সাথে সংযোগ করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।'
+      message: 'সার্ভারের সাথে সংযোগ করা যাচ্ছে না। আবার চেষ্টা করুন।'
     });
   }
-}
+};
