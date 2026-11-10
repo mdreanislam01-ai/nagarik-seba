@@ -1,37 +1,22 @@
 {
+  "cleanUrls": false,
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://api.nagarikseba.com/$1"
+      "destination": "/api/$1"
     }
   ],
   "headers": [
     {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "query",
-          "key": "v"
-        }
-      ],
+      "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
-        }
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
       ]
     },
     {
-      "source": "/(.*)",
+      "source": "/(.*).html",
       "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     }
   ]
