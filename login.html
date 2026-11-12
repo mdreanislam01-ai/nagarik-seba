@@ -766,7 +766,7 @@
                 const r = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ identifier: email, password: pass, remember_me: rememberMe })
+                    body: JSON.stringify({ identifier: email, password: pass, remember_me: true })
                 });
                 const j = await r.json().catch(function(){ return {}; });
                 if (r.ok && j.token) {
