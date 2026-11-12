@@ -189,7 +189,7 @@ html.dark .avatarBtn{background:#1e293b}
 <div class="service-icon">♧</div>
 <div class="service-name"><h1>IMEI to Phone Number</h1><p>IMEI থেকে সকল নাম্বার</p></div>
 </section>
-<div class="pills"><span class="pill">✧ &nbsp;ফি: ৳470 থেকে শুরু</span><span class="pill green">▣ &nbsp;ব্যালেন্স: ৳0</span></div>
+<div class="pills"><span class="pill">✧ &nbsp;ফি: ৳470 থেকে শুরু</span><span class="pill green">▣ &nbsp;ব্যালেন্স: <span class="bal">৳0</span></span></div>
 <section class="order-card" id="orderCard">
 <div class="stripe"></div>
 <div class="card-content">
@@ -225,7 +225,7 @@ document.getElementById('submit').addEventListener('click',()=>{
  const one=document.getElementById('imeiOne'),two=document.getElementById('imeiTwo');
  if(!chosen){nsToast('⚠️ অনুগ্রহ করে ভ্যারিয়েন্ট নির্বাচন করুন।');return;}
  if(!one.value.trim()){one.focus();return;} if(!two.value.trim()){two.focus();return;}
- var optName=(function(){var el=document.querySelector('.plan.selected');if(!el)return null;var k=(el.getAttribute('data-name')||el.textContent||'').trim();var m={"সকল নাম্বার": "IMEI To All Number", "এডভান্স নাম্বার": "IMEI To Active Number"};return m[k]||k;})();
+ var optName=(function(){var el=document.querySelector('.plan.selected');if(!el)return null;var k=(el.getAttribute('data-name')||el.textContent||'').replace(/\u2713/g,'').replace(/\u09f3\s*[\d,]+/g,'').replace(/\s+/g,' ').trim();var m={"সকল নাম্বার": "IMEI To All Number", "এডভান্স নাম্বার": "IMEI To Active Number"};return m[k]||k;})();
  var lost=document.getElementById('lostDate');
  nsWireSubmit({service_id:'i2an',option_name:optName,payload:{imei1:one.value.trim(),imei2:two.value.trim(),lost_date:lost?lost.value:''},btn:document.getElementById('submit'),btnLabel:'অর্ডার প্লেস করুন',clearForm:function(){one.value='';two.value='';if(lost)lost.value='';}});
 });

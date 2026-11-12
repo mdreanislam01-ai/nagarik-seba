@@ -168,7 +168,7 @@ html.dark .avatarBtn{background:#1e293b}
 <div class="toast" id="toast">❌ অপর্যাপ্ত ব্যালেন্স! দয়া করে রিচার্জ করুন | 🥺</div>
 <main>
 <section class="head"><button class="back" type="button" onclick="history.back()">‹</button><div class="serviceicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="9" r="2.5"/><path d="M8 17c.8-2.5 7.2-2.5 8 0"/></svg></div><div class="heading"><h1>কল লিস্ট</h1><p>সকল ডাটা সহ কল লিস্ট</p></div></section>
-<div class="chips"><div class="chip">✧ &nbsp;ফি: ৳1450 থেকে শুরু</div><div class="chip green">▣ &nbsp;ব্যালেন্স: ৳0</div></div>
+<div class="chips"><div class="chip">✧ &nbsp;ফি: ৳1450 থেকে শুরু</div><div class="chip green">▣ &nbsp;ব্যালেন্স: <span class="bal">৳0</span></div></div>
 <section class="formcard" id="formcard">
 <div class="stripe"></div>
 <div class="formhead"><div class="formtitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 2.8h8l5 5V21H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>নতুন অর্ডার প্লেস করুন</div><span class="base" id="base">বেস ৳1450</span></div>
@@ -202,7 +202,7 @@ document.getElementById('submit').addEventListener('click',()=>{
  const phone=document.getElementById('phone').value.trim();
  if(!selected){nsToast('⚠️ অনুগ্রহ করে ভ্যারিয়েন্ট নির্বাচন করুন');return;}
  if(!phone){document.getElementById('phone').focus();return;}
- var optName=(function(){var el=document.querySelector('.option.selected');if(!el)return null;var k=(el.getAttribute('data-name')||el.textContent||'').trim();var m={"৩ মাস": "৩ মাস কল লিস্ট", "৬ মাস": "৬ মাস কল লিস্ট"};return m[k]||k;})();
+ var optName=(function(){var el=document.querySelector('.option.selected');if(!el)return null;var k=(el.getAttribute('data-name')||el.textContent||'').replace(/\u2713/g,'').replace(/\u09f3\s*[\d,]+/g,'').replace(/\s+/g,' ').trim();var m={"৩ মাস": "৩ মাস কল লিস্ট", "৬ মাস": "৬ মাস কল লিস্ট"};return m[k]||k;})();
  nsWireSubmit({service_id:'calllist',option_name:optName,payload:{phone:phone},btn:document.getElementById('submit'),btnLabel:'অর্ডার প্লেস করুন',clearForm:function(){document.getElementById('phone').value='';}});
 });
 function toggleDrawer(v){document.getElementById('drawerShade').style.display=v?'block':'none'}
