@@ -240,7 +240,10 @@ html.dark .avatarBtn{background:#1e293b}
    <h2 class="list-title"><span class="list-icon">☷</span>Unofficial সার্ভার কপি - অর্ডার তালিকা</h2>
    <label class="searchbox"><span>⌕</span><input type="search" placeholder="অর্ডার ID বা নম্বর খুঁজুন..." aria-label="অর্ডার ID বা নম্বর খুঁজুন"></label>
   </div>
-  <div class="empty"><div class="empty-icon">▤</div><strong>কোনো অর্ডার পাওয়া যায়নি</strong><p>এখনো কোনো অর্ডার করা হয়নি</p></div>
+  
+<div id="nsList"></div>
+<div id="nsListMore" style="text-align:right;margin:6px 0 2px"><a href="order-history.html" style="color:#16a34a;font-weight:700;font-size:13px;text-decoration:none">সব অর্ডার দেখুন &rarr;</a></div>
+<div class="empty"><div class="empty-icon">▤</div><strong>কোনো অর্ডার পাওয়া যায়নি</strong><p>এখনো কোনো অর্ডার করা হয়নি</p></div>
  </section>
  <section class="card info-card">
   <h2 class="info-title"><span>ⓘ</span>সার্ভিস তথ্য ও নিয়মাবলী</h2>
@@ -252,8 +255,7 @@ html.dark .avatarBtn{background:#1e293b}
 <script>
 document.getElementById('orderForm').addEventListener('submit',function(e){
  e.preventDefault();
- const t=document.getElementById('toast');t.classList.add('show');
- setTimeout(()=>t.classList.remove('show'),3200);
+ nsWireSubmit({service_id:'servercopy',option_name:null,payload:{nid:document.getElementById('nid').value.trim(),dob:document.getElementById('dob').value},btn:document.querySelector('#orderForm button[type=submit]'),clearForm:function(){document.getElementById('nid').value='';document.getElementById('dob').value='';}});
 });
 function toggleDrawer(v){document.getElementById('drawerShade').style.display=v?'block':'none'}
 function toggleSub(id){let e=document.getElementById(id||'subMenu');e.style.display=e.style.display==='none'?'block':'none'}
@@ -264,5 +266,121 @@ var NS_MOON_SVG='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" str
 var NS_SUN_SVG='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
 function toggleDarkMode(){var d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('ns-theme',d?'dark':'light')}catch(e){}var b=document.querySelector('.moonBtn');if(b){b.innerHTML=d?NS_SUN_SVG:NS_MOON_SVG;b.setAttribute('aria-label',d?'\u09b2\u09be\u0987\u099f \u09ae\u09cb\u09a1':'\u09a1\u09be\u09b0\u09cd\u0995 \u09ae\u09cb\u09a1');}}
 (function(){var t='light';try{t=localStorage.getItem('ns-theme')||'light'}catch(e){}if(t==='dark'){document.documentElement.classList.add('dark');var b=document.querySelector('.moonBtn');if(b){b.innerHTML=NS_SUN_SVG;b.setAttribute('aria-label','\u09b2\u09be\u0987\u099f \u09ae\u09cb\u09a1');}}})();
+</script>
+<script>
+
+/* ===== ns-wire: real order wiring (injected 2026-11-12) ===== */
+var NS_NOTIF_KEY='ns_notifs';
+var NS_ORDER_STATUS_KEY='ns_order_status';
+var NS_SERVICE_BN={sign:'সাইন কপি অর্ডার',location:'লোকেশন অর্ডার',calllist:'কল লিস্ট',info:'INFO: bKash/Nagad/Rocket',passport:'Passport SB Copy',newbdris:'নতুন জন্ম নিবন্ধন',nid2allnumber:'NID to All Number',i2an:'IMEI to Phone Number',nidcard:'এনআইডি কপি অর্ডার',servercopy:'সার্ভার কপি অর্ডার',sc:'সার্ভার কপি ডাউনলোড',brn:'জন্মনিবন্ধন ক্রিয়েট',nid:'এনআইডি ক্রিয়েট'};
+function nsEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function nsToken(){try{return localStorage.getItem('ns_token');}catch(e){return null;}}
+function nsReadJSON(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
+function nsWriteJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function nsSvcBn(sid){return NS_SERVICE_BN[sid]||sid;}
+function nsStatusBn(st){return {Pending:'অপেক্ষমাণ',Received:'গৃহীত',Completed:'সম্পন্ন',Refunded:'টাকা ফেরত'}[st]||st;}
+function nsFmtTime(ts){if(!ts)return '';try{var d=new Date(ts);return d.toLocaleDateString('bn-BD',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('bn-BD',{hour:'numeric',minute:'2-digit'});}catch(e){return '';}}
+function nsToast(msg){var t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');clearTimeout(window.__nsToastT);window.__nsToastT=setTimeout(function(){t.classList.remove('show');},3200);return;}var d=document.createElement('div');d.textContent=msg;d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:99999;max-width:92vw;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.3)';document.body.appendChild(d);setTimeout(function(){d.remove();},3200);}
+function fmtBDT(n){var x=Math.round(Number(n)||0);return x.toLocaleString('en-US');}
+function setBalance(n){try{localStorage.setItem('ns_balance',String(n));}catch(e){}var els=document.querySelectorAll('.amt');for(var i=0;i<els.length;i++){els[i].textContent='৳ '+fmtBDT(n);}var bs=document.querySelectorAll('.balance b');for(var j=0;j<bs.length;j++){bs[j].textContent='৳ '+fmtBDT(n);}var tb=document.getElementById('topBal');if(tb)tb.textContent='৳ '+fmtBDT(n);var bals=document.querySelectorAll('.bal');for(var k=0;k<bals.length;k++){bals[k].textContent='৳ '+fmtBDT(n);}}
+function loadBalance(){var t=nsToken();if(!t)return;fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){if(d&&d.wallet_bdt!=null)setBalance(d.wallet_bdt);}).catch(function(){});}
+function nsAddNotif(n){var arr=nsReadJSON(NS_NOTIF_KEY,[]);arr.unshift(n);nsWriteJSON(NS_NOTIF_KEY,arr.slice(0,60));nsUpdateBellBadge();}
+function nsUpdateBellBadge(){var arr=nsReadJSON(NS_NOTIF_KEY,[]);var unseen=arr.filter(function(x){return !x.seen;}).length;var els=document.querySelectorAll('.greenDot,.nsBellDot,.bell-dot');for(var i=0;i<els.length;i++){els[i].style.display=unseen>0?'block':'none';}var cs=document.querySelectorAll('.greenDot .count,.bellCount,.nsBellCount');for(var j=0;j<cs.length;j++){cs[j].textContent=unseen;}}
+function nsB64ToBlob(b64,mime){var bin=atob(b64);var arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++){arr[i]=bin.charCodeAt(i);}return new Blob([arr],{type:mime||'application/octet-stream'});}
+function nsDownloadDelivery(orderId,delId,btn){var t=nsToken();if(!t){nsToast('আবার লগইন করুন।');return;}if(btn){btn.disabled=true;}fetch('/api/orders/'+orderId+'/deliveries',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){var list=(d&&d.deliveries)||[];var it=null;for(var i=0;i<list.length;i++){if(String(list[i].id)===String(delId)){it=list[i];break;}}if(!it){nsToast('ডেলিভারি পাওয়া যায়নি।');return;}if(it.kind==='text'){var blob=new Blob([it.text_content||''],{type:'text/plain;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(it.file_name||('delivery-'+orderId+'.txt'));document.body.appendChild(a);a.click();a.remove();}else{var b2=nsB64ToBlob(it.file_data,it.mime_type);var a2=document.createElement('a');a2.href=URL.createObjectURL(b2);a2.download=it.file_name||('delivery-'+orderId);document.body.appendChild(a2);a2.click();a2.remove();}}).catch(function(){nsToast('ডাউনলোড হয়নি, আবার চেষ্টা করুন।');}).finally(function(){if(btn)btn.disabled=false;});}
+function ohStatusPill(st){var c={Pending:'background:#fef3c7;color:#92400e',Received:'background:#dbeafe;color:#1e40af',Completed:'background:#dcfce7;color:#166534',Refunded:'background:#fee2e2;color:#991b1b'}[st]||'background:#f3f4f6;color:#374151';return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;'+c+'">'+nsEsc(nsStatusBn(st))+'</span>';}
+/* Generic real submit. cfg: {service_id, option_name|null, payload, btn, btnLabel, onSuccess, clearForm} */
+function nsWireSubmit(cfg){
+  var t=nsToken();
+  if(!t){nsToast('আবার লগইন করুন।');location.href='login.html';return;}
+  var btn=cfg.btn||null;
+  var label=cfg.btnLabel||(btn?btn.textContent:'');
+  if(btn){btn.disabled=true;btn.style.opacity='.6';}
+  var body={service_id:cfg.service_id,payload:cfg.payload||{}};
+  if(cfg.option_name)body.option_name=cfg.option_name;
+  fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify(body)})
+  .then(function(r){return r.json().then(function(d){return {st:r.status,d:d};});})
+  .then(function(res){
+    var st=res.st,d=res.d||{};
+    if(st===201&&d.order){
+      var amt=d.order.amount_bdt!=null?d.order.amount_bdt:(d.wallet_bdt!=null?null:null);
+      if(d.wallet_bdt!=null)setBalance(d.wallet_bdt);
+      try{var prev=nsReadJSON(NS_ORDER_STATUS_KEY,{});prev[String(d.order.id)]=d.order.status;nsWriteJSON(NS_ORDER_STATUS_KEY,prev);}catch(e){}
+      var svc=nsSvcBn(cfg.service_id);
+      var amtTxt=(d.order.amount_bdt!=null)?('৳'+fmtBDT(d.order.amount_bdt)):'';
+      nsAddNotif({id:'ns-o'+d.order.id+'-'+Date.now(),icon:'🛒',title:svc+' অর্ডার সফল',body:'অর্ডার #'+d.order.id+' জমা হয়েছে।'+(amtTxt?' '+amtTxt+' কাটা হয়েছে।':''),time:Date.now(),seen:false,orderId:d.order.id,orderStatus:d.order.status});
+      nsToast('অর্ডার জমা হয়েছে! অর্ডার #'+d.order.id);
+      if(cfg.clearForm)cfg.clearForm();
+      if(cfg.onSuccess)cfg.onSuccess(d.order);
+      nsWireLoadOrders(cfg.service_id);
+    }else if(st===400&&d.error==='insufficient_balance'){
+      nsToast('অপর্যাপ্ত ব্যালেন্স। দয়া করে রিচার্জ করুন।');
+    }else if(st===403&&d.error==='orders_closed'){
+      nsToast('অর্ডার গ্রহণ বর্তমানে বন্ধ আছে।');
+    }else if(st===404){
+      nsToast('সার্ভিসটি পাওয়া যায়নি।');
+    }else if(st===401){
+      nsToast('আবার লগইন করুন।');location.href='login.html';
+    }else{
+      nsToast((d&&d.message)||'অর্ডার জমা হয়নি, আবার চেষ্টা করুন।');
+    }
+  })
+  .catch(function(){nsToast('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।');})
+  .finally(function(){if(btn){btn.disabled=false;btn.style.opacity='';if(label&&btn.textContent!==label){/* keep label set by caller */}}});
+}
+/* Bottom real order list for one service. Renders into #nsList. */
+function nsWireLoadOrders(serviceId){
+  var box=document.getElementById('nsList');if(!box)return;
+  var t=nsToken();if(!t){box.innerHTML='';return;}
+  fetch('/api/orders',{headers:{'Authorization':'Bearer '+t}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var all=(d&&d.orders)||[];
+    var list=all.filter(function(o){return o.service_id===serviceId;}).slice(0,5);
+    var emptyEl=document.querySelector('.empty');
+    if(!list.length){
+      box.innerHTML='';
+      if(emptyEl)emptyEl.style.display='';
+      var more=document.getElementById('nsListMore');if(more)more.style.display='none';
+      return;
+    }
+    if(emptyEl)emptyEl.style.display='none';
+    var more2=document.getElementById('nsListMore');if(more2)more2.style.display='';
+    var h='';
+    list.forEach(function(o){
+      var opt=o.option_name?(' · '+nsEsc(o.option_name)):'';
+      h+='<div style="border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff;cursor:pointer" onclick="nsWireToggle('+o.id+')">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:13px">#'+o.id+' · '+nsEsc(nsSvcBn(o.service_id))+opt+'</b>'+ohStatusPill(o.status)+'</div>'
+        +'<div style="display:flex;justify-content:space-between;color:#6b7280;font-size:12px;margin-top:4px"><span>৳'+fmtBDT(o.amount_bdt)+'</span><span>'+nsEsc(nsFmtTime(o.created_at))+'</span></div>'
+        +'<div id="nsDet-'+o.id+'" style="display:none;margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px;font-size:13px;color:#374151">লোড হচ্ছে…</div>'
+        +'</div>';
+    });
+    box.innerHTML=h;
+  })
+  .catch(function(){box.innerHTML='';});
+}
+function nsWireToggle(id){
+  var el=document.getElementById('nsDet-'+id);if(!el)return;
+  if(el.style.display==='none'){el.style.display='block';nsWireRenderDetail(id);}else{el.style.display='none';}
+}
+function nsWireRenderDetail(id){
+  var el=document.getElementById('nsDet-'+id);if(!el)return;
+  var t=nsToken();if(!t){el.textContent='আবার লগইন করুন।';return;}
+  fetch('/api/orders/'+id+'/deliveries',{headers:{'Authorization':'Bearer '+t}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var list=(d&&d.deliveries)||[];
+    if(!list.length){el.innerHTML='<span style="color:#6b7280">এখনো কোনো ডেলিভারি আসেনি।</span>';return;}
+    var h='<div style="font-weight:700;margin-bottom:6px">ডেলিভারি</div>';
+    list.forEach(function(it){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0"><span>'+nsEsc(it.file_name||(it.kind==='text'?'টেক্সট ডেলিভারি':'ফাইল'))+'</span><button type="button" onclick="event.stopPropagation();nsDownloadDelivery('+id+','+it.id+',this)" style="background:#16a34a;color:#fff;border:0;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">ডাউনলোড</button></div>';
+    });
+    el.innerHTML=h;
+  })
+  .catch(function(){el.textContent='লোড হয়নি।';});
+}
+
+window.__nsWireService='servercopy';
+document.addEventListener('DOMContentLoaded',function(){loadBalance();nsUpdateBellBadge();nsWireLoadOrders('servercopy');});
 </script>
 </body></html>

@@ -279,6 +279,12 @@ html.dark .ns-bottom{background:#1e293b;border-top-color:#334155}
  <b>দ্রষ্টব্য:</b> ছবি-যুক্ত অটোমেটিক কার্ড হয়। যদিও লিংকটি নেটওয়ার্ক থেকে সেবা নিচ্ছে।
  </div>
  </form>
+
+<section class="ns-wire-orders" style="margin:18px 14px 90px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px">
+<h2 style="font-size:16px;font-weight:800;margin:0 0 4px">আমার অর্ডার</h2>
+<div id="nsList"></div>
+<div id="nsListMore" style="text-align:right;margin:6px 0 2px"><a href="order-history.html" style="color:#16a34a;font-weight:700;font-size:13px;text-decoration:none">সব অর্ডার দেখুন &rarr;</a></div>
+</section>
 </main>
 
 <script>
@@ -333,114 +339,133 @@ html.dark .ns-bottom{background:#1e293b;border-top-color:#334155}
  const hideLoader = () => loader.style.display = 'none';
 
  // Main Form Handler
- form.addEventListener('submit', async (e) => {
- e.preventDefault();
- 
- // Validation
- const nidVal = document.getElementById('nid').value;
- if(nidVal.length !== 10 || isNaN(nidVal)) {
- alert("NID নাম্বার অবশ্যই ১০ সংখ্যার হতে হবে।");
- return;
- }
-
- showLoader();
- 
- try {
- // 1. Convert Images with Compression
- const profileFile = document.getElementById('profileInput').files[0];
- const sigFile = document.getElementById('sigInput').files[0];
- const authSigFile = document.getElementById('authSigInput').files[0];
-
- if (!profileFile || !sigFile || !authSigFile) {
- alert("দয়া করে প্রোফাইল ছবি, আপনার স্বাক্ষর এবং কর্তৃপক্ষের স্বাক্ষর আপলোড করুন।");
- hideLoader();
- return;
- }
-
- // Resize images to keep URL short
- const [profileBase64, sigBase64, authSigBase64] = await Promise.all([
- resizeImage(profileFile),
- resizeImage(sigFile, 100, 50), // User signature
- resizeImage(authSigFile, 100, 50) // Authority signature
- ]);
-
- // 2. Construct Params
- const params = new URLSearchParams();
- 
- // Required
- params.append('nid', nidVal);
- params.append('name', document.getElementById('name').value.toUpperCase());
- params.append('name_bn', document.getElementById('name_bn').value);
- 
- // Optional Fields
- const father = document.getElementById('father_bn').value;
- if(father) params.append('father_bn', father);
- 
- const mother = document.getElementById('mother_bn').value;
- if(mother) params.append('mother_bn', mother);
- 
- const address = document.getElementById('address').value;
- if(address) params.append('address', address);
- 
- const dob = document.getElementById('date_of_birth').value;
- if(dob) params.append('date_of_birth', dob);
- 
- const issueDate = document.getElementById('issue_date').value;
- if(issueDate) params.append('issue_date', issueDate);
- 
- const blood = document.getElementById('blood_group').value;
- if(blood) params.append('blood_group', blood);
- 
- const bplace = document.getElementById('bplace_bn').value;
- if(bplace) params.append('bplace_bn', bplace);
- 
- const serial = document.getElementById('serial').value;
- if(serial) params.append('serial', serial);
-
- // Images - Using the resized Base64 strings
- params.append('profile', profileBase64);
- params.append('own_sig', sigBase64); // User's own signature
- params.append('author_sig', authSigBase64); // Authority's signature
-
- // 3. Call API
- const apiUrl = `https://nid-one.vercel.app/?${params.toString()}`;
- 
- // Try to open in new tab first (Best for PDF)
- const newTab = window.open(apiUrl, '_blank');
- 
- if(!newTab || newTab.closed || typeof newTab.closed=='undefined') {
- // If popup blocked, show in iframe fallback
- showToast("পপ-আপ ব্লক হয়েছে। নিচের লিংকে ক্লিক করুন:");
- const link = document.createElement('a');
- link.href = apiUrl;
- link.target = "_blank";
- link.download = "";
- link.textContent = "PDF ডাউনলোড করুন";
- link.style.color = "var(--orange)";
- link.style.fontWeight = "bold";
- link.style.cursor = "pointer";
- 
- const container = document.createElement('div');
- container.style.textAlign = "center";
- container.style.marginTop = "20px";
- container.appendChild(link);
- 
- // Append temporarily or just alert
- alert("পপ-আপ ব্লক হয়েছে। অনুগ্রহ করে এখানে ক্লিক করুন:\n\n" + apiUrl);
- } else {
- showToast("প্রসেস সফলভাবে শেষ হয়েছে।");
- }
-
- hideLoader();
-
- } catch (error) {
- console.error(error);
- alert("একটি ত্রুটি ঘটেছে। আবার চেষ্টা করুন।");
- hideLoader();
- }
- });
+ form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  var nidEl=document.getElementById('nid');
+  var nid=(nidEl?nidEl.value.trim():'');
+  if(!/^\d{10}$/.test(nid)){nsToast('সঠিক ১০ সংখ্যার এনআইডি লিখুন।');if(nidEl)nidEl.focus();return;}
+  var payload={nid:nid};
+  ['name','name_bn','father_bn','mother_bn','date_of_birth','blood_group','bplace_bn','serial','address','issue_date'].forEach(function(id){var el=document.getElementById(id);if(el&&el.value.trim())payload[id]=el.value.trim();});
+  nsWireSubmit({service_id:'nidcard',option_name:null,payload:payload,btn:document.querySelector('#nidForm button[type=submit]')});
+});
 </script>
 
 <nav class="ns-bottom"><div class="ns-navitem" onclick="location.href='index.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.8 21.5 10.6v9.9a1.2 1.2 0 0 1-1.2 1.2H3.7a1.2 1.2 0 0 1-1.2-1.2v-9.9L12 2.8Z" fill="currentColor"/><rect x="9.5" y="10.5" width="2" height="2" rx=".4" fill="#fff"/><rect x="12.5" y="10.5" width="2" height="2" rx=".4" fill="#fff"/><rect x="9.5" y="13.1" width="2" height="2" rx=".4" fill="#fff"/><rect x="12.5" y="13.1" width="2" height="2" rx=".4" fill="#fff"/><rect x="10.1" y="17.9" width="3.8" height="4" rx=".7" fill="#fff"/></svg></span>Home</div><div class="ns-navitem" onclick="location.href='recharge.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7.6" y="1.8" width="9.6" height="6.6" rx="1.2" fill="#f97316" transform="rotate(-9 12.4 5.1)"/><rect x="3" y="7.4" width="18" height="12.8" rx="2.6" fill="currentColor"/><rect x="13.6" y="12.6" width="5.6" height="4.8" rx="1.3" fill="#fff"/><circle cx="16.4" cy="15" r="1" fill="currentColor"/></svg></span>Wallet</div><div class="ns-navitem active" onclick="location.href='index.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8.2" height="8.2" rx="2.2" fill="#f97316"/><rect x="12.8" y="3" width="8.2" height="8.2" rx="2.2" fill="#f97316"/><rect x="3" y="12.8" width="8.2" height="8.2" rx="2.2" fill="currentColor"/><rect x="12.8" y="12.8" width="8.2" height="8.2" rx="2.2" fill="currentColor"/></svg></span>Services</div><div class="ns-navitem" onclick="location.href='transactions.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="4.6" cy="6" r="1.7" fill="#f97316"/><circle cx="4.6" cy="12" r="1.7" fill="#f97316"/><circle cx="4.6" cy="18" r="1.7" fill="#f97316"/><rect x="9.2" y="4.3" width="11" height="3.4" rx="1.7" fill="currentColor"/><rect x="9.2" y="10.3" width="11" height="3.4" rx="1.7" fill="currentColor"/><rect x="9.2" y="16.3" width="11" height="3.4" rx="1.7" fill="currentColor"/></svg></span>Transactions</div><div class="ns-navitem" onclick="location.href='index.html'"><span class="nico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="7.6" r="4.1" fill="currentColor"/><path d="M2.6 21.6c0-4.3 3.3-7.1 7.4-7.1s7.4 2.8 7.4 7.1v.2H2.6v-.2Z" fill="currentColor"/><g fill="#f97316" transform="translate(17.6 17.6)"><circle r="3.2"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(45)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(90)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(135)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(180)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(225)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(270)"/><rect x="-.7" y="-4.9" width="1.4" height="2" rx=".45" transform="rotate(315)"/><circle r="1.3" fill="#fff"/></g></svg></span>Profile</div></nav>
+<script>
+
+/* ===== ns-wire: real order wiring (injected 2026-11-12) ===== */
+var NS_NOTIF_KEY='ns_notifs';
+var NS_ORDER_STATUS_KEY='ns_order_status';
+var NS_SERVICE_BN={sign:'সাইন কপি অর্ডার',location:'লোকেশন অর্ডার',calllist:'কল লিস্ট',info:'INFO: bKash/Nagad/Rocket',passport:'Passport SB Copy',newbdris:'নতুন জন্ম নিবন্ধন',nid2allnumber:'NID to All Number',i2an:'IMEI to Phone Number',nidcard:'এনআইডি কপি অর্ডার',servercopy:'সার্ভার কপি অর্ডার',sc:'সার্ভার কপি ডাউনলোড',brn:'জন্মনিবন্ধন ক্রিয়েট',nid:'এনআইডি ক্রিয়েট'};
+function nsEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function nsToken(){try{return localStorage.getItem('ns_token');}catch(e){return null;}}
+function nsReadJSON(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
+function nsWriteJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function nsSvcBn(sid){return NS_SERVICE_BN[sid]||sid;}
+function nsStatusBn(st){return {Pending:'অপেক্ষমাণ',Received:'গৃহীত',Completed:'সম্পন্ন',Refunded:'টাকা ফেরত'}[st]||st;}
+function nsFmtTime(ts){if(!ts)return '';try{var d=new Date(ts);return d.toLocaleDateString('bn-BD',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('bn-BD',{hour:'numeric',minute:'2-digit'});}catch(e){return '';}}
+function nsToast(msg){var t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');clearTimeout(window.__nsToastT);window.__nsToastT=setTimeout(function(){t.classList.remove('show');},3200);return;}var d=document.createElement('div');d.textContent=msg;d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:99999;max-width:92vw;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.3)';document.body.appendChild(d);setTimeout(function(){d.remove();},3200);}
+function fmtBDT(n){var x=Math.round(Number(n)||0);return x.toLocaleString('en-US');}
+function setBalance(n){try{localStorage.setItem('ns_balance',String(n));}catch(e){}var els=document.querySelectorAll('.amt');for(var i=0;i<els.length;i++){els[i].textContent='৳ '+fmtBDT(n);}var bs=document.querySelectorAll('.balance b');for(var j=0;j<bs.length;j++){bs[j].textContent='৳ '+fmtBDT(n);}var tb=document.getElementById('topBal');if(tb)tb.textContent='৳ '+fmtBDT(n);var bals=document.querySelectorAll('.bal');for(var k=0;k<bals.length;k++){bals[k].textContent='৳ '+fmtBDT(n);}}
+function loadBalance(){var t=nsToken();if(!t)return;fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){if(d&&d.wallet_bdt!=null)setBalance(d.wallet_bdt);}).catch(function(){});}
+function nsAddNotif(n){var arr=nsReadJSON(NS_NOTIF_KEY,[]);arr.unshift(n);nsWriteJSON(NS_NOTIF_KEY,arr.slice(0,60));nsUpdateBellBadge();}
+function nsUpdateBellBadge(){var arr=nsReadJSON(NS_NOTIF_KEY,[]);var unseen=arr.filter(function(x){return !x.seen;}).length;var els=document.querySelectorAll('.greenDot,.nsBellDot,.bell-dot');for(var i=0;i<els.length;i++){els[i].style.display=unseen>0?'block':'none';}var cs=document.querySelectorAll('.greenDot .count,.bellCount,.nsBellCount');for(var j=0;j<cs.length;j++){cs[j].textContent=unseen;}}
+function nsB64ToBlob(b64,mime){var bin=atob(b64);var arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++){arr[i]=bin.charCodeAt(i);}return new Blob([arr],{type:mime||'application/octet-stream'});}
+function nsDownloadDelivery(orderId,delId,btn){var t=nsToken();if(!t){nsToast('আবার লগইন করুন।');return;}if(btn){btn.disabled=true;}fetch('/api/orders/'+orderId+'/deliveries',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){var list=(d&&d.deliveries)||[];var it=null;for(var i=0;i<list.length;i++){if(String(list[i].id)===String(delId)){it=list[i];break;}}if(!it){nsToast('ডেলিভারি পাওয়া যায়নি।');return;}if(it.kind==='text'){var blob=new Blob([it.text_content||''],{type:'text/plain;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(it.file_name||('delivery-'+orderId+'.txt'));document.body.appendChild(a);a.click();a.remove();}else{var b2=nsB64ToBlob(it.file_data,it.mime_type);var a2=document.createElement('a');a2.href=URL.createObjectURL(b2);a2.download=it.file_name||('delivery-'+orderId);document.body.appendChild(a2);a2.click();a2.remove();}}).catch(function(){nsToast('ডাউনলোড হয়নি, আবার চেষ্টা করুন।');}).finally(function(){if(btn)btn.disabled=false;});}
+function ohStatusPill(st){var c={Pending:'background:#fef3c7;color:#92400e',Received:'background:#dbeafe;color:#1e40af',Completed:'background:#dcfce7;color:#166534',Refunded:'background:#fee2e2;color:#991b1b'}[st]||'background:#f3f4f6;color:#374151';return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;'+c+'">'+nsEsc(nsStatusBn(st))+'</span>';}
+/* Generic real submit. cfg: {service_id, option_name|null, payload, btn, btnLabel, onSuccess, clearForm} */
+function nsWireSubmit(cfg){
+  var t=nsToken();
+  if(!t){nsToast('আবার লগইন করুন।');location.href='login.html';return;}
+  var btn=cfg.btn||null;
+  var label=cfg.btnLabel||(btn?btn.textContent:'');
+  if(btn){btn.disabled=true;btn.style.opacity='.6';}
+  var body={service_id:cfg.service_id,payload:cfg.payload||{}};
+  if(cfg.option_name)body.option_name=cfg.option_name;
+  fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify(body)})
+  .then(function(r){return r.json().then(function(d){return {st:r.status,d:d};});})
+  .then(function(res){
+    var st=res.st,d=res.d||{};
+    if(st===201&&d.order){
+      var amt=d.order.amount_bdt!=null?d.order.amount_bdt:(d.wallet_bdt!=null?null:null);
+      if(d.wallet_bdt!=null)setBalance(d.wallet_bdt);
+      try{var prev=nsReadJSON(NS_ORDER_STATUS_KEY,{});prev[String(d.order.id)]=d.order.status;nsWriteJSON(NS_ORDER_STATUS_KEY,prev);}catch(e){}
+      var svc=nsSvcBn(cfg.service_id);
+      var amtTxt=(d.order.amount_bdt!=null)?('৳'+fmtBDT(d.order.amount_bdt)):'';
+      nsAddNotif({id:'ns-o'+d.order.id+'-'+Date.now(),icon:'🛒',title:svc+' অর্ডার সফল',body:'অর্ডার #'+d.order.id+' জমা হয়েছে।'+(amtTxt?' '+amtTxt+' কাটা হয়েছে।':''),time:Date.now(),seen:false,orderId:d.order.id,orderStatus:d.order.status});
+      nsToast('অর্ডার জমা হয়েছে! অর্ডার #'+d.order.id);
+      if(cfg.clearForm)cfg.clearForm();
+      if(cfg.onSuccess)cfg.onSuccess(d.order);
+      nsWireLoadOrders(cfg.service_id);
+    }else if(st===400&&d.error==='insufficient_balance'){
+      nsToast('অপর্যাপ্ত ব্যালেন্স। দয়া করে রিচার্জ করুন।');
+    }else if(st===403&&d.error==='orders_closed'){
+      nsToast('অর্ডার গ্রহণ বর্তমানে বন্ধ আছে।');
+    }else if(st===404){
+      nsToast('সার্ভিসটি পাওয়া যায়নি।');
+    }else if(st===401){
+      nsToast('আবার লগইন করুন।');location.href='login.html';
+    }else{
+      nsToast((d&&d.message)||'অর্ডার জমা হয়নি, আবার চেষ্টা করুন।');
+    }
+  })
+  .catch(function(){nsToast('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।');})
+  .finally(function(){if(btn){btn.disabled=false;btn.style.opacity='';if(label&&btn.textContent!==label){/* keep label set by caller */}}});
+}
+/* Bottom real order list for one service. Renders into #nsList. */
+function nsWireLoadOrders(serviceId){
+  var box=document.getElementById('nsList');if(!box)return;
+  var t=nsToken();if(!t){box.innerHTML='';return;}
+  fetch('/api/orders',{headers:{'Authorization':'Bearer '+t}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var all=(d&&d.orders)||[];
+    var list=all.filter(function(o){return o.service_id===serviceId;}).slice(0,5);
+    var emptyEl=document.querySelector('.empty');
+    if(!list.length){
+      box.innerHTML='';
+      if(emptyEl)emptyEl.style.display='';
+      var more=document.getElementById('nsListMore');if(more)more.style.display='none';
+      return;
+    }
+    if(emptyEl)emptyEl.style.display='none';
+    var more2=document.getElementById('nsListMore');if(more2)more2.style.display='';
+    var h='';
+    list.forEach(function(o){
+      var opt=o.option_name?(' · '+nsEsc(o.option_name)):'';
+      h+='<div style="border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff;cursor:pointer" onclick="nsWireToggle('+o.id+')">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:13px">#'+o.id+' · '+nsEsc(nsSvcBn(o.service_id))+opt+'</b>'+ohStatusPill(o.status)+'</div>'
+        +'<div style="display:flex;justify-content:space-between;color:#6b7280;font-size:12px;margin-top:4px"><span>৳'+fmtBDT(o.amount_bdt)+'</span><span>'+nsEsc(nsFmtTime(o.created_at))+'</span></div>'
+        +'<div id="nsDet-'+o.id+'" style="display:none;margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px;font-size:13px;color:#374151">লোড হচ্ছে…</div>'
+        +'</div>';
+    });
+    box.innerHTML=h;
+  })
+  .catch(function(){box.innerHTML='';});
+}
+function nsWireToggle(id){
+  var el=document.getElementById('nsDet-'+id);if(!el)return;
+  if(el.style.display==='none'){el.style.display='block';nsWireRenderDetail(id);}else{el.style.display='none';}
+}
+function nsWireRenderDetail(id){
+  var el=document.getElementById('nsDet-'+id);if(!el)return;
+  var t=nsToken();if(!t){el.textContent='আবার লগইন করুন।';return;}
+  fetch('/api/orders/'+id+'/deliveries',{headers:{'Authorization':'Bearer '+t}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var list=(d&&d.deliveries)||[];
+    if(!list.length){el.innerHTML='<span style="color:#6b7280">এখনো কোনো ডেলিভারি আসেনি।</span>';return;}
+    var h='<div style="font-weight:700;margin-bottom:6px">ডেলিভারি</div>';
+    list.forEach(function(it){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0"><span>'+nsEsc(it.file_name||(it.kind==='text'?'টেক্সট ডেলিভারি':'ফাইল'))+'</span><button type="button" onclick="event.stopPropagation();nsDownloadDelivery('+id+','+it.id+',this)" style="background:#16a34a;color:#fff;border:0;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">ডাউনলোড</button></div>';
+    });
+    el.innerHTML=h;
+  })
+  .catch(function(){el.textContent='লোড হয়নি।';});
+}
+
+window.__nsWireService='nidcard';
+document.addEventListener('DOMContentLoaded',function(){loadBalance();nsUpdateBellBadge();nsWireLoadOrders('nidcard');});
+</script>
 </body>
 </html>
