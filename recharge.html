@@ -226,4 +226,14 @@ var NS_SUN_SVG='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stro
 function toggleDarkMode(){var d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('ns-theme',d?'dark':'light')}catch(e){}var b=document.querySelector('.moonBtn');if(b){b.innerHTML=d?NS_SUN_SVG:NS_MOON_SVG;b.setAttribute('aria-label',d?'\u09b2\u09be\u0987\u099f \u09ae\u09cb\u09a1':'\u09a1\u09be\u09b0\u09cd\u0995 \u09ae\u09cb\u09a1');}}
 (function(){var t='light';try{t=localStorage.getItem('ns-theme')||'light'}catch(e){}if(t==='dark'){document.documentElement.classList.add('dark');var b=document.querySelector('.moonBtn');if(b){b.innerHTML=NS_SUN_SVG;b.setAttribute('aria-label','\u09b2\u09be\u0987\u099f \u09ae\u09cb\u09a1');}}})();
 </script>
+
+<script>
+/* Header balance on plain load (was stuck on the ৳1,000 placeholder). */
+(function(){
+function nsToken(){try{return localStorage.getItem('ns_token');}catch(e){return null;}}
+function fmtBDT(n){var x=Math.round(Number(n)||0);return x.toLocaleString('en-US');}
+var t=nsToken();if(!t)return;
+fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){if(d&&d.wallet_bdt!=null){var bs=document.querySelectorAll('.balance b');for(var i=0;i<bs.length;i++){bs[i].textContent='৳ '+fmtBDT(d.wallet_bdt);}}}).catch(function(){});
+})();
+</script>
 </body></html>

@@ -270,4 +270,104 @@ var NS_SUN_SVG='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stro
 function toggleDarkMode(){var d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('ns-theme',d?'dark':'light')}catch(e){}var b=document.querySelector('.moonBtn');if(b){b.innerHTML=d?NS_SUN_SVG:NS_MOON_SVG;b.setAttribute('aria-label',d?'\u09b2\u09be\u0987\u099f \u09ae\u09cb\u09a1':'\u09a1\u09be\u09b0\u09cd\u0995 \u09ae\u09cb\u09a1');}}
 (function(){var t='light';try{t=localStorage.getItem('ns-theme')||'light'}catch(e){}if(t==='dark'){document.documentElement.classList.add('dark');var b=document.querySelector('.moonBtn');if(b){b.innerHTML=NS_SUN_SVG;b.setAttribute('aria-label','\u09b2\u09be\u0987\u099f \u09ae\u09cb\u09a1');}}})();
 </script>
+
+<script>
+/* Real transactions: loads the user's actual recharges + orders (was an empty table + demo CSV row). */
+(function(){
+function nsToken(){try{return localStorage.getItem('ns_token');}catch(e){return null;}}
+function fmtBDT(n){var x=Math.round(Number(n)||0);return x.toLocaleString('en-US');}
+function nsEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var NS_SERVICE_BN={sign:'সাইন কপি অর্ডার',location:'লোকেশন অর্ডার',calllist:'কল লিস্ট',info:'INFO: bKash/Nagad/Rocket',passport:'Passport SB Copy',newbdris:'নতুন জন্ম নিবন্ধন',nid2allnumber:'NID to All Number',i2an:'IMEI to Phone Number',nidcard:'এনআইডি কপি অর্ডার',servercopy:'সার্ভার কপি অর্ডার',sc:'সার্ভার কপি ডাউনলোড',brn:'জন্মনিবন্ধন ক্রিয়েট',nid:'এনআইডি ক্রিয়েট'};
+function nsSvcBn(sid){return NS_SERVICE_BN[sid]||sid;}
+function nsStatusBn(st){return {Pending:'অপেক্ষমাণ',Received:'গৃহীত',Completed:'সম্পন্ন',Refunded:'টাকা ফেরত',Approved:'অনুমোদিত',Rejected:'বাতিল',Canceled:'বাতিল'}[st]||st;}
+function nsFmtDate(ts){if(!ts)return '';try{var d=new Date(ts);return d.toLocaleDateString('bn-BD',{day:'numeric',month:'short',year:'numeric'})+'<br><small>'+d.toLocaleTimeString('bn-BD',{hour:'numeric',minute:'2-digit'})+'</small>';}catch(e){return '';}}
+function nsFmtDatePlain(ts){if(!ts)return '';try{var d=new Date(ts);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+function rchDesc(r){
+  if(r.channel==='zammpay')return 'ZAMM Pay রিচার্জ';
+  if(r.method==='BanglaQR')return 'বাংলা কিউআর রিচার্জ';
+  return (r.method||'রিচার্জ')+' রিচার্জ';
+}
+var allTx=[];var curFilter='সব সময়';
+function loadBalance(){var t=nsToken();if(!t)return;fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){if(d&&d.wallet_bdt!=null){var bs=document.querySelectorAll('.balance b');for(var i=0;i<bs.length;i++){bs[i].textContent='৳ '+fmtBDT(d.wallet_bdt);}}}).catch(function(){});}
+function loadTx(){
+  var t=nsToken();if(!t)return;
+  Promise.all([
+    fetch('/api/recharges',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).catch(function(){return {}; }),
+    fetch('/api/orders',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).catch(function(){return {}; })
+  ]).then(function(res){
+    var list=[];
+    var rch=(res[0]&&res[0].recharges)||[];
+    for(var i=0;i<rch.length;i++){var r=rch[i];list.push({kind:'recharge',id:r.id,date:r.created_at,desc:rchDesc(r),type:'ক্রেডিট',amount:Number(r.amount_bdt)||0,status:r.status||'Pending',trxid:r.trxid||''});}
+    var ord=(res[1]&&res[1].orders)||[];
+    for(var j=0;j<ord.length;j++){var o=ord[j];list.push({kind:'order',id:o.id,date:o.created_at,desc:nsSvcBn(o.service_id)+(o.option_name?' — '+o.option_name:''),type:'ডেবিট',amount:Number(o.amount_bdt)||0,status:o.status||'Pending',trxid:'#'+o.id});}
+    list.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+    allTx=list;renderTx();
+  }).catch(function(){});
+}
+function inFilter(x){
+  if(curFilter==='সব সময়')return true;
+  var d=new Date(x.date);var now=new Date();var start=new Date(now);
+  if(curFilter==='আজ'){start.setHours(0,0,0,0);}
+  else if(curFilter==='গত ৭ দিন'){start.setDate(now.getDate()-7);}
+  else if(curFilter==='গত ৩০ দিন'){start.setDate(now.getDate()-30);}
+  else if(curFilter==='গত ৯০ দিন'){start.setDate(now.getDate()-90);}
+  else if(curFilter==='এই মাস'){start.setDate(1);start.setHours(0,0,0,0);}
+  else return true;
+  return d>=start;
+}
+function renderTx(){
+  var rows=document.getElementById('rows');if(!rows)return;
+  var empty=document.querySelector('.search-empty');
+  var list=allTx.filter(inFilter);
+  if(!list.length){rows.innerHTML='';if(empty)empty.style.display='';return;}
+  if(empty)empty.style.display='none';
+  var h='';
+  for(var i=0;i<list.length;i++){var x=list[i];
+    var amtHtml=x.type==='ক্রেডিট'?'<span class="positive">+ ৳'+fmtBDT(x.amount)+'</span>':'<span class="amount">− ৳'+fmtBDT(x.amount)+'</span>';
+    var typePill=x.type==='ক্রেডিট'?'<span class="pill">ক্রেডিট</span>':'<span class="pill orange">ডেবিট</span>';
+    h+='<tr><td class="date">'+nsFmtDate(x.date)+'</td>'
+      +'<td>'+nsEsc(x.desc)+'<br><small style="color:#a2a7b0">'+nsEsc(nsStatusBn(x.status))+'</small></td>'
+      +'<td>'+typePill+'</td>'
+      +'<td>'+amtHtml+'</td>'
+      +'<td>—</td>'
+      +'<td><button class="tool receiptBtn" data-idx="'+i+'" title="রসিদ">🧾</button></td></tr>';
+  }
+  rows.innerHTML=h;
+  rows.querySelectorAll('.receiptBtn').forEach(function(b){b.addEventListener('click',function(){openReceipt(list[Number(b.getAttribute('data-idx'))]);});});
+}
+function openReceipt(x){
+  if(!x)return;
+  var sh=document.getElementById('receiptShade');if(!sh)return;
+  var lines=sh.querySelectorAll('.rline b');
+  if(lines[0])lines[0].textContent=nsFmtDatePlain(x.date);
+  if(lines[1])lines[1].textContent=x.trxid||('#'+x.id);
+  if(lines[2]){lines[2].textContent=nsStatusBn(x.status);lines[2].className='positive';}
+  if(lines[3])lines[3].textContent=x.desc;
+  if(lines[4])lines[4].textContent='—';
+  if(lines[5])lines[5].textContent='৳'+fmtBDT(x.amount)+'.00';
+  if(lines[6])lines[6].textContent='৳0.00';
+  if(lines[7])lines[7].textContent='—';
+  var big=sh.querySelector('.bigamount');
+  if(big)big.textContent=(x.type==='ক্রেডিট'?'+ ':'− ')+'৳'+fmtBDT(x.amount)+'.00';
+  var cr=sh.querySelector('.credit');
+  if(cr)cr.textContent=x.type==='ক্রেডিট'?'CREDIT AMOUNT':'DEBIT AMOUNT';
+  sh.classList.add('open');
+}
+var fm=document.getElementById('filterMenu');
+if(fm){fm.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){curFilter=b.dataset.value||b.textContent;renderTx();});});}
+var dl=document.getElementById('downloadBtn');
+if(dl){dl.onclick=function(){
+  var list=allTx.filter(inFilter);
+  var csv='Date,Description,Type,Amount,Status\n';
+  for(var i=0;i<list.length;i++){var x=list[i];
+    csv+='"'+nsFmtDatePlain(x.date).replace(/"/g,'""')+'","'+String(x.desc).replace(/"/g,'""')+'","'+x.type+'",'+(x.type==='ক্রেডিট'?'+':'-')+x.amount+',"'+nsStatusBn(x.status)+'"\n';
+  }
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='transactions.csv';a.click();URL.revokeObjectURL(a.href);
+};}
+loadBalance();
+loadTx();
+})();
+</script>
 </body></html>
