@@ -288,7 +288,13 @@ function rchDesc(r){
   return (r.method||'রিচার্জ')+' রিচার্জ';
 }
 var allTx=[];var curFilter='সব সময়';
-function loadBalance(){var t=nsToken();if(!t)return;fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){if(d&&d.wallet_bdt!=null){var bs=document.querySelectorAll('.balance b');for(var i=0;i<bs.length;i++){bs[i].textContent='৳ '+fmtBDT(d.wallet_bdt);}}}).catch(function(){});}
+function loadBalance(){
+  try{var c=localStorage.getItem('ns_balance')||'';if(c){var bs0=document.querySelectorAll('.balance b');for(var i=0;i<bs0.length;i++){bs0[i].textContent='৳ '+fmtBDT(Number(c));}}}catch(e){}
+  var t=nsToken();if(!t)return;
+  fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){
+    if(r.status===401){try{localStorage.removeItem('ns_token');localStorage.removeItem('ns_user');}catch(e){}location.replace('login.html');return null;}
+    return r.json();
+  }).then(function(d){if(d&&d.wallet_bdt!=null){var bs=document.querySelectorAll('.balance b');for(var i=0;i<bs.length;i++){bs[i].textContent='৳ '+fmtBDT(d.wallet_bdt);}}}).catch(function(){});}
 function loadTx(){
   var t=nsToken();if(!t)return;
   Promise.all([

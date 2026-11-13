@@ -1432,8 +1432,15 @@ function toggleDarkMode(){var d=document.documentElement.classList.toggle('dark'
 /* Header balance: was stuck on the hardcoded ৳1,000 placeholder — now loads the real wallet balance. */
 function nsToken(){try{return localStorage.getItem('ns_token');}catch(e){return null;}}
 function fmtBDT(n){var x=Math.round(Number(n)||0);return x.toLocaleString('en-US');}
-function nsSetBalance(n){var bs=document.querySelectorAll('.balance b');for(var i=0;i<bs.length;i++){bs[i].textContent='৳ '+fmtBDT(n);}}
-function nsLoadBalance(){var t=nsToken();if(!t)return;fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.json();}).then(function(d){if(d&&d.wallet_bdt!=null)nsSetBalance(d.wallet_bdt);}).catch(function(){});}
+function nsSetBalance(n){try{localStorage.setItem('ns_balance',String(n));}catch(e){}var bs=document.querySelectorAll('.balance b');for(var i=0;i<bs.length;i++){bs[i].textContent='৳ '+fmtBDT(n);}}
+function nsLoadBalance(){
+  try{var c=localStorage.getItem('ns_balance')||'';if(c){var bs0=document.querySelectorAll('.balance b');for(var i=0;i<bs0.length;i++){bs0[i].textContent='৳ '+fmtBDT(Number(c));}}}catch(e){}
+  var t=nsToken();if(!t)return;
+  fetch('/api/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){
+    if(r.status===401){try{localStorage.removeItem('ns_token');localStorage.removeItem('ns_user');}catch(e){}location.replace('login.html');return null;}
+    return r.json();
+  }).then(function(d){if(d&&d.wallet_bdt!=null)nsSetBalance(d.wallet_bdt);}).catch(function(){});
+}
 document.addEventListener('DOMContentLoaded',function(){nsLoadBalance();});
 </script>
 </body>
