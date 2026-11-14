@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Birth Certificate Make — নাগরিক সেবা</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -86,15 +87,12 @@
   .toast.show{opacity:1}
   .api-status-box{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:12px 14px;border-radius:12px;margin:0 14px 14px;font-size:13px;line-height:1.6;display:none}
   
-  /* Certificate Preview Styles */
-  .cert-container{background:#fff;color:#000;padding:24px;margin:12px 14px;border-radius:12px;border:2px solid #14532d;font-size:13px;line-height:1.5}
-  .cert-header{text-align:center;border-bottom:2px solid #14532d;padding-bottom:10px;margin-bottom:12px}
-  .cert-header h3{font-size:16px;color:#14532d;font-weight:800}
-  .cert-header p{font-size:11px;color:#555}
-  .cert-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-  .cert-row{margin-bottom:6px}
-  .cert-row span{display:block;font-size:11px;color:#666}
-  .cert-row b{font-size:13px;color:#111}
+  /* Official Original PDF Canvas Preview Container */
+  .pdf-preview-wrap{background:#fff;margin:12px 14px;border-radius:12px;padding:10px;border:1.5px solid #d1d5db;box-shadow:0 4px 16px rgba(0,0,0,.08);text-align:center;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+  .pdf-preview-wrap canvas{width:100%;height:auto;display:block;border-radius:6px}
+  .pdf-loader{padding:40px 16px;color:#374151;font-size:14px;font-weight:700}
+  .pdf-loader .spin{width:34px;height:34px;border:3.5px solid #fed7aa;border-top-color:var(--orange);border-radius:50%;animation:sp 0.8s linear infinite;margin:0 auto 12px}
+  @keyframes sp{to{transform:rotate(360deg)}}
 
   .hist-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
   .hist-item h4{font-size:15px;color:#111827;margin-bottom:3px}
@@ -103,13 +101,6 @@
   .hist-btn{background:var(--orange-soft);color:var(--orange);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
   .hist-btn.print{background:#e0f2fe;color:#0369a1}
   .hist-btn.pdf{background:#dcfce7;color:#15803d}
-
-  @media print {
-    body * { visibility: hidden; }
-    #certPrintArea, #certPrintArea * { visibility: visible; }
-    #certPrintArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; border: none; padding: 10px; }
-    .no-print { display: none !important; }
-  }
 
   body.dark{background:#0f172a}
   body.dark .app{background:#111827;color:#f1f5f9}
@@ -171,7 +162,7 @@
       <div class="feat">
         <span class="a">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-          অটো-ফেচ ও PDF ডাউনলোড
+          অরিজিনাল PDF প্রিভিউ ও ডাউনলোড
         </span>
         <span class="b">ইনস্ট্যান্ট ডেলিভারি</span>
       </div>
@@ -194,7 +185,7 @@
     </div>
 
     <div class="notice-box no-print">
-      <b>নোটিশ:</b> তথ্য দিয়ে যাচাই করুন এবং অর্ডার জমা দেওয়ার পর সার্টিফিকেট প্রিভিউ দেখে অফিশিয়াল A4 PDF ডাউনলোড করতে পারবেন।
+      <b>নোটিশ:</b> তথ্য দিয়ে যাচাই করুন এবং অর্ডার জমা দেওয়ার পর সরাসরি অরিজিনাল A4 PDF প্রিভিউ দেখে ডাউনলোড করতে পারবেন।
     </div>
 
     <div class="price no-print">Price: 2 Taka<small>ফি: ৳2 &nbsp;•&nbsp; প্রতি সফল সার্চে ৳2 কাটা হবে</small></div>
@@ -266,44 +257,27 @@
     </div>
   </section>
 
-  <!-- Certificate View & PDF Download Section -->
+  <!-- Original Official PDF Preview & Download Section -->
   <section class="view" id="view-certificate">
     <div class="page-head no-print">
       <button type="button" class="back" onclick="goHome()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
       </button>
-      <h1>Birth Certificate Preview</h1>
+      <h1>Original PDF Preview</h1>
     </div>
 
-    <div class="cert-container" id="certPrintArea">
-      <div class="cert-header">
-        <h3>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h3>
-        <p>স্থানীয় সরকার প্রতিষ্ঠান, জন্ম ও মৃত্যু নিবন্ধন কার্যালয়</p>
-        <h4 style="margin-top:6px;font-size:14px;color:#14532d">জন্ম নিবন্ধন সনদ</h4>
+    <div class="pdf-preview-wrap" id="pdfPreviewBox">
+      <div class="pdf-loader" id="pdfLoader">
+        <div class="spin"></div>
+        অরিজিনাল PDF লোড হচ্ছে...
       </div>
-      <div class="cert-row"><span>নিবন্ধন নম্বর (UBRN):</span> <b id="c_brn"></b></div>
-      <div class="cert-grid">
-        <div class="cert-row"><span>জন্ম তারিখ:</span> <b id="c_dob"></b></div>
-        <div class="cert-row"><span>লিঙ্গ:</span> <b id="c_sex"></b></div>
-      </div>
-      <div class="cert-row"><span>নাম (বাংলা):</span> <b id="c_name_bn"></b></div>
-      <div class="cert-row"><span>নাম (ইংরেজি):</span> <b id="c_name_en"></b></div>
-      <div class="cert-grid">
-        <div class="cert-row"><span>পিতার নাম:</span> <b id="c_fname"></b></div>
-        <div class="cert-row"><span>মাতার নাম:</span> <b id="c_mname"></b></div>
-      </div>
-      <div class="cert-row"><span>জন্মস্থান:</span> <b id="c_bp"></b></div>
-      <div class="cert-row"><span>স্থায়ী ঠিকানা:</span> <b id="c_paddr"></b></div>
-      <div class="cert-grid" style="margin-top:10px;border-top:1px dashed #ccc;padding-top:8px">
-        <div class="cert-row"><span>নিবন্ধনের তারিখ:</span> <b id="c_regdate"></b></div>
-        <div class="cert-row"><span>ইস্যুর তারিখ:</span> <b id="c_issdate"></b></div>
-      </div>
+      <canvas id="pdfCanvas" style="display:none"></canvas>
     </div>
 
     <div class="btn-row no-print" style="margin:16px 14px; flex-wrap:wrap;">
       <button type="button" class="btn-outline" onclick="goHome()">হোমে ফিরুন</button>
-      <button type="button" class="btn-ghost" onclick="window.print()">🖨️ প্রিন্ট</button>
-      <button type="button" class="btn-primary" id="btnDownloadPdf" onclick="downloadOfficialPdf()" style="flex:1 1 100%; margin-top:6px;">📥 অফিশিয়াল PDF ডাউনলোড করুন</button>
+      <button type="button" class="btn-ghost" onclick="printOriginalPdf()">🖨️ প্রিন্ট</button>
+      <button type="button" class="btn-primary" id="btnDownloadPdf" onclick="downloadSavedPdf()" style="flex:1 1 100%; margin-top:6px;">📥 অরিজিনাল PDF ডাউনলোড করুন</button>
     </div>
   </section>
 
@@ -356,11 +330,19 @@
 </div>
 
 <script>
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
   var PDF_API_ENDPOINT = 'https://my.sheva247.site/api/hub/v1/birth-certificate-pdf';
   var PDF_API_KEY_VAL = 'BHAPI-0745ff16433260b343d577c28b34ea7b05f217599ceb3f8e';
 
   var captchaAnswer = 64;
   var currentCertFields = null;
+  var currentPdfBlob = null;
+  var currentPdfBlobUrl = null;
+  var currentPdfBrn = '';
+
   var formFieldIds = [
     'f_brn','f_datewords','f_sex','f_dob','f_name_bn','f_name_en',
     'f_bp_bn','f_bp_en','f_regdate','f_issdate','f_regoffice','f_offloc',
@@ -602,23 +584,36 @@
     }
   }
 
-  function renderCertificate(fields) {
-    currentCertFields = fields;
-    document.getElementById('c_brn').textContent = fields['f_brn'] || '';
-    document.getElementById('c_dob').textContent = fields['f_dob'] || '';
-    document.getElementById('c_sex').textContent = fields['f_sex'] || '';
-    document.getElementById('c_name_bn').textContent = fields['f_name_bn'] || '';
-    document.getElementById('c_name_en').textContent = fields['f_name_en'] || '';
-    document.getElementById('c_fname').textContent = (fields['f_fname_bn'] || '') + ' (' + (fields['f_fname_en'] || '') + ')';
-    document.getElementById('c_mname').textContent = (fields['f_mname_bn'] || '') + ' (' + (fields['f_mname_en'] || '') + ')';
-    document.getElementById('c_bp').textContent = (fields['f_bp_bn'] || '') + ' / ' + (fields['f_bp_en'] || '');
-    document.getElementById('c_paddr').textContent = fields['f_paddr_bn'] || '';
-    document.getElementById('c_regdate').textContent = fields['f_regdate'] || '';
-    document.getElementById('c_issdate').textContent = fields['f_issdate'] || '';
+  async function renderPdfBlobToCanvas(blob) {
+    var loader = document.getElementById('pdfLoader');
+    var canvas = document.getElementById('pdfCanvas');
+    if (!window.pdfjsLib) {
+      if (loader) loader.innerHTML = 'PDF তৈরি হয়েছে! নিচের বাটন থেকে ডাউনলোড করুন।';
+      return;
+    }
+
+    try {
+      var arrayBuffer = await blob.arrayBuffer();
+      var pdfDoc = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      var page = await pdfDoc.getPage(1);
+
+      var scale = 2.2;
+      var viewport = page.getViewport({ scale: scale });
+      var context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+      if (loader) loader.style.display = 'none';
+      canvas.style.display = 'block';
+    } catch (renderErr) {
+      if (loader) loader.innerHTML = 'অরিজিনাল PDF প্রস্তুত! নিচের বাটন থেকে ডাউনলোড করুন।';
+    }
   }
 
-  async function downloadOfficialPdf(customFields) {
-    var f = customFields || currentCertFields;
+  async function fetchAndShowOriginalPdf(fields) {
+    var f = fields || currentCertFields;
     if (!f) {
       toast('সার্টিফিকেট তথ্য পাওয়া যায়নি।');
       return;
@@ -630,12 +625,25 @@
       return;
     }
 
-    var btn = document.getElementById('btnDownloadPdf');
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = '⏳ অফিশিয়াল PDF তৈরি হচ্ছে...';
+    currentCertFields = f;
+    currentPdfBrn = cleanBrn;
+    currentPdfBlob = null;
+
+    var loader = document.getElementById('pdfLoader');
+    var canvas = document.getElementById('pdfCanvas');
+    var dlBtn = document.getElementById('btnDownloadPdf');
+
+    if (loader) {
+      loader.style.display = 'block';
+      loader.innerHTML = '<div class="spin"></div>API থেকে অরিজিনাল PDF লোড হচ্ছে...';
     }
-    toast('PDF তৈরি হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...');
+    if (canvas) canvas.style.display = 'none';
+    if (dlBtn) {
+      dlBtn.disabled = true;
+      dlBtn.textContent = '⏳ অরিজিনাল PDF লোড হচ্ছে...';
+    }
+
+    showView('view-certificate');
 
     var sexFormatted = (f['f_sex'] || 'MALE').toUpperCase() === 'FEMALE' ? 'Female' : 'Male';
 
@@ -691,28 +699,66 @@
       if (!res || !res.ok) {
         var status = res ? res.status : 0;
         var errTxt = res ? await res.text().catch(function () { return ''; }) : '';
-        toast('PDF তৈরি ব্যর্থ হয়েছে (কোড: ' + status + ') ' + errTxt.slice(0, 60));
+        if (loader) {
+          loader.innerHTML = '<span style="color:#dc2626">PDF তৈরি ব্যর্থ হয়েছে (কোড: ' + status + ')</span><br><small style="color:#6b7280">' + errTxt.slice(0, 120) + '</small>';
+        }
+        toast('PDF তৈরি ব্যর্থ হয়েছে (কোড: ' + status + ')');
         return;
       }
 
       var blob = await res.blob();
-      var url = window.URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'Birth_Certificate_' + cleanBrn + '.pdf';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      toast('✓ অফিশিয়াল PDF ডাউনলোড সম্পন্ন হয়েছে!');
+      currentPdfBlob = blob;
+      if (currentPdfBlobUrl) window.URL.revokeObjectURL(currentPdfBlobUrl);
+      currentPdfBlobUrl = window.URL.createObjectURL(blob);
+
+      await renderPdfBlobToCanvas(blob);
+      toast('✓ অরিজিনাল PDF প্রিভিউ লোড হয়েছে!');
     } catch (e) {
-      toast('PDF ডাউনলোড করা যায়নি: ' + (e.message || 'Server Error'));
+      if (loader) {
+        loader.innerHTML = '<span style="color:#dc2626">সার্ভার সংযোগে ত্রুটি: ' + (e.message || 'Error') + '</span>';
+      }
+      toast('PDF লোড করা যায়নি!');
     } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = '📥 অফিশিয়াল PDF ডাউনলোড করুন';
+      if (dlBtn) {
+        dlBtn.disabled = false;
+        dlBtn.textContent = '📥 অরিজিনাল PDF ডাউনলোড করুন';
       }
     }
+  }
+
+  function downloadSavedPdf() {
+    if (!currentPdfBlob || !currentPdfBlobUrl) {
+      if (currentCertFields) {
+        fetchAndShowOriginalPdf(currentCertFields);
+      } else {
+        toast('ডাউনলোড করার মতো PDF পাওয়া যায়নি।');
+      }
+      return;
+    }
+
+    var a = document.createElement('a');
+    a.href = currentPdfBlobUrl;
+    a.download = 'Birth_Certificate_' + (currentPdfBrn || 'Official') + '.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast('✓ অরিজিনাল PDF ডাউনলোড শুরু হয়েছে!');
+  }
+
+  function printOriginalPdf() {
+    var canvas = document.getElementById('pdfCanvas');
+    if (!canvas || canvas.style.display === 'none') {
+      toast('প্রথমে অরিজিনাল PDF লোড হতে দিন।');
+      return;
+    }
+    var dataUrl = canvas.toDataURL('image/png');
+    var win = window.open('', '_blank');
+    if (!win) {
+      toast('পপ-আপ ব্লক করা আছে, ডাউনলোড বাটন ব্যবহার করুন।');
+      return;
+    }
+    win.document.write('<html><head><title>Birth Certificate</title><style>@page{size:A4;margin:0}body{margin:0}img{width:100%;height:auto;display:block}</style></head><body><img src="' + dataUrl + '" onload="window.print();window.close()"/></body></html>');
+    win.document.close();
   }
 
   function submitOrder() {
@@ -724,6 +770,13 @@
         if (el) el.focus();
         return;
       }
+    }
+
+    var cleanBrn = document.getElementById('f_brn').value.replace(/\D/g, '');
+    if (cleanBrn.length !== 17) {
+      toast('Birth Registration Number অবশ্যই ১৭ ডিজিটের হতে হবে (বর্তমানে ' + cleanBrn.length + ' ডিজিট)।');
+      document.getElementById('f_brn').focus();
+      return;
     }
 
     var savedFields = {};
@@ -745,25 +798,15 @@
     });
     localStorage.setItem('nagarik_birth_history', JSON.stringify(historyList));
 
-    renderCertificate(savedFields);
-    showView('view-certificate');
-    toast('✓ সার্টিফিকেট প্রিভিউ তৈরি হয়েছে! নিচে থেকে PDF ডাউনলোড করুন।');
+    // সরাসরি API থেকে অরিজিনাল PDF এনে প্রিভিউতে রেন্ডার করা হবে
+    fetchAndShowOriginalPdf(savedFields);
   }
 
   function viewCertificateFromHistory(index) {
     var historyList = JSON.parse(localStorage.getItem('nagarik_birth_history') || '[]');
     var item = historyList[index];
     if (!item || !item.fields) return;
-    renderCertificate(item.fields);
-    showView('view-certificate');
-  }
-
-  function downloadPdfFromHistory(index) {
-    var historyList = JSON.parse(localStorage.getItem('nagarik_birth_history') || '[]');
-    var item = historyList[index];
-    if (!item || !item.fields) return;
-    currentCertFields = item.fields;
-    downloadOfficialPdf(item.fields);
+    fetchAndShowOriginalPdf(item.fields);
   }
 
   function renderHistory() {
@@ -786,8 +829,7 @@
       return '<div class="hist-item">' +
         '<div><h4>' + item.name + '</h4><p>UBRN: ' + item.brn + ' • জন্ম: ' + item.dob + '</p><p style="font-size:11px;margin-top:3px">' + item.date + '</p></div>' +
         '<div class="hist-actions">' +
-          '<button type="button" class="hist-btn print" onclick="viewCertificateFromHistory(' + idx + ')">দেখুন</button>' +
-          '<button type="button" class="hist-btn pdf" onclick="downloadPdfFromHistory(' + idx + ')">PDF</button>' +
+          '<button type="button" class="hist-btn pdf" onclick="viewCertificateFromHistory(' + idx + ')">অরিজিনাল PDF</button>' +
         '</div>' +
       '</div>';
     }).join('');
