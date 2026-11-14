@@ -1,95 +1,98 @@
-module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
-  let body = req.body || {};
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch (e) { body = {}; }
-  }
-
-  const ubrn = body.ubrn || req.query.ubrn;
-  const dob = body.dob || req.query.dob;
-
+  const { ubrn, dob } = req.body || {};
   if (!ubrn || !dob) {
-    return res.status(200).json({ success: false, message: 'UBRN এবং জন্ম তারিখ প্রদান করা হয়নি।' });
+    return res.status(400).json({ success: false, message: 'UBRN এবং জন্ম তারিখ আবশ্যক।' });
   }
 
-  const API_KEY = process.env.MY_API_KEY || 'vbn_634795dcf8e9fe08d63a35da4f82a80bf4cde62b3ce9766a';
-  const cleanUbrn = String(ubrn).trim();
-  const cleanDob = String(dob).trim();
+  const cleanUbrn = String(ubrn).replace(/\D/g, '');
+  const rawDob = String(dob).trim();
 
-  // তারিখের বিভিন্ন ফরম্যাট তৈরি করা (যাতে প্রোভাইডারের সার্ভার যেকোনো একটি লুফে নেয়)
-  let altDob = cleanDob;
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleanDob)) {
-    const p = cleanDob.split('/');
-    altDob = `${p[2]}-${p[1]}-${p[0]}`; // YYYY-MM-DD
+  // YYYY-MM-DD এবং DD/MM/YYYY দুটি ফরম্যাটই প্রস্তুত রাখা
+  let isoDob = rawDob;
+  let slashDob = rawDob;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(rawDob)) {
+    const [d, m, y] = rawDob.split('/');
+    isoDob = `${y}-${m}-${d}`;
+    slashDob = `${d}/${m}/${y}`;
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(rawDob)) {
+    const [y, m, d] = rawDob.split('-');
+    isoDob = `${y}-${m}-${d}`;
+    slashDob = `${d}/${m}/${y}`;
   }
 
-  async function callProviderApi(targetDob) {
+  const API_KEY = process.env.DOB_API_KEY || 'vbn_e20046874bca2dbc3b0c2ff62e77aebfa229150bd11af2dd';
+  const BASE_URL = 'https://my-api.top/api/v1/birth';
+
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${API_KEY}`,
+    'x-api-key': API_KEY
+  };
+
+  // প্রোভাইডারের সম্ভাব্য রিকোয়েস্ট ধরনগুলো পর্যায়ক্রমে চেষ্টা করা
+  const attempts = [
+    // ১. POST (YYYY-MM-DD)
+    () => fetch(BASE_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ ubrn: cleanUbrn, dob: isoDob, api_key: API_KEY })
+    }),
+    // ২. GET Query Params (YYYY-MM-DD)
+    () => fetch(`${BASE_URL}?ubrn=${encodeURIComponent(cleanUbrn)}&dob=${encodeURIComponent(isoDob)}&api_key=${encodeURIComponent(API_KEY)}`, {
+      method: 'GET',
+      headers
+    }),
+    // ৩. GET Query Params (DD/MM/YYYY)
+    () => fetch(`${BASE_URL}?ubrn=${encodeURIComponent(cleanUbrn)}&dob=${encodeURIComponent(slashDob)}&api_key=${encodeURIComponent(API_KEY)}`, {
+      method: 'GET',
+      headers
+    })
+  ];
+
+  let lastData = null;
+
+  for (const runAttempt of attempts) {
     try {
-      // পদ্ধতি ১: JSON ফরম্যাটে রিকোয়েস্ট পাঠানো (প্রোভাইডারদের সাইটে এটিই বেশি ব্যবহৃত হয়)
-      let response = await fetch('https://my-api.top/api/v1/birth', {
-        method: 'POST',
-        headers: {
-          'X-API-Key': API_KEY,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ ubrn: cleanUbrn, dob: targetDob })
-      });
-
-      let text = await response.text();
-      let json;
+      const response = await runAttempt();
+      const text = await response.text();
+      let data = {};
       try {
-        json = JSON.parse(text);
+        data = JSON.parse(text);
       } catch (e) {
-        json = null;
+        continue;
       }
 
-      // যদি JSON এ সফল না হয়, তবে ফর্ম-ইউআরএল-এনকোডেড (Form URL Encoded) ফরম্যাটে ট্রাই করবে
-      if (!json || (!json.success && json.message)) {
-        const params = new URLSearchParams();
-        params.append('ubrn', cleanUbrn);
-        params.append('dob', targetDob);
+      lastData = data;
 
-        response = await fetch('https://my-api.top/api/v1/birth', {
-          method: 'POST',
-          headers: {
-            'X-API-Key': API_KEY,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
-          },
-          body: params.toString()
+      // সফলভাবে ডেটা পাওয়া গেলে রিটার্ন করা
+      const payload = data.data || data.result || data;
+      const hasValidRecord =
+        response.ok &&
+        data.success !== false &&
+        data.status !== false &&
+        payload &&
+        typeof payload === 'object' &&
+        (payload.nameBn || payload.nameEn || payload.personNameBn || payload.personNameEn || payload.name || payload.fatherNameBn || payload.motherNameBn || payload.ubrn || payload.brn);
+
+      if (hasValidRecord) {
+        return res.status(200).json({
+          success: true,
+          data: payload,
+          charged: 2
         });
-        text = await response.text();
-        try {
-          json = JSON.parse(text);
-        } catch (e) {
-          json = { success: false, message: 'Invalid JSON response', raw: text };
-        }
       }
-
-      return json;
     } catch (err) {
-      return { success: false, message: 'Fetch Error: ' + err.message };
+      // পরবর্তী মেথড চেষ্টা করবে
     }
   }
 
-  try {
-    let result = await callProviderApi(cleanDob);
-    
-    // প্রথম ফরম্যাটে না আসলে বিকল্প তারিখ ফরম্যাট দিয়ে চেষ্টা করবে
-    if (!result.success && (!result.charged || result.charged === 0) && altDob !== cleanDob) {
-      result = await callProviderApi(altDob);
-    }
-
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(200).json({ success: false, message: 'Server Error: ' + error.message });
-  }
-};
+  return res.status(404).json({
+    success: false,
+    message: (lastData && (lastData.message || lastData.error)) || 'তথ্য পাওয়া যায়নি (Record not found)। UBRN ১৭ ডিজিট কি না যাচাই করুন।'
+  });
+}
