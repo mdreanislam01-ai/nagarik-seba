@@ -82,11 +82,11 @@
   .nav-item.active{color:var(--orange)}
   .view{display:none}
   .view.active{display:block}
-  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 18px;border-radius:16px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;max-width:92%;text-align:center;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;max-width:92%;text-align:center}
   .toast.show{opacity:1}
   .api-status-box{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:12px 14px;border-radius:12px;margin:0 14px 14px;font-size:13px;line-height:1.6;display:none}
   
-  /* Certificate / PDF Preview Styles */
+  /* Certificate Preview Styles */
   .cert-container{background:#fff;color:#000;padding:24px;margin:12px 14px;border-radius:12px;border:2px solid #14532d;font-size:13px;line-height:1.5}
   .cert-header{text-align:center;border-bottom:2px solid #14532d;padding-bottom:10px;margin-bottom:12px}
   .cert-header h3{font-size:16px;color:#14532d;font-weight:800}
@@ -128,24 +128,24 @@
 <div class="app">
 
   <header class="no-print">
-    <button class="icon-btn" aria-label="মেনু" onclick="toast('ড্রয়ার মেনু — প্রিভিউতে বন্ধ আছে')">
+    <button type="button" class="icon-btn" aria-label="মেনু" onclick="toast('ড্রয়ার মেনু — প্রিভিউতে বন্ধ আছে')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
     <svg class="logo" viewBox="0 0 64 52" width="50" height="40" aria-label="নাগরিক সেবা"><path d="M32 3 2 27h8v22h16V34h12v15h16V27h8L32 3z" fill="#f36b17"/><rect x="28" y="38" width="8" height="11" fill="#fff"/><rect x="12" y="32" width="7" height="7" fill="#fff"/><rect x="45" y="32" width="7" height="7" fill="#fff"/></svg>
     <span class="bal" id="topBal">৳ 239.12</span>
-    <button class="icon-btn" aria-label="নোটিফিকেশন" onclick="toast('কোনো নতুন নোটিশ নেই')">
+    <button type="button" class="icon-btn" aria-label="নোটিফিকেশন" onclick="toast('কোনো নতুন নোটিশ নেই')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
     </button>
-    <button class="icon-btn" aria-label="ডার্ক মোড" onclick="toggleDark()">
+    <button type="button" class="icon-btn" aria-label="ডার্ক মোড" onclick="toggleDark()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
     </button>
   </header>
 
   <section class="view active" id="view-list">
     <div class="pill-row">
-      <button class="pill active">সকলে 36</button>
-      <button class="pill" onclick="toast('NID ও ভোটার ক্যাটাগরি')">NID ও ভোটার 11</button>
-      <button class="pill" onclick="toast('বায়োমেট্রিক ক্যাটাগরি')">বায়োমেট্রিক</button>
+      <button type="button" class="pill active">সকলে 36</button>
+      <button type="button" class="pill" onclick="toast('NID ও ভোটার ক্যাটাগরি')">NID ও ভোটার 11</button>
+      <button type="button" class="pill" onclick="toast('বায়োমেট্রিক ক্যাটাগরি')">বায়োমেট্রিক</button>
     </div>
     <div class="search-wrap">
       <label class="search">
@@ -171,7 +171,7 @@
       <div class="feat">
         <span class="a">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-          অটো-ফেচ ও অফিশিয়াল PDF
+          অটো-ফেচ ও PDF ডাউনলোড
         </span>
         <span class="b">ইনস্ট্যান্ট ডেলিভারি</span>
       </div>
@@ -179,7 +179,7 @@
         <span class="lbl">বর্তমান ফি:</span>
         <span class="val">৳2</span>
       </div>
-      <button class="btn-primary" onclick="goForm()">সার্ভিস ব্যবহার করুন
+      <button type="button" class="btn-primary" onclick="goForm()">সার্ভিস ব্যবহার করুন
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
     </div>
@@ -187,7 +187,7 @@
 
   <section class="view" id="view-form">
     <div class="page-head no-print">
-      <button class="back" aria-label="ফিরে যান" onclick="goHome()">
+      <button type="button" class="back" aria-label="ফিরে যান" onclick="goHome()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
       </button>
       <h1>Birth Certificate Make</h1>
@@ -218,8 +218,8 @@
       </div>
       <div class="err" id="step1Err"></div>
       <div class="btn-row">
-        <button class="btn-outline" onclick="goHistory()">History</button>
-        <button class="btn-primary" id="btnNextStep" onclick="nextStep()">এগিয়ে যান</button>
+        <button type="button" class="btn-outline" onclick="goHistory()">History</button>
+        <button type="button" class="btn-primary" id="btnNextStep" onclick="nextStep()">এগিয়ে যান</button>
       </div>
     </div>
 
@@ -227,7 +227,7 @@
       <div class="step-title">তথ্য যাচাই ও এডিট করুন</div>
       <div class="api-status-box" id="apiStatusBox"></div>
 
-      <div class="field"><label>Birth Registration Number (17 Digit) *</label><input id="f_brn" type="text" maxlength="17"></div>
+      <div class="field"><label>Birth Registration Number (17 Digit) *</label><input id="f_brn" type="text"></div>
       <div class="field"><label>Date in Words *</label><input id="f_datewords" type="text"></div>
       <div class="field"><label>Sex *</label><select id="f_sex"><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option></select></div>
       <div class="field"><label>Date of Birth *</label><input id="f_dob" type="text"></div>
@@ -260,16 +260,16 @@
       </div>
 
       <div class="btn-row">
-        <button class="btn-ghost" onclick="goHome()">Cancel</button>
-        <button class="btn-primary" id="btnSubmitOrder" onclick="submitOrder()">অর্ডার জমা দিন ও প্রিভিউ দেখুন</button>
+        <button type="button" class="btn-ghost" onclick="goHome()">Cancel</button>
+        <button type="button" class="btn-primary" id="btnSubmitOrder" onclick="submitOrder()">অর্ডার জমা দিন ও প্রিভিউ দেখুন</button>
       </div>
     </div>
   </section>
 
-  <!-- Certificate View & Official PDF Download Section -->
+  <!-- Certificate View & PDF Download Section -->
   <section class="view" id="view-certificate">
     <div class="page-head no-print">
-      <button class="back" onclick="goHome()">
+      <button type="button" class="back" onclick="goHome()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
       </button>
       <h1>Birth Certificate Preview</h1>
@@ -301,15 +301,15 @@
     </div>
 
     <div class="btn-row no-print" style="margin:16px 14px; flex-wrap:wrap;">
-      <button class="btn-outline" onclick="goHome()">হোমে ফিরুন</button>
-      <button class="btn-ghost" onclick="window.print()">🖨️ প্রিন্ট</button>
-      <button class="btn-primary" id="btnDownloadPdf" onclick="downloadOfficialPdf()" style="flex:1 1 100%; margin-top:6px;">📥 অফিশিয়াল PDF ডাউনলোড করুন</button>
+      <button type="button" class="btn-outline" onclick="goHome()">হোমে ফিরুন</button>
+      <button type="button" class="btn-ghost" onclick="window.print()">🖨️ প্রিন্ট</button>
+      <button type="button" class="btn-primary" id="btnDownloadPdf" onclick="downloadOfficialPdf()" style="flex:1 1 100%; margin-top:6px;">📥 অফিশিয়াল PDF ডাউনলোড করুন</button>
     </div>
   </section>
 
   <section class="view" id="view-history">
     <div class="page-head no-print">
-      <button class="back" onclick="goHome()">
+      <button type="button" class="back" onclick="goHome()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
       </button>
       <h1>Birth Certificate History</h1>
@@ -330,29 +330,480 @@
   </section>
 
   <nav class="bottom no-print">
-    <button class="nav-item active" data-nav="home" onclick="goHome()">
+    <button type="button" class="nav-item active" data-nav="home" onclick="goHome()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
       হোম
     </button>
-    <button class="nav-item" data-nav="wallet" onclick="toast('ওয়ালেট — প্রিভিউতে বন্ধ আছে')">
+    <button type="button" class="nav-item" data-nav="wallet" onclick="toast('ওয়ালেট — প্রিভিউতে বন্ধ আছে')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
       ওয়ালেট
     </button>
-    <button class="nav-item" data-nav="services" onclick="goHome()">
+    <button type="button" class="nav-item" data-nav="services" onclick="goHome()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       সার্ভিস
     </button>
-    <button class="nav-item" data-nav="tx" onclick="goHistory()">
+    <button type="button" class="nav-item" data-nav="tx" onclick="goHistory()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1" fill="currentColor"/><circle cx="3.5" cy="12" r="1" fill="currentColor"/><circle cx="3.5" cy="18" r="1" fill="currentColor"/></svg>
       লেনদেন
     </button>
-    <button class="nav-item" data-nav="profile" onclick="toast('প্রোফাইল — প্রিভিউতে বন্ধ আছে')">
+    <button type="button" class="nav-item" data-nav="profile" onclick="toast('প্রোফাইল — প্রিভিউতে বন্ধ আছে')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
       প্রোফাইল
     </button>
   </nav>
 
   <div class="toast" id="toast"></div>
+</div>
 
 <script>
-  var PDF_API_ENDPOINT = '
+  var PDF_API_ENDPOINT = 'https://my.sheva247.site/api/hub/v1/birth-certificate-pdf';
+  var PDF_API_KEY_VAL = 'BHAPI-0745ff16433260b343d577c28b34ea7b05f217599ceb3f8e';
+
+  var captchaAnswer = 64;
+  var currentCertFields = null;
+  var formFieldIds = [
+    'f_brn','f_datewords','f_sex','f_dob','f_name_bn','f_name_en',
+    'f_bp_bn','f_bp_en','f_regdate','f_issdate','f_regoffice','f_offloc',
+    'f_mname_bn','f_mname_en','f_mnat_bn','f_mnat_en',
+    'f_fname_bn','f_fname_en','f_fnat_bn','f_fnat_en',
+    'f_paddr_bn','f_paddr_en','f_certno','f_pdftype'
+  ];
+
+  function newCaptcha() {
+    var a = Math.floor(Math.random() * 40) + 10;
+    var b = Math.floor(Math.random() * 40) + 10;
+    captchaAnswer = a + b;
+    var qEl = document.getElementById('captchaQ');
+    if (qEl) qEl.textContent = a + ' + ' + b + ' = ?';
+  }
+
+  function showView(id) {
+    var views = document.querySelectorAll('.view');
+    for (var i = 0; i < views.length; i++) {
+      views[i].classList.remove('active');
+    }
+    var target = document.getElementById(id);
+    if (target) target.classList.add('active');
+
+    var map = {
+      'view-list': 'home',
+      'view-form': 'services',
+      'view-history': 'tx',
+      'view-certificate': 'services'
+    };
+    var key = map[id] || 'home';
+    var navs = document.querySelectorAll('.nav-item');
+    for (var j = 0; j < navs.length; j++) {
+      navs[j].classList.toggle('active', navs[j].getAttribute('data-nav') === key);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.__mainToastT);
+    window.__mainToastT = setTimeout(function () {
+      t.classList.remove('show');
+    }, 3200);
+  }
+
+  function goForm() {
+    newCaptcha();
+    var errEl = document.getElementById('step1Err');
+    if (errEl) errEl.textContent = '';
+    var s1 = document.getElementById('step1');
+    var s2 = document.getElementById('step2');
+    if (s1) s1.style.display = 'block';
+    if (s2) s2.style.display = 'none';
+    showView('view-form');
+  }
+
+  function goHistory() {
+    renderHistory();
+    showView('view-history');
+  }
+
+  function goHome() {
+    showView('view-list');
+  }
+
+  function getField(obj, keys, defVal) {
+    if (defVal === undefined) defVal = '';
+    if (!obj || typeof obj !== 'object') return defVal;
+    var flat = {};
+    function flatten(o) {
+      for (var k in o) {
+        if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
+        var val = o[k];
+        if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+          flatten(val);
+        } else {
+          flat[k.toLowerCase().replace(/[_\s-]/g, '')] = val;
+        }
+      }
+    }
+    flatten(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var target = keys[i].toLowerCase().replace(/[_\s-]/g, '');
+      if (flat[target] !== undefined && flat[target] !== null && String(flat[target]).trim() !== '') {
+        return String(flat[target]).trim();
+      }
+    }
+    return defVal;
+  }
+
+  function normalizeDateStr(dt) {
+    if (!dt) return '';
+    var s = String(dt).trim();
+    if (!s) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+    var dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (dmy) {
+      var dd = dmy[1].length === 1 ? '0' + dmy[1] : dmy[1];
+      var mm = dmy[2].length === 1 ? '0' + dmy[2] : dmy[2];
+      return dmy[3] + '-' + mm + '-' + dd;
+    }
+
+    var months = {
+      january: '01', jan: '01',
+      february: '02', feb: '02',
+      march: '03', mar: '03',
+      april: '04', apr: '04',
+      may: '05',
+      june: '06', jun: '06',
+      july: '07', jul: '07',
+      august: '08', aug: '08',
+      september: '09', sep: '09', sept: '09',
+      october: '10', oct: '10',
+      november: '11', nov: '11',
+      december: '12', dec: '12'
+    };
+
+    var textMatch = s.match(/^(\d{1,2})\s+([a-zA-Z]+)[,\s]+(\d{4})$/);
+    if (textMatch) {
+      var mKey = textMatch[2].toLowerCase();
+      if (months[mKey]) {
+        var dayStr = textMatch[1].length === 1 ? '0' + textMatch[1] : textMatch[1];
+        return textMatch[3] + '-' + months[mKey] + '-' + dayStr;
+      }
+    }
+
+    var parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().slice(0, 10);
+    }
+    return '';
+  }
+
+  function makeUuid() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = (Math.random() * 16) | 0;
+      var v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  async function nextStep() {
+    var ubrn = document.getElementById('ubrn').value.trim();
+    var dob = document.getElementById('dob').value.trim();
+    var cap = document.getElementById('captcha').value.trim();
+    var err = document.getElementById('step1Err');
+    var btn = document.getElementById('btnNextStep');
+
+    if (ubrn.replace(/\D/g, '').length < 10) {
+      err.textContent = 'সঠিক UBRN দিন (কমপক্ষে ১০ সংখ্যা)।';
+      return;
+    }
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dob) && !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+      err.textContent = 'জন্ম তারিখ DD/MM/YYYY ফরম্যাটে লিখুন (যেমন 27/06/2023)।';
+      return;
+    }
+    if (parseInt(cap, 10) !== captchaAnswer) {
+      err.textContent = 'ক্যাপচার উত্তর ভুল হয়েছে — আবার হিসাব করে লিখুন।';
+      newCaptcha();
+      document.getElementById('captcha').value = '';
+      return;
+    }
+
+    err.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'সার্ভার থেকে তথ্য আনা হচ্ছে...';
+
+    try {
+      var response = await fetch('/api/birth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ubrn: ubrn, dob: dob })
+      });
+
+      var resData = await response.json();
+
+      if (!resData.success) {
+        err.textContent = resData.message || 'তথ্য পাওয়া যায়নি (Record not found)।';
+        newCaptcha();
+        document.getElementById('captcha').value = '';
+        return;
+      }
+
+      var d = resData.data || resData;
+
+      document.getElementById('f_brn').value = getField(d, ['ubrn', 'brn', 'birthRegNo', 'registrationNumber', 'birthRegistrationNumber'], ubrn);
+      document.getElementById('f_dob').value = getField(d, ['dob', 'dateOfBirth', 'birthDate'], dob);
+      document.getElementById('f_datewords').value = getField(d, ['dateInWords', 'dobInWords', 'dateOfBirthInWords', 'dobWords', 'wordDob', 'inWords']);
+
+      var genderStr = getField(d, ['sex', 'gender'], 'MALE').toUpperCase();
+      document.getElementById('f_sex').value = (genderStr.indexOf('FEMALE') !== -1 || genderStr.indexOf('নারী') !== -1 || genderStr.indexOf('মহিলা') !== -1) ? 'FEMALE' : 'MALE';
+
+      document.getElementById('f_name_bn').value = getField(d, ['nameBn', 'personNameBn', 'fullNameBn', 'nameBangla', 'banglaName']);
+      document.getElementById('f_name_en').value = getField(d, ['nameEn', 'personNameEn', 'fullNameEn', 'nameEnglish', 'englishName', 'name']);
+
+      document.getElementById('f_bp_bn').value = getField(d, ['birthPlaceBn', 'placeOfBirthBn', 'birthPlaceBangla', 'bpBn']);
+      document.getElementById('f_bp_en').value = getField(d, ['birthPlaceEn', 'placeOfBirthEn', 'birthPlaceEnglish', 'birthPlace', 'bpEn']);
+
+      document.getElementById('f_regdate').value = getField(d, ['regDate', 'registrationDate', 'dateOfRegistration']);
+      document.getElementById('f_issdate').value = getField(d, ['issuanceDate', 'issueDate', 'dateOfIssue', 'dateOfIssuance']) || new Date().toISOString().slice(0, 10);
+
+      document.getElementById('f_regoffice').value = getField(d, ['regOffice', 'registrationOffice', 'officeName', 'registerOffice']);
+      document.getElementById('f_offloc').value = getField(d, ['officeLocation', 'officeAddress', 'upazila', 'location']);
+
+      document.getElementById('f_mname_bn').value = getField(d, ['motherNameBn', 'motherBn', 'motherNameBangla', 'mothersNameBn']);
+      document.getElementById('f_mname_en').value = getField(d, ['motherNameEn', 'motherEn', 'motherNameEnglish', 'motherName', 'mothersNameEn']);
+      document.getElementById('f_mnat_bn').value = getField(d, ['motherNationalityBn', 'motherNatBn', 'mothersNationalityBn'], 'বাংলাদেশী');
+      document.getElementById('f_mnat_en').value = getField(d, ['motherNationalityEn', 'motherNatEn', 'mothersNationalityEn'], 'Bangladeshi');
+
+      document.getElementById('f_fname_bn').value = getField(d, ['fatherNameBn', 'fatherBn', 'fatherNameBangla', 'fathersNameBn']);
+      document.getElementById('f_fname_en').value = getField(d, ['fatherNameEn', 'fatherEn', 'fatherNameEnglish', 'fatherName', 'fathersNameEn']);
+      document.getElementById('f_fnat_bn').value = getField(d, ['fatherNationalityBn', 'fatherNatBn', 'fathersNationalityBn'], 'বাংলাদেশী');
+      document.getElementById('f_fnat_en').value = getField(d, ['fatherNationalityEn', 'fatherNatEn', 'fathersNationalityEn'], 'Bangladeshi');
+
+      document.getElementById('f_paddr_bn').value = getField(d, ['permanentAddressBn', 'permAddressBn', 'addressBn', 'permanentAddressBangla']);
+      document.getElementById('f_paddr_en').value = getField(d, ['permanentAddressEn', 'permAddressEn', 'addressEn', 'address', 'permanentAddressEnglish']);
+      document.getElementById('f_certno').value = getField(d, ['certificateNo', 'certificateNumber', 'certNo', 'randomCode']);
+
+      var statusBox = document.getElementById('apiStatusBox');
+      statusBox.style.display = 'block';
+      statusBox.innerHTML = '<b>✓ সার্ভার থেকে তথ্য সফলভাবে লোড হয়েছে!</b> (চার্জ: ৳' + (resData.charged || 2) + ')';
+
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+      window.scrollTo(0, 0);
+    } catch (error) {
+      err.textContent = 'সার্ভার সংযোগে ত্রুটি!';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'এগিয়ে যান';
+    }
+  }
+
+  function renderCertificate(fields) {
+    currentCertFields = fields;
+    document.getElementById('c_brn').textContent = fields['f_brn'] || '';
+    document.getElementById('c_dob').textContent = fields['f_dob'] || '';
+    document.getElementById('c_sex').textContent = fields['f_sex'] || '';
+    document.getElementById('c_name_bn').textContent = fields['f_name_bn'] || '';
+    document.getElementById('c_name_en').textContent = fields['f_name_en'] || '';
+    document.getElementById('c_fname').textContent = (fields['f_fname_bn'] || '') + ' (' + (fields['f_fname_en'] || '') + ')';
+    document.getElementById('c_mname').textContent = (fields['f_mname_bn'] || '') + ' (' + (fields['f_mname_en'] || '') + ')';
+    document.getElementById('c_bp').textContent = (fields['f_bp_bn'] || '') + ' / ' + (fields['f_bp_en'] || '');
+    document.getElementById('c_paddr').textContent = fields['f_paddr_bn'] || '';
+    document.getElementById('c_regdate').textContent = fields['f_regdate'] || '';
+    document.getElementById('c_issdate').textContent = fields['f_issdate'] || '';
+  }
+
+  async function downloadOfficialPdf(customFields) {
+    var f = customFields || currentCertFields;
+    if (!f) {
+      toast('সার্টিফিকেট তথ্য পাওয়া যায়নি।');
+      return;
+    }
+
+    var cleanBrn = (f['f_brn'] || '').replace(/\D/g, '');
+    if (cleanBrn.length !== 17) {
+      toast('Birth Registration Number অবশ্যই ১৭ ডিজিটের হতে হবে (বর্তমানে ' + cleanBrn.length + ' ডিজিট)।');
+      return;
+    }
+
+    var btn = document.getElementById('btnDownloadPdf');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ অফিশিয়াল PDF তৈরি হচ্ছে...';
+    }
+    toast('PDF তৈরি হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...');
+
+    var sexFormatted = (f['f_sex'] || 'MALE').toUpperCase() === 'FEMALE' ? 'Female' : 'Male';
+
+    var payload = {
+      birthRegNumber: cleanBrn,
+      dateOfBirth: normalizeDateStr(f['f_dob']),
+      personNameBn: (f['f_name_bn'] || '').trim(),
+      personNameEn: (f['f_name_en'] || '').trim() || 'N/A',
+      sex: sexFormatted,
+      registrationOffice: (f['f_regoffice'] || '').trim(),
+      officeLocation: (f['f_offloc'] || '').trim(),
+      registrationDate: normalizeDateStr(f['f_regdate']),
+      issuanceDate: normalizeDateStr(f['f_issdate']),
+      motherNameBn: (f['f_mname_bn'] || '').trim(),
+      motherNameEn: (f['f_mname_en'] || '').trim(),
+      motherNationalityBn: (f['f_mnat_bn'] || 'বাংলাদেশী').trim(),
+      motherNationalityEn: (f['f_mnat_en'] || 'Bangladeshi').trim(),
+      fatherNameBn: (f['f_fname_bn'] || '').trim(),
+      fatherNameEn: (f['f_fname_en'] || '').trim(),
+      fatherNationalityBn: (f['f_fnat_bn'] || 'বাংলাদেশী').trim(),
+      fatherNationalityEn: (f['f_fnat_en'] || 'Bangladeshi').trim(),
+      birthPlaceBn: (f['f_bp_bn'] || '').trim(),
+      birthPlaceEn: (f['f_bp_en'] || '').trim(),
+      permanentAddressBn: (f['f_paddr_bn'] || '').trim(),
+      permanentAddressEn: (f['f_paddr_en'] || '').trim(),
+      dateInWords: (f['f_datewords'] || '').trim(),
+      randomCode: (f['f_certno'] || '').trim(),
+      pdfType: f['f_pdftype'] || 'New',
+      qrCodeData: cleanBrn,
+      barcodeData: cleanBrn
+    };
+
+    try {
+      var res;
+      try {
+        res = await fetch(PDF_API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': PDF_API_KEY_VAL,
+            'Idempotency-Key': makeUuid()
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (corsErr) {
+        res = await fetch('/api/generate-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (!res || !res.ok) {
+        var status = res ? res.status : 0;
+        var errTxt = res ? await res.text().catch(function () { return ''; }) : '';
+        toast('PDF তৈরি ব্যর্থ হয়েছে (কোড: ' + status + ') ' + errTxt.slice(0, 60));
+        return;
+      }
+
+      var blob = await res.blob();
+      var url = window.URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'Birth_Certificate_' + cleanBrn + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast('✓ অফিশিয়াল PDF ডাউনলোড সম্পন্ন হয়েছে!');
+    } catch (e) {
+      toast('PDF ডাউনলোড করা যায়নি: ' + (e.message || 'Server Error'));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '📥 অফিশিয়াল PDF ডাউনলোড করুন';
+      }
+    }
+  }
+
+  function submitOrder() {
+    var req = ['f_brn', 'f_dob', 'f_name_bn', 'f_name_en'];
+    for (var i = 0; i < req.length; i++) {
+      var el = document.getElementById(req[i]);
+      if (!el || !el.value.trim()) {
+        toast('অনুগ্রহ করে নাম (বাংলা ও ইংরেজি), নিবন্ধন নম্বর ও জন্ম তারিখ পূরণ করুন।');
+        if (el) el.focus();
+        return;
+      }
+    }
+
+    var savedFields = {};
+    for (var j = 0; j < formFieldIds.length; j++) {
+      var fid = formFieldIds[j];
+      var fEl = document.getElementById(fid);
+      if (fEl) savedFields[fid] = fEl.value;
+    }
+
+    currentCertFields = savedFields;
+
+    var historyList = JSON.parse(localStorage.getItem('nagarik_birth_history') || '[]');
+    historyList.unshift({
+      brn: document.getElementById('f_brn').value.trim(),
+      name: document.getElementById('f_name_bn').value.trim() || 'নামহীন',
+      dob: document.getElementById('f_dob').value.trim(),
+      date: new Date().toLocaleString('bn-BD'),
+      fields: savedFields
+    });
+    localStorage.setItem('nagarik_birth_history', JSON.stringify(historyList));
+
+    renderCertificate(savedFields);
+    showView('view-certificate');
+    toast('✓ সার্টিফিকেট প্রিভিউ তৈরি হয়েছে! নিচে থেকে PDF ডাউনলোড করুন।');
+  }
+
+  function viewCertificateFromHistory(index) {
+    var historyList = JSON.parse(localStorage.getItem('nagarik_birth_history') || '[]');
+    var item = historyList[index];
+    if (!item || !item.fields) return;
+    renderCertificate(item.fields);
+    showView('view-certificate');
+  }
+
+  function downloadPdfFromHistory(index) {
+    var historyList = JSON.parse(localStorage.getItem('nagarik_birth_history') || '[]');
+    var item = historyList[index];
+    if (!item || !item.fields) return;
+    currentCertFields = item.fields;
+    downloadOfficialPdf(item.fields);
+  }
+
+  function renderHistory() {
+    var historyList = JSON.parse(localStorage.getItem('nagarik_birth_history') || '[]');
+    var searchEl = document.getElementById('histSearch');
+    var q = (searchEl ? searchEl.value : '').trim().toLowerCase();
+    var filtered = historyList.filter(function (item) {
+      if (!q) return true;
+      return (item.name && item.name.toLowerCase().indexOf(q) !== -1) ||
+             (item.brn && item.brn.toLowerCase().indexOf(q) !== -1);
+    });
+
+    document.getElementById('histCount').textContent = filtered.length + 'টি অর্ডার দেখানো হচ্ছে';
+    var container = document.getElementById('historyContainer');
+    if (!filtered.length) {
+      container.innerHTML = '<div class="empty"><div class="big">📄</div><p>কোনো অর্ডার পাওয়া যায়নি।</p></div>';
+      return;
+    }
+    container.innerHTML = filtered.map(function (item, idx) {
+      return '<div class="hist-item">' +
+        '<div><h4>' + item.name + '</h4><p>UBRN: ' + item.brn + ' • জন্ম: ' + item.dob + '</p><p style="font-size:11px;margin-top:3px">' + item.date + '</p></div>' +
+        '<div class="hist-actions">' +
+          '<button type="button" class="hist-btn print" onclick="viewCertificateFromHistory(' + idx + ')">দেখুন</button>' +
+          '<button type="button" class="hist-btn pdf" onclick="downloadPdfFromHistory(' + idx + ')">PDF</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleDark() {
+    document.body.classList.toggle('dark');
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    newCaptcha();
+    try {
+      var bal = localStorage.getItem('ns_balance');
+      if (bal) document.getElementById('topBal').textContent = '৳ ' + bal;
+    } catch (e) {}
+  });
+</script>
+</body>
+</html>
